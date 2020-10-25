@@ -32,30 +32,31 @@ from sklearn.decomposition import PCA
 from sklearn.neighbors import NearestNeighbors
 import shoji
 from cytograph.enrichment import FeatureSelectionByVariance
-from cytograph import CytographMethod
+from cytograph import requires, creates
 from sklearn.neighbors import KernelDensity
 from sklearn.cluster import KMeans
 from unidip import UniDip
 
 
-class DoubletFinder(CytographMethod):
+class DoubletFinder:
 	def __init__(self, proportion_artificial: float = 0.2, fixed_threshold: float = None, max_threshold: float = 1, k: int = None) -> None:
 		self.proportion_artificial = proportion_artificial
 		self.fixed_threshold = fixed_threshold
 		self.max_threshold = max_threshold
 		self.k = k
-		self._requires = [
-			("Expression", None, ("cells", "genes")),
-			("MeanExpression", "float32", ("genes",)),  # Required by FeatureSelectionByVariance
-			("StdevExpression", "float32", ("genes",))
-		]
-	
-	def fit(self, ws: shoji.WorkspaceManager) -> Tuple[np.ndarray, np.ndarray]:
+
+	@requires("Expression", None, ("cells", "genes"))
+	@requires("MeanExpression", "float32", ("genes",))  # Required by FeatureSelectionByVariance
+	@requires("StdevExpression", "float32", ("genes",))
+	@creates("DoubletScore", "float32", ("cells",))
+	@creates("DoubletFlag", "bool", ("cells",))
+	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> Tuple[np.ndarray, np.ndarray]:
 		"""
 		Find doublets using the doublet-finder algorithm.
 
 		Args:
 			ws		Workspace
+			save			if true, save the result to the workspace
 
 		Returns:
 			doublet_score		A doublet score in the interval [0, 1]
@@ -63,7 +64,6 @@ class DoubletFinder(CytographMethod):
 		"""
 		# WARNING: for historical reasons, all the processing here is done with matrices oriented (genes, cells)
 		# Step 1: Generate artificial doublets from input
-		self.check(ws, "DoubletFinder")
 		logging.info("DoubletFinder: Creating artificial doublets")
 		n_real_cells = ws.cells.length
 		n_genes = ws.genes.length
@@ -164,16 +164,3 @@ class DoubletFinder(CytographMethod):
 		logging.info(f"DoubletFinder: Done.")
 		
 		return doublet_score, doublet_flag
-
-	def fit_save(self, ws: shoji.WorkspaceManager) -> Tuple[np.ndarray, np.ndarray]:
-		"""
-		Fit, then save the results as
-			DoubletScore, float32 tensor
-			DoubletFlag, uint9 tensor
-		"""
-		(doublet_score, doublet_flag) = self.fit(ws)
-		logging.info("DoubletFinder: Saving doublet score as float32 tensor 'DoubletScore'")
-		logging.info("DoubletFinder: Saving doublet flag as uint8 tensor 'DoubletFlag'")
-		ws.DoubletScore = shoji.Tensor("float32", ("cells",), inits=doublet_score.astype("float32"))
-		ws.DoubletFlag = shoji.Tensor("uint8", ("cells",), inits=doublet_flag.astype("uint8"))
-		return (doublet_score, doublet_flag)

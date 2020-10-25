@@ -3,58 +3,17 @@ from typing import Any, List
 
 import numpy as np
 
-import loompy
+import shoji
+from cytograph import requires, creates
 
 from .human import TFs_human, cc_genes_human, g1_human, g2m_human, s_human
 from .mouse import TFs_mouse, cc_genes_mouse, g1_mouse, g2m_mouse, s_mouse
 
 
 class Species:
-	@staticmethod
-	def detect(ds: loompy.LoomConnection) -> Any:  # Really returns Species, but mypy doesn't understand that
-		name: str = None
-		if "Species" in ds.attrs:
-			name = ds.attrs.Species
-			if name == "Hs":
-				name = "Homo sapiens"
-			elif name == "Mm":
-				name = "Mus musculus"
-		elif "species" in ds.attrs:
-			name = ds.attrs.species
-			if name == "Hs":
-				name = "Homo sapiens"
-			elif name == "Mm":
-				name = "Mus musculus"
-		elif "Species" in ds.ca:
-			name = ds.ca.Species[0]
-			if name == "Hs":
-				name = "Homo sapiens"
-			elif name == "Mm":
-				name = "Mus musculus"
-		elif "Gene" in ds.ra:
-			for gene, species in {
-				"ACTB": "Homo sapiens",
-				"Tspy1": "Rattus norvegicus",
-				"Actb": "Mus musculus",  # Note must come after rat, because rat has the same gene name
-				"actb1": "Danio rerio",
-				"Act5C": "Drosophila melanogaster",
-				"ACT1": "Saccharomyces cerevisiae",
-				"act1": "Schizosaccharomyces pombe",
-				"act-1": "Caenorhabditis elegans",
-				"ACT12": "Arabidopsis thaliana",
-				"AFTTAS": "Gallus gallus"
-			}.items():
-				if gene in ds.ra.Gene:
-					name = species
-					break
-		if name is None:
-			raise ValueError("Failed to auto-detect species (to override auto-detection, set ds.attrs.Species to the species name, like 'Homo sapiens')")
-
-		return Species(name)
-		
-	def __init__(self, name: str) -> None:
+	def __init__(self, name) -> None:
 		self.name = name
-		if name == "Homo sapiens":
+		if self.name == "Homo sapiens":
 			genes = {
 				"TFs": TFs_human,
 				"cellcycle": cc_genes_human,
@@ -89,7 +48,7 @@ class Species:
 				"Oligodendrocytes": ["PDGFRA", "PLP1", "SOX10", "MOG", "MBP"],
 				"Schwann": ["MPZ"]
 			}
-		elif name == "Mus musculus":
+		elif self.name == "Mus musculus":
 			genes = {
 				"TFs": TFs_mouse,
 				"cellcycle": cc_genes_mouse,
@@ -136,19 +95,19 @@ class Species:
 				"ery": [],
 				"mt": []
 			}
+
 			self.markers = {}
 		self.genes = SimpleNamespace(**genes)
 
-	@staticmethod
-	def mask(ds: loompy.LoomConnection, categories: List[str]) -> np.ndarray:
+	def mask(self, ws: shoji.WorkspaceManager, categories: List[str]) -> np.ndarray:
 		"""
 		Create a boolean mask that includes all genes except those that belong to any of the categories
 
 		Args:
 			categories		Any combination of "TFs", "cellcycle", "sex", "ieg", "g1", "s", "g2m"
 		"""
-		s = Species.detect(ds)
-		mask = np.zeros(ds.shape[0], dtype=bool)
+		mask = np.zeros(ws.genes.length, dtype=bool)
+		genes = ws[:].Gene
 		for cat in categories:
-			mask = mask | np.isin(ds.ra.Gene, s.genes.__dict__[cat])
+			mask = mask | np.isin(genes, self.genes.__dict__[cat])
 		return mask

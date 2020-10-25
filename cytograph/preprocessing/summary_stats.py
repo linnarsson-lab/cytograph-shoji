@@ -1,31 +1,57 @@
 from typing import Tuple
 import shoji
 import numpy as np
-from cytograph.species import Species
-from cytograph import CytographMethod
+import cytograph as cg
+from cytograph import requires, creates
 import logging
 
 
-class CellSummaryStatistics(CytographMethod):
-	def __init__(self, species: Species) -> None:
-		"""
-		Args:
-			species		A cytograph Species object, which is used to obtain the list of cell cycle genes
-		"""
-		self.species = species
-		self._requires = [
-			("Expression", None, ("cells", "genes")),
-			("Unspliced", "uint16", ("cells", "genes")),
-			("Chromosome", "string", ("genes",)),
-			("Gene", "string", ("genes",))
-		]
+class DetectSpecies:
+	def __init__(self) -> None:
+		pass
 
-	def fit(self, ws: shoji.WorkspaceManager) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+	@requires("Gene", "string", ("genes",))
+	@creates("Species", "string", ())
+	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> str:
+		genes = ws[:].Gene
+		for gene, species in {
+			"ACTB": "Homo sapiens",
+			"Tspy1": "Rattus norvegicus",
+			"Actb": "Mus musculus",  # Note must come after rat, because rat has the same gene name
+			"actb1": "Danio rerio",
+			"Act5C": "Drosophila melanogaster",
+			"ACT1": "Saccharomyces cerevisiae",
+			"act1": "Schizosaccharomyces pombe",
+			"act-1": "Caenorhabditis elegans",
+			"ACT12": "Arabidopsis thaliana",
+			"AFTTAS": "Gallus gallus"
+		}.items():
+			if gene in genes:
+				return species
+		raise ValueError("Could not auto-detect species")
+
+
+class CellSummaryStatistics:
+	def __init__(self) -> None:
+		pass
+
+	@requires("Expression", None, ("cells", "genes"))
+	@requires("Chromosome", "string", ("genes",))
+	@requires("Gene", "string", ("genes",))
+	@requires("Unspliced", "uint16", ("cells", "genes"))
+	@requires("Species", "string", ())
+	@creates("NGenes", "uint32", ("cells",))
+	@creates("TotalUMIs", "uint32", ("cells",))
+	@creates("MitoFraction", "float32", ("cells",))
+	@creates("UnsplicedFraction", "float32", ("cells",))
+	@creates("CellCycleFraction", "float32", ("cells",))
+	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
 		"""
 		Calculate summary statistics for each cell
 
 		Args:
 			ws				shoji workspace
+			save			if true, save the result to the workspace
 
 		Returns:
 			n_genes				Number of non-zero genes per cell
@@ -38,7 +64,6 @@ class CellSummaryStatistics(CytographMethod):
 			The complete Expression and Unspliced tensors are loaded into memory
 			If species is None, cell cycle scores are set to 0
 		"""
-		self.check(ws, "CellSummaryStatistics")
 
 		logging.info("SummaryStatistics: Loading 'Expression' and 'Unspliced' tensors")
 		x = ws[:].Expression
@@ -52,7 +77,8 @@ class CellSummaryStatistics(CytographMethod):
 		mt_ratio = np.sum(x[:, mito_genes], axis=1) / n_UMIs
 		unspliced_ratio = np.sum(u, axis=1) / n_UMIs
 
-		if self.species is not None:
+		species = cg.Species(ws[:].Species)
+		if species.name in ["Homo sapiens", "Mus musculus"]:
 			genes = ws[:].Gene
 			g1_indices = np.isin(genes, self.species.genes.g1)
 			s_indices = np.isin(genes, self.species.genes.s)
@@ -75,52 +101,32 @@ class CellSummaryStatistics(CytographMethod):
 		logging.info(f"CellSummaryStatistics: Done.")
 		return (nnz, n_UMIs, mt_ratio, unspliced_ratio, cc)
 
-	def fit_save(self, ws: shoji.WorkspaceManager) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-		(nnz, n_UMIs, mt_ratio, unspliced_ratio, cc) = self.fit(ws)
-		logging.info("CellSummaryStatistics: Saving nnz as uint32 tensor 'NGenes'")
-		logging.info("CellSummaryStatistics: Saving n_UMIs as uint32 tensor 'TotalUMIs'")
-		logging.info("CellSummaryStatistics: Saving mitochondrial UMI fraction as float32 tensor 'MitoFraction'")
-		logging.info("CellSummaryStatistics: Saving unspliced fraction as float32 tensor 'UnsplicedFraction'")
-		logging.info("CellSummaryStatistics: Saving cell cycle UMI fraction as float32 tensor 'CellCycleFraction'")
-		logging.info("CellSummaryStatistics: Saving mean expression per gene as float32 tensor 'MeanExpression'")
-		logging.info("CellSummaryStatistics: Saving standard deviation per gene as float32 tensor 'StdevExpression'")
-		ws.NGenes = shoji.Tensor("uint32", ("cells",), inits=nnz.astype("uint32"))
-		ws.TotalUMIs = shoji.Tensor("uint32", ("cells",), inits=n_UMIs.astype("uint32"))
-		ws.MitoFraction = shoji.Tensor("float32", ("cells",), inits=mt_ratio.astype("float32"))
-		ws.UnsplicedFraction = shoji.Tensor("float32", ("cells",), inits=unspliced_ratio.astype("float32"))
-		ws.CellCycleFraction = shoji.Tensor("float32", ("cells",), inits=cc.astype("float32"))
-		return (nnz, n_UMIs, mt_ratio, unspliced_ratio, cc)
 
-
-class GeneSummaryStatistics(CytographMethod):
+class GeneSummaryStatistics:
 	def __init__(self) -> None:
-		self._requires = [
-			("Expression", None, ("cells", "genes"))
-		]
+		pass
 
-	def fit(self, ws: shoji.WorkspaceManager) -> Tuple[np.ndarray, np.ndarray]:
+	@requires("Expression", None, ("cells", "genes"))
+	@creates("MeanExpression", "float32", ("genes",))
+	@creates("StdevExpression", "float32", ("genes",))
+	@creates("Nonzeros", "uint32", ("genes",))
+	@creates("ValidGenes", "bool", ("genes",))
+	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
 		"""
 		Calculate summary statistics for each gene
 
 		Args:
 			ws				shoji workspace
+			save			if true, save the result to the workspace
 
 		Returns:
 			mean				Mean expression per gene
 			sd					Standard deviation of expression per gene
 		"""
-		self.check(ws, "GeneSummaryStatistics")
 		logging.info("GeneSummaryStatistics: Computing summary statistics for genes")
 		stats = ws.cells.groupby(None).stats("Expression")
 		mu = stats.mean()[1].flatten()
 		sd = stats.sd()[1].flatten()
+		nnz = stats.nnz()[1].flatten()
 		logging.info(f"GeneSummaryStatistics: Done.")
-		return (mu, sd)
-
-	def fit_save(self, ws: shoji.WorkspaceManager) -> Tuple[np.ndarray, np.ndarray]:
-		(mu, sd) = self.fit(ws)
-		logging.info("GeneSummaryStatistics: Saving mean expression per gene as float32 tensor 'MeanExpression'")
-		logging.info("GeneSummaryStatistics: Saving standard deviation per gene as float32 tensor 'StdevExpression'")
-		ws.MeanExpression = shoji.Tensor("float32", ("genes",), inits=mu.astype("float32"))
-		ws.StdevExpression = shoji.Tensor("float32", ("genes",), inits=sd.astype("float32"))
-		return (mu, sd)
+		return (mu, sd, nnz, (nnz > 10) & (nnz < ws.cells.length * 0.6))

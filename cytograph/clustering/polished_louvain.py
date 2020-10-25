@@ -1,17 +1,15 @@
 import logging
 
 import community
-import leidenalg
 import networkx as nx
-import igraph as ig
 import numpy as np
 from scipy.stats import mode
 from sklearn.cluster import DBSCAN
 from sklearn.decomposition import PCA
 from sklearn.neighbors import NearestNeighbors
-from scipy.sparse.csgraph import connected_components
-
-import loompy
+import scipy.sparse as sparse
+from cytograph import requires, creates
+import shoji
 
 
 def is_outlier(points: np.ndarray, thresh: float = 3.5) -> np.ndarray:
@@ -49,13 +47,9 @@ def is_outlier(points: np.ndarray, thresh: float = 3.5) -> np.ndarray:
 
 
 class PolishedLouvain:
-	def __init__(self, resolution: float = 1.0, outliers: bool = True, min_cells: int = 10, graph: str = "MKNN", embedding: str = "TSNE", method: str = "python-louvain") -> None:
+	def __init__(self, resolution: float = 1.0, min_cells: int = 10) -> None:
 		self.resolution = resolution
-		self.outliers = outliers
 		self.min_cells = min_cells
-		self.graph = graph
-		self.embedding = embedding
-		self.method = method  # "leiden" or "python-louvain"
 
 	def _break_cluster(self, embedding: np.ndarray) -> np.ndarray:
 		"""
@@ -94,52 +88,28 @@ class PolishedLouvain:
 		clusterer = DBSCAN(eps=epsilon, min_samples=round(min_pts * 0.5))
 		return clusterer.fit_predict(xy)
 
-	def fit_predict(self, ds: loompy.LoomConnection) -> np.ndarray:
+	@requires("TSNE", "float32", ("cells", None))
+	@creates("Clusters", "uint32", ("cells",))
+	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> np.ndarray:
 		"""
 		Given a sparse adjacency matrix, perform Louvain clustering, then polish the result
 
 		Args:
-			ds		The loom dataset
-			graph	The graph to use
+			ws		The shoji Workspace
 
 		Returns:
-			labels:	The cluster labels (where -1 indicates outliers)
-
+			labels:	The cluster labels
 		"""
-		if self.embedding in ds.ca:
-			xy = ds.ca[self.embedding]
-		else:
-			raise ValueError(f"Embedding '{self.embedding}' not found in file")
-			
-		knn = ds.col_graphs[self.graph]
+		xy = ws[:].TSNE
+		knn = sparse.coo_matrix((ws[:].RNN_data, (ws[:].RNN_row, ws[:].RNN_col)))
 
-		logging.info("Louvain community detection")
-		if self.method == "leiden":
-			_, components = connected_components(knn)
-			next_label = 0
-			all_labels = np.zeros(ds.shape[1], dtype="int")
-			for cc in np.unique(components):
-				# Create an RNN graph restricted to the component
-				cells = np.where(components == cc)[0]
-				n_cells = cells.shape[0]
-				if n_cells > self.min_cells:
-					cc_rnn = ds.col_graphs[cells].RNN.tocsr()
-					sources, targets = cc_rnn.nonzero()
-					weights = cc_rnn[sources, targets]
-					g = ig.Graph(list(zip(sources, targets)), directed=False, edge_attrs={'weight': weights})
-					labels = np.array(leidenalg.find_partition(g, leidenalg.ModularityVertexPartition, n_iterations=-1).membership) + next_label
-				else:
-					labels = np.zeros(n_cells) + next_label
-				next_label = labels.max() + 1
-				all_labels[cells] = labels
-			labels = all_labels
-		else:
-			g = nx.from_scipy_sparse_matrix(knn)
-			partitions = community.best_partition(g, resolution=self.resolution, randomize=False)
-			labels = np.array([partitions[key] for key in range(knn.shape[0])])
+		logging.info("PolishedLouvain: Louvain community detection")
+		g = nx.from_scipy_sparse_matrix(knn)
+		partitions = community.best_partition(g, resolution=self.resolution, randomize=False)
+		labels = np.array([partitions[key] for key in range(knn.shape[0])])
 
 		# Mark outliers using DBSCAN
-		logging.info("Using DBSCAN to mark outliers")
+		logging.info("PolishedLouvain: Using DBSCAN to mark outliers")
 		nn = NearestNeighbors(n_neighbors=10, algorithm="ball_tree", n_jobs=4)
 		nn.fit(xy)
 		knn = nn.kneighbors_graph(mode='distance')
@@ -150,7 +120,7 @@ class PolishedLouvain:
 		labels[outliers] = -1
 
 		# Mark outliers as cells in bad neighborhoods
-		logging.info("Using neighborhood to mark outliers")
+		logging.info("PolishedLouvain: Using neighborhood to mark outliers")
 		nn = NearestNeighbors(n_neighbors=10, algorithm="ball_tree", n_jobs=4)
 		nn.fit(xy)
 		knn = nn.kneighbors_graph(mode='connectivity').tocoo()
@@ -173,7 +143,7 @@ class PolishedLouvain:
 		labels = np.array([d[x] if x in d else -1 for x in labels])
 
 		# Break clusters based on the embedding
-		logging.info("Breaking clusters")
+		logging.info("PolishedLouvain: Breaking clusters")
 		max_label = 0
 		labels2 = np.copy(labels)
 		for lbl in range(labels.max() + 1):
@@ -189,7 +159,7 @@ class PolishedLouvain:
 		labels = labels2
 
 		# Set the local cluster label to the local majority vote
-		logging.info("Smoothing cluster identity on the embedding")
+		logging.info("PolishedLouvain: Smoothing cluster identity on the embedding")
 		nn = NearestNeighbors(n_neighbors=10, algorithm="ball_tree", n_jobs=4)
 		nn.fit(xy)
 		knn = nn.kneighbors_graph(mode='connectivity').tocoo()
@@ -200,7 +170,7 @@ class PolishedLouvain:
 		labels = np.array(temp)
 
 		# Mark tiny clusters as outliers
-		logging.info("Marking tiny clusters as outliers")
+		logging.info("PolishedLouvain: Marking tiny clusters as outliers")
 		ix, counts = np.unique(labels, return_counts=True)
 		labels[np.isin(labels, ix[counts < self.min_cells])] = -1
 
@@ -213,10 +183,10 @@ class PolishedLouvain:
 		labels = np.array([d[x] if x in d else -1 for x in labels])
 
 		if np.all(labels < 0):
-			logging.warn("All cells were determined to be outliers!")
+			logging.warn("PolishedLouvain: All cells were determined to be outliers!")
 			return np.zeros_like(labels)
 
-		if not self.outliers and np.any(labels == -1):
+		if np.any(labels == -1):
 			# Assign each outlier to the same cluster as the nearest non-outlier
 			nn = NearestNeighbors(n_neighbors=50, algorithm="ball_tree")
 			nn.fit(xy[labels >= 0])

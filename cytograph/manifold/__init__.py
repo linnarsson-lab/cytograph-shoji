@@ -3,3 +3,4 @@ from .principal_curve import PrincipalCurve
 from .graph_skeletonizer import GraphSkeletonizer
 from .poisson_pooling import PoissonPooling
 from .pseudo_lineage import PseudoLineage
+from .manifold import Manifold

@@ -3,18 +3,19 @@ from typing import List, Tuple
 import numpy as np
 import scipy.cluster.hierarchy as hc
 import logging
-from cytograph import CytographMethod
+from cytograph import requires, creates
 import shoji
 
 
-class FeatureSelectionByMultilevelEnrichment(CytographMethod):
-	def __init__(self) -> None:
-		self._requires = [
-			("Linkage", "float64", None),
-			("Expression", None, ("cells", "genes")),
-			("NCells", "int64", ("clusters",)),
-			("Gene", "string", ("genes",))
-		]
+class FeatureSelectionByMultilevelEnrichment:
+	def __init__(self, n_genes: int = 1, mask: np.ndarray = None) -> None:
+		"""
+		Args:
+			n_genes			Number of genes to select for each cluster group
+			mask			Bool mask indicating genes that should not be selected
+		"""
+		self.n_genes = n_genes
+		self.mask = mask
 
 	def enrichment_by_clusters(self, ws: shoji.WorkspaceManager) -> np.ndarray:
 		"""
@@ -64,22 +65,28 @@ class FeatureSelectionByMultilevelEnrichment(CytographMethod):
 		
 		return enrichment
 
-	def fit(self, ws: shoji.WorkspaceManager, preselected: List[str] = [], mask: np.ndarray = None):
+	@requires("Linkage", "float64", None)
+	@requires("Expression", None, ("cells", "genes"))
+	@requires("NCells", "int64", ("clusters",))
+	@requires("Gene", "string", ("genes",))
+	@creates("SelectedFeatures", "bool", ("genes",), indices=True)  # indices=True means that the return value is a vector of indices that should be automatically converted to a bool vector
+	def fit(self, ws: shoji.WorkspaceManager, preselected: List[str] = [], save: bool = False):
 		"""
 		Select genes at multiple levels in a hierarchy of clusters
 
 		Args:
 			ws				The shoji workspace containing aggregate data
+			n_genes			Number of genes to select for each cluster group
 			preselected		Optional list of preselected genes (names as strings)
-			mask			Bool mask indicating genes that should not be selected
+			save			If true, save the result as tensor SelectedFeatures (default: false)
 
 		Returns:
 			selected		np.ndarray of ints giving indices into the genes dimension for the selected genes
 		
 		Remarks:
 			The number of genes selected will depend on the number of clusters as follows. The dendrogram is
-			cut at n = 2, 4, 8, ... (for n <= n_clusters // 2) clusters and the most enriched gene is selected for each cluster (without
-			replacement). Finally, the most enriched gene in each cluster is selected (without replacement) and added to the list.
+			cut at n = 2, 4, 8, ... (for n <= n_clusters // 2) clusters and the most enriched n_genes are selected for each cluster 
+			(without replacement). Finally, the most enriched gene in each cluster is selected (without replacement) and added to the list.
 		"""
 		logging.info("FeatureSelectionByMultilevelEnrichment: Selecting features at 2, 4, 8, ... cluster levels")
 		n_clusters = ws.clusters.length
@@ -97,10 +104,13 @@ class FeatureSelectionByMultilevelEnrichment(CytographMethod):
 			enr = self.enrichment_by_cluster_groups(ws, labels)
 			for j in range(n):
 				top = np.argsort(-enr[j, :])
+				n_selected = 0
 				for t in top:
-					if t not in selected and (mask is not None and not mask[t]):
+					if t not in selected and (self.mask is not None and not self.mask[t]):
+						n_selected += 1
 						selected.append(t)
-						break
+						if n_selected == self.n_genes:
+							break
 			n *= 2
 
 		logging.info("FeatureSelectionByMultilevelEnrichment: Selecting features at cluster leaves")
@@ -108,17 +118,13 @@ class FeatureSelectionByMultilevelEnrichment(CytographMethod):
 		enr = self.enrichment_by_clusters(ws)
 		for j in range(n_clusters):
 			top = np.argsort(-enr[j, :])
+			n_selected = 0
 			for t in top:
-				if t not in selected and (mask is not None and not mask[t]):
+				if t not in selected and (self.mask is not None and not self.mask[t]):
+					n_selected += 1
 					selected.append(t)
-					break
+					if n_selected == self.n_genes:
+						break
+
 		logging.info(f"FeatureSelectionByMultilevelEnrichment: Done; {len(selected)} features selected")
 		return selected
-
-	def fit_save(self, ws: shoji.WorkspaceManager, preselected: List[str] = [], mask: np.ndarray = None):
-		selected_list = self.fit(ws, preselected, mask)
-		logging.info("FeatureSelectionByMultilevelEnrichment: Saving selected features as bool tensor 'SelectedFeatures'")
-		selected_bool = np.zeros(ws.genes.length, dtype="bool")
-		selected_bool[selected_list] = True
-		ws.SelectedFeatures = shoji.Tensor("bool", ("genes",), inits=selected_bool)
-		return selected_list

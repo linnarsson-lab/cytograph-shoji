@@ -1,11 +1,11 @@
 import numpy as np
 from sklearn.svm import SVR
-from cytograph import CytographMethod
+from cytograph import requires, creates
 import shoji
 import logging
 
 
-class FeatureSelectionByVariance(CytographMethod):
+class FeatureSelectionByVariance:
 	def __init__(self, n_genes: int, mask: np.ndarray = None) -> None:
 		"""
 		Args:
@@ -14,13 +14,12 @@ class FeatureSelectionByVariance(CytographMethod):
 		"""
 		self.n_genes = n_genes
 		self.mask = mask
-		self._requires = [
-			("Expression", None, ("cells", "genes")),
-			("MeanExpression", "float32", ("genes",)),
-			("StdevExpression", "float32", ("genes",))
-		]
 
-	def fit(self, ws: shoji.WorkspaceManager) -> np.ndarray:
+	@requires("Expression", None, ("cells", "genes"))
+	@requires("MeanExpression", "float32", ("genes",))
+	@requires("StdevExpression", "float32", ("genes",))
+	@creates("SelectedFeatures", "bool", ("genes",), indices=True)
+	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> np.ndarray:
 		"""
 		Fits a noise model (CV vs mean) and select high-variance genes
 
@@ -28,12 +27,11 @@ class FeatureSelectionByVariance(CytographMethod):
 			ws:	shoji.Workspace containing the data to be used
 
 		Returns:
-			ndarray of selected genes (bool array)
+			ndarray of indices of selected genes
 		
 		Remarks:
 			If the tensor "ValidGenes" exists, only ValidGenes == True genes will be selected
 		"""
-		self.check(ws, "FeatureSelectionByVariance")
 		n_genes = ws.genes.length
 
 		logging.info("FeatureSelectionByVariance: Fitting CV vs mean")
@@ -60,20 +58,5 @@ class FeatureSelectionByVariance(CytographMethod):
 		score = log2_cv - fitted_fun(log2_m[:, np.newaxis])
 		score = score * valid[ok]
 		genes = np.where(ok)[0][np.argsort(score)][-self.n_genes:]
-		selected = np.zeros(n_genes, dtype=bool)
-		selected[np.sort(genes)] = True
 		logging.info("FeatureSelectionByVariance: Done.")
-		return selected
-
-	def fit_save(self, ws: shoji.WorkspaceManager) -> np.ndarray:
-		"""
-		Fits a noise model (CV vs mean) and select high-variance genes, save the
-		result as bool tensor SelectedFeatures.
-
-		Returns:
-			Bool array indicating the selected genes
-		"""
-		selected = self.fit(ws)
-		logging.info("FeatureSelectionByVariance: Saving selected features as bool tensor 'SelectedFeatures'")
-		ws.SelectedFeatures = shoji.Tensor("bool", ("genes",), selected)
-		return selected
+		return genes

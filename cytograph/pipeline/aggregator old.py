@@ -4,23 +4,39 @@ from typing import Dict, List, Union
 import numpy as np
 import scipy.cluster.hierarchy as hc
 from scipy.spatial.distance import pdist
-import shoji
-from cytograph import creates, requires, FeatureSelectionByMultilevelEnrichment
+
+import loompy
+from cytograph.annotation import AutoAnnotator, AutoAutoAnnotator
+from cytograph.enrichment import FeatureSelectionByMultilevelEnrichment, Trinarizer
+
+from .config import load_config
 
 
 class Aggregator:
-	def __init__(self, labels: str, *, f: Union[float, List[float]] = 0.2, mask: np.ndarray = None, agg_spec: Dict[str, str] = None) -> None:
-		self.labels = labels
+	def __init__(self, *, f: Union[float, List[float]] = 0.2, mask: np.ndarray = None) -> None:
 		self.f = f
 		self.mask = mask
-		self.agg_spec = agg_spec
 
-	def fit(self, ws: shoji.WorkspaceManager, wsagg: shoji.WorkspaceManager) -> None:
-		labels = ws[:][self.labels]
+	def aggregate(self, ds: loompy.LoomConnection, *, out_file: str, agg_spec: Dict[str, str] = None) -> None:
+		config = load_config()  # Generic config, just to get the paths
+		if agg_spec is None:
+			agg_spec = {
+				"Age": "tally",
+				"Clusters": "first",
+				"Class": "mode",
+				"Total": "mean",
+				"Sex": "tally",
+				"Tissue": "tally",
+				"SampleID": "tally",
+				"TissuePool": "first",
+				"Outliers": "mean",
+				"PCW": "mean"
+			}
+		cells = ds.col_attrs["Clusters"] >= 0
+		labels = ds.col_attrs["Clusters"][cells]
 		n_labels = len(set(labels))
 
-		logging.info(f"Aggregator: aggregating by labels '{self.labels}'")
-
+		logging.info("Aggregating clusters")
 		ds.aggregate(out_file, None, "Clusters", "mean", agg_spec)
 		with loompy.connect(out_file) as dsout:
 
