@@ -10,6 +10,4 @@ from .metrics import *
 #from .pipeline import *
 from .preprocessing import *
 from .species import *
-from .velocity import *
-from .interpolation import *
 from .utils import *

@@ -6,7 +6,6 @@ from sklearn.metrics import classification_report
 from sklearn.model_selection import train_test_split
 
 import loompy
-from cytograph.decomposition import HPF
 
 
 class ClusterValidator:

@@ -3,6 +3,7 @@ from cytograph import creates
 import logging
 import numpy as np
 import scipy.sparse as sparse
+import shoji
 
 
 class Manifold:
@@ -14,7 +15,7 @@ class Manifold:
 	@creates("RNN_row", "uint32", (None, ))
 	@creates("RNN_col", "uint32", (None, ))
 	@creates("RNN_data", "float32", (None, ))
-	def fit(self, data: np.ndarray, save=False):
+	def fit(self, ws: shoji.WorkspaceManager, data: np.ndarray, save=False):
 		logging.info(f"Manifold: Computing balanced KNN (k = {self.k}, metric = '{self.metric}')")
 		bnn = cg.BalancedKNN(k=self.k, metric=self.metric, maxl=2 * self.k, sight_k=2 * self.k, n_jobs=-1)
 		bnn.fit(data)
