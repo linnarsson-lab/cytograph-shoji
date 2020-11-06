@@ -7,24 +7,23 @@ import shoji
 import logging
 
 
-class FeatureSelectionByVariance:
+class FeatureSelectionByDeviance:
 	def __init__(self, n_genes: int, mask: List[str] = None) -> None:
 		"""
 		Args:
 			n_genes		Number of genes to select
-			mask		Optional mask (numpy bool array) indicating genes that should not be selected
+			mask		Optional list indicating categories of genes that should not be selected
 		"""
 		self.n_genes = n_genes
 		self.mask = mask if mask is not None else []
 
 	@requires("Species", "string", ())
 	@requires("Expression", None, ("cells", "genes"))
-	@requires("MeanExpression", "float32", ("genes",))
-	@requires("StdevExpression", "float32", ("genes",))
+	@requires("Deviance", "float32", ("genes",))
 	@creates("SelectedFeatures", "bool", ("genes",), indices=True)
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> np.ndarray:
 		"""
-		Fits a noise model (CV vs mean) and select high-variance genes
+		Selects genes that show high deviance using a binomial model
 
 		Args:
 			ws:	shoji.Workspace containing the data to be used
@@ -34,14 +33,14 @@ class FeatureSelectionByVariance:
 		
 		Remarks:
 			If the tensor "ValidGenes" exists, only ValidGenes == True genes will be selected
+			See equation D_j on p. 14 of https://doi.org/10.1186/s13059-019-1861-6
 		"""
 		n_genes = ws.genes.length
 		species = cg.Species(ws[:].Species)
 		mask_genes = species.mask(ws, self.mask)
 
-		logging.info(" FeatureSelectionByVariance: Fitting CV vs mean")
-		mu = ws[:].MeanExpression
-		sd = ws[:].StdevExpression
+		logging.info("FeatureSelectionByDeviance: Computing D_j")
+		d = ws[:].Deviance
 
 		if "ValidGenes" in ws:
 			valid = ws.ValidGenes[:]
@@ -50,18 +49,5 @@ class FeatureSelectionByVariance:
 		if self.mask is not None:
 			valid = np.logical_and(valid, np.logical_not(mask_genes))
 
-		ok = np.logical_and(mu > 0, sd > 0)
-		cv = sd[ok] / mu[ok]
-		log2_m = np.log2(mu[ok])
-		log2_cv = np.log2(cv)
-
-		svr_gamma = 1000. / len(mu[ok])
-		clf = SVR(gamma=svr_gamma)
-		clf.fit(log2_m[:, np.newaxis], log2_cv)
-		fitted_fun = clf.predict
-		# Score is the relative position with respect of the fitted curve
-		score = log2_cv - fitted_fun(log2_m[:, np.newaxis])
-		score = score * valid[ok]
-		genes = np.where(ok)[0][np.argsort(score)][-self.n_genes:]
-		logging.info(f" FeatureSelectionByVariance: Selected {len(genes)} features")
+		genes = np.where(valid)[0][np.argsort(d)][-self.n_genes:]
 		return genes

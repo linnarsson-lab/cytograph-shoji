@@ -1,4 +1,8 @@
-from .normalizer import Log2Normalizer
+from .log2_normalizer import Log2Normalizer
 from .utils import div0
 from .doublet_finder import DoubletFinder
-from .summary_stats import CellSummaryStatistics, GeneSummaryStatistics, DetectSpecies
+from .cell_summary_statistics import CellSummaryStatistics
+from .gene_summary_statistics import GeneSummaryStatistics
+from .detect_species import DetectSpecies
+from .deviance_statistics import DevianceStatistics
+from .quality_control import QualityControl

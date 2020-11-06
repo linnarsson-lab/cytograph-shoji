@@ -1,5 +1,9 @@
+from typing import Dict
 import os
 import random
+import shoji
+import logging
+import cytograph as cg
 
 
 class Tempname:
@@ -18,3 +22,11 @@ class Tempname:
 	def __exit__(self, exc_type, exc_value, traceback) -> None:  # type: ignore
 		if os.path.exists(self.temp_path) and exc_type is None:
 			os.rename(self.temp_path, self.path)
+
+
+def run_recipe(ws: shoji.WorkspaceManager, recipe: Dict) -> None:
+	for fname, args in recipe.items():
+		logging.info(f"{fname}: {args}")
+		getattr(cg, fname)(**args).fit(ws, save=True)
+		logging.info(f"{fname}: Done.")
+		logging.info("")

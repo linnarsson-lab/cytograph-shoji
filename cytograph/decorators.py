@@ -4,7 +4,7 @@ import numpy as np
 import shoji
 
 
-def requires(name: str, dtype: Optional[str], dims: Optional[Tuple[str, ...]]) -> Callable:
+def requires(name: str, dtype: Optional[str], dims: Optional[Tuple[Union[str, int, None], ...]]) -> Callable:
 	"""
 	Declare the tensor requirements of a Cytograph fit() method
 
@@ -67,6 +67,8 @@ def creates(name: str, dtype: str, dims: Tuple[Optional[Union[str, int]], ...], 
 			result = func(self, ws, *args, **kwargs)
 			if "save" not in kwargs or not kwargs["save"]:
 				return result
+			if not isinstance(result, (tuple, list, ResultHolder)):
+				result = (result,)
 			if not isinstance(result, ResultHolder):
 				result = ResultHolder(result, result)
 			inits = result.args[-1]
@@ -76,9 +78,15 @@ def creates(name: str, dtype: str, dims: Tuple[Optional[Union[str, int]], ...], 
 				bool_vector[inits] = True
 				inits = bool_vector
 			else:
-				inits = inits.astype("object" if dtype == "string" else dtype)
+				try:
+					inits = inits.astype("object" if dtype == "string" else dtype)
+				except AttributeError as e:
+					print(e)
+					raise AttributeError("@creates() decorator handles only numpy ndarrays; use np.array(x, dtype=...) to wrap scalars")
 			ws[name] = shoji.Tensor(dtype, dims, inits=inits)
 			if len(result.args) == 1:
+				if len(result.stored) == 1:
+					return result.stored[0]
 				return result.stored
 			return ResultHolder(result.args[:-1], result.stored)
 		return wrapper

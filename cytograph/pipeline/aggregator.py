@@ -5,7 +5,7 @@ import numpy as np
 import scipy.cluster.hierarchy as hc
 from scipy.spatial.distance import pdist
 import shoji
-from cytograph import creates, requires, FeatureSelectionByMultilevelEnrichment
+from cytograph import creates, requires
 
 
 class Aggregator:
@@ -15,7 +15,7 @@ class Aggregator:
 		self.mask = mask
 		self.agg_spec = agg_spec
 
-	def fit(self, ws: shoji.WorkspaceManager, wsagg: shoji.WorkspaceManager) -> None:
+	def fit(self, ws: shoji.WorkspaceManager) -> None:
 		labels = ws[:][self.labels]
 		n_labels = len(set(labels))
 

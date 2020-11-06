@@ -56,15 +56,14 @@ class Punchcard:
 
 
 class PunchcardSubset:
-	def __init__(self, name: str, card: Punchcard, include: Union[List[str], List[List[str]]], onlyif: str, params: Dict[str, Any], steps: List[str], execution: Dict[str, Any]) -> None:
+	def __init__(self, name: str, card: Punchcard, include: Union[List[str], List[List[str]]], onlyif: str, recipe: Dict[str, Any], execution: Dict[str, Any]) -> None:
 		if name == "Pool":
 			raise ValueError(f"Subset '{name}' in punchcard '{card.name}' not allowed ('Pool' is a reserved name).")
 		self.name = name
 		self.card = card
 		self.include = include
 		self.onlyif = onlyif
-		self.params = params
-		self.steps = steps
+		self.recipe = recipe
 		self.execution = execution
 
 	def longname(self) -> str:
@@ -88,9 +87,6 @@ class PunchcardView:
 			sys.exit(1)
 		with open(path) as f:
 			spec = yaml.load(f)
-		self.steps = spec.get("steps")
-		if self.steps is not None and not isinstance(self.steps, list):
-			raise ValueError(f"'steps' in the view '{self.name}' must be a list of named analysis steps")
 		self.sources = spec.get("sources")
 		if not isinstance(self.sources, list):
 			raise ValueError(f"'sources' in the view '{self.name}' must be a list of names of punchcard subsets")
@@ -100,7 +96,7 @@ class PunchcardView:
 		self.onlyif = spec.get("onlyif")
 		if self.onlyif is not None and not isinstance(self.onlyif, str):
 			raise ValueError(f"'onlyif' in the view '{self.name}' must be a Python expression in a string")
-		self.params = spec.get("params")
+		self.recipe = spec.get("recipe")
 		self.execution = spec.get("execution")
 
 	@staticmethod

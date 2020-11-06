@@ -38,6 +38,7 @@ from sklearn.cluster import KMeans
 from unidip import UniDip
 
 
+# TODO: make it possible to run doublet finder on sets of cells from same batch
 class DoubletFinder:
 	def __init__(self, proportion_artificial: float = 0.2, fixed_threshold: float = None, max_threshold: float = 1, k: int = None) -> None:
 		self.proportion_artificial = proportion_artificial
@@ -46,8 +47,6 @@ class DoubletFinder:
 		self.k = k
 
 	@requires("Expression", None, ("cells", "genes"))
-	@requires("MeanExpression", "float32", ("genes",))  # Required by FeatureSelectionByVariance
-	@requires("StdevExpression", "float32", ("genes",))
 	@creates("DoubletScore", "float32", ("cells",))
 	@creates("DoubletFlag", "bool", ("cells",))
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> Tuple[np.ndarray, np.ndarray]:
@@ -56,15 +55,15 @@ class DoubletFinder:
 
 		Args:
 			ws		Workspace
-			save			if true, save the result to the workspace
+			save	If true, save the result to the workspace
 
 		Returns:
-			doublet_score		A doublet score in the interval [0, 1]
-			doublet_flag		0: singlet, 1: doublet, 2: neighbor of a doublet
+			DoubletScore		A doublet score in the interval [0, 1]
+			DoubletFlag			0: singlet, 1: doublet, 2: neighbor of a doublet
 		"""
 		# WARNING: for historical reasons, all the processing here is done with matrices oriented (genes, cells)
 		# Step 1: Generate artificial doublets from input
-		logging.info("DoubletFinder: Creating artificial doublets")
+		logging.info(" DoubletFinder: Creating artificial doublets")
 		n_real_cells = ws.cells.length
 		n_genes = ws.genes.length
 		n_doublets = int(n_real_cells / (1 - self.proportion_artificial) - n_real_cells)
@@ -74,10 +73,8 @@ class DoubletFinder:
 			doublets[:, i] = ws.Expression[a] + ws.Expression[b]
 
 		data_wdoublets = np.concatenate((ws.Expression[:].T, doublets), axis=1)  # Transpose the expression matrix to be (genes, cells)
-
-		logging.info("DoubletFinder: Feature selection and dimensionality reduction")
+		logging.info(" DoubletFinder: Feature selection and dimensionality reduction")
 		genes = FeatureSelectionByVariance(2000).fit(ws)
-
 		f = np.divide(data_wdoublets.sum(axis=0), 10e6)
 		norm_data = np.divide(data_wdoublets, f)
 		norm_data = np.log(norm_data + 1)
@@ -88,7 +85,7 @@ class DoubletFinder:
 		else:
 			k = self.k
 
-		logging.info(f"DoubletFinder: Initializing NN structure with k = {k}")
+		logging.info(f" DoubletFinder: Initializing NN structure with k = {k}")
 		knn_result = NearestNeighbors(n_neighbors=k, metric='euclidean', n_jobs=4)
 		knn_result.fit(pca)
 		knn_dist, knn_idx = knn_result.kneighbors(X=pca, return_distance=True)
@@ -98,7 +95,7 @@ class DoubletFinder:
 		knn_dist1, _ = knn_result1.kneighbors(X=pca[n_real_cells + 1:, :], n_neighbors=10)
 		knn_dist_rc, knn_idx_rc = knn_result1.kneighbors(X=pca[0:n_real_cells, :], return_distance=True)
 
-		logging.info(f"DoubletFinder: Finding the doublet score threshold")
+		logging.info(f" DoubletFinder: Finding the doublet score threshold")
 		dist_th = np.mean(knn_dist1.flatten()) + 1.64 * np.std(knn_dist1.flatten())
 
 		doublet_freq = np.logical_and(knn_idx > n_real_cells, knn_dist < dist_th)
@@ -146,21 +143,22 @@ class DoubletFinder:
 				doublet_th = doublet_th2
 			else:
 				doublet_th = doublet_th1
+		logging.info(f" DoubletFinder: Optimal threshold was {doublet_th:.2f}")
 		doublet_flag[doublet_score >= doublet_th] = 1
 
-		logging.info(f"DoubletFinder: Finding doublet neighbors")
+		logging.info(f" DoubletFinder: Finding doublet neighbors")
 		# Calculate the score for the cells that are nn of the marked doublets
-		pca_rc = pca[0:n_real_cells, :]
-		knn_dist1_rc, _ = knn_result1.kneighbors(X=pca_rc[doublet_flag == 1, :], n_neighbors=10, return_distance=True)
+		if (doublet_flag == 1).sum() > 0:
+			pca_rc = pca[0:n_real_cells, :]
+			knn_dist1_rc, _ = knn_result1.kneighbors(X=pca_rc[doublet_flag == 1, :], n_neighbors=10, return_distance=True)
 
-		dist_th = np.mean(knn_dist1_rc.flatten()) + 1.64 * np.std(knn_dist1_rc.flatten())
-		doublet2_freq = np.logical_and(doublet_flag[knn_idx_rc] == 1, knn_dist_rc < dist_th)
-		doublet2_nn = knn_dist_rc < dist_th
-		doublet2_score = doublet2_freq.sum(axis=1) / doublet2_nn.sum(axis=1)
-		
-		doublet_flag[np.logical_and(doublet_flag == 0, doublet2_score >= doublet_th / 2)] = 2
+			dist_th = np.mean(knn_dist1_rc.flatten()) + 1.64 * np.std(knn_dist1_rc.flatten())
+			doublet2_freq = np.logical_and(doublet_flag[knn_idx_rc] == 1, knn_dist_rc < dist_th)
+			doublet2_nn = knn_dist_rc < dist_th
+			doublet2_score = doublet2_freq.sum(axis=1) / doublet2_nn.sum(axis=1)
 			
-		logging.info(f"DoubletFinder: Doublet fraction was {100*len(np.where(doublet_flag > 0)[0]) / n_real_cells:.2f}%, i.e. {len(np.where(doublet_flag > 0)[0])} cells")
-		logging.info(f"DoubletFinder: Done.")
+			doublet_flag[np.logical_and(doublet_flag == 0, doublet2_score >= doublet_th / 2)] = 2
+			
+		logging.info(f" DoubletFinder: Doublet fraction was {100*len(np.where(doublet_flag > 0)[0]) / n_real_cells:.2f}%, i.e. {len(np.where(doublet_flag > 0)[0])} cells")
 		
 		return doublet_score, doublet_flag

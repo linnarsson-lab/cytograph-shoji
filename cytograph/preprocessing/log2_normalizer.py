@@ -30,7 +30,7 @@ class Log2Normalizer:
 	@creates("Log2Level", "uint16", ())
 	@creates("Log2Mean", "float32", ("cells",))
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> Tuple[int, np.ndarray]:
-		logging.info("Log2Normalizer: Computing normalized log2 mean")
+		logging.info(" Log2Normalizer: Computing normalized log2 mean")
 		n_genes = ws.genes.length
 		n_cells = ws.cells.length
 		self.log2_mu = np.zeros(n_genes)
@@ -43,7 +43,6 @@ class Log2Normalizer:
 			# Rescale to the median total UMI count, plus 1 (to avoid log of zero), then log transform
 			vals = np.log2(div0(vals.T, self.totals) * self.level + 1).T
 			self.log2_mu[ix: ix + 1000] = np.mean(vals, axis=1)
-		logging.info("Log2Normalizer: Done.")
 		return (self.level, self.log2_mu)
 
 	def load(self, ws: shoji.WorkspaceManager) -> "Log2Normalizer":

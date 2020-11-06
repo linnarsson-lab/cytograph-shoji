@@ -1,3 +1,4 @@
 from .feature_selection_by_multilevel_enrichment import FeatureSelectionByMultilevelEnrichment
 from .feature_selection_by_variance import FeatureSelectionByVariance
+from .feature_selection_by_deviance import FeatureSelectionByDeviance
 from .gsea import GSEA

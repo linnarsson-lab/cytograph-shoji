@@ -88,7 +88,7 @@ class PolishedLouvain:
 		clusterer = DBSCAN(eps=epsilon, min_samples=round(min_pts * 0.5))
 		return clusterer.fit_predict(xy)
 
-	@requires("TSNE", "float32", ("cells", None))
+	@requires("TSNE", "float32", ("cells", 2))
 	@creates("Clusters", "uint32", ("cells",))
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> np.ndarray:
 		"""

@@ -1,0 +1,28 @@
+recipes:
+  qc:
+    DetectSpecies: {}
+    CellSummaryStatistics: {}
+    GeneSummaryStatistics: {}
+    DoubletFinder: {}
+    QualityControl: {min_umis: 1000, min_unspliced_fraction: 0.1, min_fraction_good_cells: 0.6}
+
+  punchcard:
+    InitializeWorkspace: {from_workspace: "samples.TenX204_1", tensors: Gene, Accession, Chromosome, Strand, Position}
+    CollectCells: {tensors: [Expression, Age, ...]}
+    GeneSummaryStatistics: {}  # Must recompute this since we pooled a different set of cells
+    DevianceStatistics: {}
+    FeatureSelectionByDeviance: {n_genes: 2000, mask: cellcycle, ieg, mt}
+    GLMPCA: {n_factors: 50, batch_keys: Chemistry}
+    Manifold: {k: 25, tensor_name: GLMPCA, metric: euclidean}
+    ArtOfTsne: {tensor_name: GLMPCA, metric: euclidean}
+    PolishedLouvain: {}
+
+paths:
+  samples: "samples"  # This is a shoji workspace path from the root
+  build: ""  # This is a filesystem path to the build folder
+  workspace: ""  # This is the shoji workspace path to use as root of all builds; it cannot be empty
+
+execution:
+  n_cpus: -1  # -1 means "use all available CPUs"
+  n_gpus: 0
+  memory: 128  # Gigabytes

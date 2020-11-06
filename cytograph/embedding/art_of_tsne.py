@@ -7,28 +7,27 @@ import shoji
 
 
 class ArtOfTsne:
-	def __init__(self, metric: Union[str, Callable] = "euclidean", exaggeration: float = -1, perplexity: int = 30, init_method: Union[str, Callable] = "pca"):
+	def __init__(self, tensor_name: str, metric: Union[str, Callable] = "euclidean", exaggeration: float = -1, perplexity: int = 30, init_method: Union[str, Callable] = "pca"):
 		"""
 		Implementation of Dmitry Kobak and Philipp Berens "The art of using t-SNE for single-cell transcriptomics" based on openTSNE.
 		See https://doi.org/10.1038/s41467-019-13056-x | www.nature.com/naturecommunications
 
 		Args:
+			tensor_name		The name of the tensor that contains the data to be embedded
 			metric			Any metric allowed by PyNNDescent (default: 'euclidean')
 			exaggeration	The exaggeration to use for the embedding or -1 to use automatic heuristic (default: -1)
 			perplexity		The perplexity to use for the embedding
 			init_method		Either 'pca', 'random', or a custom method with the same signature as initialization.pca.
 		"""
+		self.tensor_name = tensor_name
 		self.metric = metric
 		self.exaggeration = exaggeration
 		self.perplexity = perplexity
 		self.init_method = init_method
 
 	@creates("TSNE", "float32", ("cells", 2))
-	def fit(self, ws: shoji.WorkspaceManager, X: np.ndarray, save: bool = False) -> np.ndarray:
+	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> np.ndarray:
 		"""
-		Args:
-			X	The data matrix of shape (n_cells, n_genes) i.e. (n_samples, n_features)
-		
 		Returns:
 			The 2D tSNE embedding as np.ndarray
 		"""
@@ -36,6 +35,7 @@ class ArtOfTsne:
 			init_method = initialization.random
 		elif init_method == "pca":
 			init_method = initialization.pca
+		X = ws[:][self.tensor_name]
 		n = X.shape[0]
 		if n > 100_000:
 			if self.exaggeration == -1:
