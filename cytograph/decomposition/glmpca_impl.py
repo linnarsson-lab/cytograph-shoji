@@ -6,6 +6,7 @@ from numpy import log
 from scipy.special import digamma, polygamma
 import statsmodels.genmod.families as smf
 from decimal import Decimal
+from tqdm import trange
 
 
 def trigamma(x):
@@ -252,7 +253,10 @@ def glmpca(Y, L, fam="poi", ctl = {"maxIter": 1000, "eps": 1e-4, "optimizeTheta"
 
     This function implements the GLM-PCA dimensionality reduction method for high-dimensional count data.
 
-    The basic model is R = AX'+ZG'+VU', where E[Y]=M=linkinv(R). Regression coefficients are A and G, latent factors are U, and loadings are V. The objective function being optimized is the deviance between Y and M, plus an L2 (ridge) penalty on U and V. Note that glmpca uses a random initialization, so for fully reproducible results one should set the random seed.
+    The basic model is R = AX'+ZG'+VU', where E[Y]=M=linkinv(R). Regression coefficients are A and G,
+    latent factors are U, and loadings are V. The objective function being optimized is the deviance between
+    Y and M, plus an L2 (ridge) penalty on U and V. Note that glmpca uses a random initialization, so
+    for fully reproducible results one should set the random seed.
 
     Parameters
     ----------
@@ -367,11 +371,11 @@ def glmpca(Y, L, fam="poi", ctl = {"maxIter": 1000, "eps": 1e-4, "optimizeTheta"
 
     # run optimization
     dev = np.repeat(np.nan, ctl["maxIter"])
-    for t in range(ctl["maxIter"]):
+    for t in trange(ctl["maxIter"]):
         dev[t] = gf.dev_func(Y, rfunc(U, V))
         if not np.isfinite(dev[t]):
             raise GlmpcaError("Numerical divergence (deviance no longer finite), try increasing the penalty to improve stability of optimization.")
-        if t > 4 and np.abs(dev[t] - dev[t - 1]) / (0.1 + np.abs(dev[t - 1])) < ctl["eps"]:
+        if t > 10 and np.abs(dev[t] - dev[t - 1]) / (0.1 + np.abs(dev[t - 1])) < ctl["eps"]:
             break
         if verbose:
             msg = "Iteration: {:d} | deviance={:.4E}".format(t, Decimal(dev[t]))

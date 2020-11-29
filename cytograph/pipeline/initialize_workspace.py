@@ -1,4 +1,5 @@
 from typing import List, Dict
+import sys
 import shoji
 import numpy as np
 import logging
@@ -21,7 +22,7 @@ class InitializeWorkspace:
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> None:
 		"""
 		Args:
-			ws				shoji workspace
+			ws		shoji workspace
 		"""
 		db = shoji.connect()
 		ws.genes = shoji.Dimension(shape=None)
@@ -30,11 +31,16 @@ class InitializeWorkspace:
 		logging.info(f" InitializeWorkspace: Collecting tensors from '{self.from_workspace}'")
 		d: Dict[str, np.ndarray] = {}
 		for tensor in self.tensors:
+			if tensor not in db[self.from_workspace]:
+				logging.error(f"Tensor '{tensor}' was not found in workspace '{self.from_workspace}'")
+				sys.exit(1)
 			t = db[self.from_workspace][tensor]
 			if t.rank > 0 and t.dims[0] == "genes":
+				ws[tensor] = shoji.Tensor(dtype=t.dtype, dims=t.dims)
 				d[tensor] = t[:]
 			elif t.rank == 0:
-				ws[tensor] = t[:]
+				ws[tensor] = shoji.Tensor(dtype=t.dtype, dims=t.dims, inits=t[:])
 			else:
-				raise ValueError(f"InitializeWorkspace can only import scalars and tensors along genes dimension, but '{tensor}' first dimension was '{t.dims[0]}'")
+				raise ValueError(f"InitializeWorkspace can only import scalars and tensors along 'genes' dimension, but '{tensor}' was rank-{t.rank} and first dimension was '{t.dims[0]}'")
 		ws.genes.append(d)
+		ws.genes = shoji.Dimension(shape=ws.genes.length)  # Fix the length of the genes dimension

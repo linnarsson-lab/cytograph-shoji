@@ -1,8 +1,7 @@
-from typing import Tuple
 import shoji
 import numpy as np
-import cytograph as cg
 from cytograph import requires, creates
+from .utils import div0
 import logging
 
 
@@ -26,16 +25,18 @@ class DevianceStatistics:
 			Deviance		Deviance per gene
 
 		Remarks:
-			If the tensor "ValidGenes" exists, only ValidGenes == True genes will be selected
 			See equation D_j on p. 14 of https://doi.org/10.1186/s13059-019-1861-6
 		"""
 		logging.info(" DevianceStatistics: Computing binomial deviance statistics for genes")
-		n = ws[:].TotalUMIs
-		gn = ws[:].GeneTotalUMIs
-		pi_hat_j = gn / n.sum()
-		d = 0
+		n = ws.TotalUMIs[...]
+		n_sum = n.sum()
+		gn = ws.GeneTotalUMIs[...]
+		d_j = np.zeros((1, ws.genes.length))
 		for ix in range(0, ws.cells.length, 1000):
-			y_ij = ws.Expression[ix: ix + 1000]
-			n_i = n[ix: ix + 1000]
-			d += 2 * (y_ij * np.log(y_ij / (n_i * pi_hat_j)) + (n_i - y_ij) * np.log((n_i - y_ij) / (n_i * (1 - pi_hat_j))))
-		return d
+			pi_hat_j = (gn / n_sum)[None, :]
+			y_ji = ws.Expression[ix: ix + 1000]
+			n_i = n[ix: ix + 1000][:, None]
+			with np.errstate(divide='ignore', invalid='ignore'):
+				# This would be faster as a numba nested for loop
+				d_j += 2 * np.sum(np.nan_to_num(y_ji * np.log(div0(y_ji, (n_i * pi_hat_j)))) + (n_i - y_ji) * np.log((n_i - y_ji) / (n_i * (1 - pi_hat_j))), axis=0)
+		return d_j[0]

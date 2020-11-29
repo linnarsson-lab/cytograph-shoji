@@ -1,77 +1,49 @@
-import fnmatch
 import logging
 import os
-import sqlite3 as sqlite
 import sys
 from pathlib import Path
-from tempfile import TemporaryDirectory
-from typing import Dict, List, Optional, Union
-from ..plotting import qc_plots
+from typing import List, Optional, Dict
 import click
 import numpy as np
 import shoji
-import cytograph as cg
-from .utils import run_recipe
 from ..postprocessing import split_subset, merge_subset
 from .._version import __version__ as version
-from .config import load_config
+from .config import Config
 from .engine import CondorEngine, Engine, LocalEngine
-from .punchcards import PunchcardDeck, PunchcardSubset, PunchcardView
-from .workflow import Workflow
+from .punchcards import PunchcardDeck
+from .workflow import Workflow, run_recipe
 import subprocess
 import shutil
 import time
-import getpass
-import datetime
 
 
-def make_build_name():
-	user = getpass.getuser()
-	now = datetime.datetime.now()
-	return f"{user}_{now.year}_{now.month}_{now.day}_" + "".join(np.random.choice(["A", "C", "G", "T"], size=6))
+def pp(config: Dict, indent: int = 0) -> str:
+	result = ""
+	for k, v in config.items():
+		result += " " * indent
+		result += k + ": "
+		if isinstance(v, dict):
+			result += "\n" + pp(v, indent + 2)
+		else:
+			result += str(v) + "\n"
+	return result
 
 
 @click.group()
-@click.option('--build-location')
 @click.option('--show-message/--hide-message', default=True)
 @click.option('--verbosity', default="info", type=click.Choice(['error', 'warning', 'info', 'debug']))
-def cli(build_location: str = None, show_message: bool = True, verbosity: str = "info") -> None:
-	config = load_config()
+def cli(show_message: bool = True, verbosity: str = "info") -> None:
+	config = Config.load()
 	level = {"error": 40, "warning": 30, "info": 20, "debug": 10}[verbosity]
-	logging.basicConfig(stream=sys.stdout, format='%(asctime)s - %(levelname)s - %(message)s', level=level)
+	logging.basicConfig(stream=sys.stdout, format='%(asctime)s - %(levelname)s - %(message)s', level=level, force=True)
 	logging.captureWarnings(True)
-
-	# Allow command-line options to override config settings
-	if build_location is not None:
-		config['paths']['build'] = build_location
 
 	if show_message:
 		print(f"Cytograph v{version} by Linnarsson Lab 🌸 (http://linnarssonlab.org)")
-		if os.path.exists(config['paths']['build']):
-			print(f"            Build: {config['paths']['build']}")
+		if os.path.exists(config['paths']['builds']):
+			print(f"            Builds: {config['paths']['builds']}")
 		else:
-			print(f"            Build: {config['paths']['build']} \033[1;31;40m-- DIRECTORY DOES NOT EXIST --\033[0m")
-		if os.path.exists(config['paths']['samples']):
-			print(f"          Samples: {config['paths']['samples']}")
-		else:
-			print(f"          Samples: {config['paths']['samples']} \033[1;31;40m-- DIRECTORY DOES NOT EXIST --\033[0m")
-		if os.path.exists(config['paths']['autoannotation']):
-			print(f"  Auto-annotation: {config['paths']['autoannotation']}")
-		else:
-			print(f"  Auto-annotation: {config['paths']['autoannotation']} \033[1;31;40m-- DIRECTORY DOES NOT EXIST --\033[0m")
-		if os.path.exists(config['paths']['metadata']):
-			print(f"         Metadata: {config['paths']['metadata']}")
-		else:
-			print(f"         Metadata: {config['paths']['metadata']} \033[1;31;40m-- FILE DOES NOT EXIST --\033[0m")
-		print(f"   Fastq template: {config['paths']['fastqs']}")
-		if os.path.exists(config['paths']['index']):
-			print(f"            Index: {config['paths']['index']}")
-		else:
-			print(f"            Index: {config['paths']['index']} \033[1;31;40m-- DIRECTORY DOES NOT EXIST --\033[0m")
-		if os.path.exists(config['paths']['qc']):
-			print(f"     QC directory: {config['paths']['qc']}")
-		else:
-			print(f"     QC directory: {config['paths']['qc']} \033[1;31;40m-- DIRECTORY DOES NOT EXIST --\033[0m")
+			print(f"            Builds: {config['paths']['builds']} \033[1;31;40m-- DIRECTORY DOES NOT EXIST --\033[0m")
 		print()
 
 
@@ -80,9 +52,8 @@ def cli(build_location: str = None, show_message: bool = True, verbosity: str = 
 @click.option('--dryrun/--no-dryrun', is_flag=True, default=False)
 def build(engine: str, dryrun: bool) -> None:
 	try:
-		config = load_config()
+		config = Config.load()
 		Path(config['paths']['build']).mkdir(exist_ok=True)
-		config["paths"]["workspace"] = make_build_name()
 
 		# Load the punchcard deck
 		deck = PunchcardDeck(config['paths']['build'])
@@ -102,28 +73,39 @@ def build(engine: str, dryrun: bool) -> None:
 
 
 @cli.command()
-@click.argument("subset_or_view")
-@click.argument("--workspace", default="")
-def process(subset_or_view: str, workspace: str) -> None:
+@click.argument("workspace")
+@click.argument("punchcard")
+def process(workspace: str, punchcard: str) -> None:
 	try:
-		config = load_config()  # This config will not have subset-specific settings, but we need it for the build path
-		Path(config['paths']['build']).mkdir(exist_ok=True)
-		if workspace == "":
-			config["paths"]["workspace"] = "builds." + sten_2020_11_01_GCATCA
-		else:
-			config["paths"]["workspace"] = workspace
+		config = Config.load()  # This config will not have subset-specific settings, but we need it for the build path
+		config["paths"]["build"] = Path(config['paths']['builds']) / workspace
+		logging.info(f"Build folder is '{config['paths']['build']}'")
+		config["paths"]["build"].mkdir(exist_ok=True)
 
-		logging.info(f"Processing '{subset_or_view}'")
+		db = shoji.connect()
+		ws_builds = db[config['workspaces']['builds']]
+		if workspace not in ws_builds:
+			logging.info(f"Creating Workspace '{config['workspaces']['builds']}.{workspace}'")
+			ws_builds[workspace] = shoji.Workspace()
+		if punchcard in ws_builds[workspace]:
+			logging.warning(f"Deleting existing Workspace '{config['workspaces']['builds']}.{workspace}.{punchcard}'")
+			del ws_builds[workspace][punchcard]
+		logging.info(f"Creating Workspace '{config['workspaces']['builds']}.{workspace}.{punchcard}'")
+		ws_builds[workspace][punchcard] = shoji.Workspace()
+		config["workspaces"]["build"] = ws_builds[workspace]
 
-		deck = PunchcardDeck(config['paths']['build'])
-		subset_obj: Union[Optional[PunchcardSubset], Optional[PunchcardView]] = deck.get_subset(subset_or_view)
-		if subset_obj is None:
-			subset_obj = deck.get_view(subset_or_view)
-			if subset_obj is None:
-				logging.error(f"Subset or view {subset_or_view} not found.")
-				sys.exit(1)
+		deck = PunchcardDeck(config['paths']['build'] / "punchcards")
+		punchcard_obj = deck.punchcards[punchcard]
+		if punchcard_obj is None:
+			logging.error(f"Punchcard {punchcard} not found.")
+			sys.exit(1)
 
-		Workflow(deck, subset_obj).process()
+		config = Config.load(punchcard_obj)  # Ensure we get any punchcard-specific configs
+		for line in pp(config).split("\n"):
+			logging.debug(line)
+
+		logging.info(f"Processing '{punchcard}'")
+		Workflow(deck, punchcard_obj).process()
 	except Exception as e:
 		logging.exception(f"'process' command failed: {e}")
 
@@ -132,8 +114,9 @@ def process(subset_or_view: str, workspace: str) -> None:
 @click.argument('sampleids', nargs=-1)
 @click.option('--file', help="Path to file containing sample IDs (one ID per line)")
 def qc(sampleids: List[str], file: str = None) -> None:
-	config = load_config()
-	Path(config['paths']['build']).mkdir(exist_ok=True)
+	config = Config.load()
+	for line in pp(config).split("\n"):
+		logging.debug(line)
 
 	samples_to_process: List[str] = []
 	if len(sampleids) > 0:
@@ -149,7 +132,8 @@ def qc(sampleids: List[str], file: str = None) -> None:
 	sampleids = np.unique(samples_to_process)
 	db = shoji.connect()
 	for sampleid in sampleids:
-		ws = db[config["paths"]["samples"] + "." + sampleid]
+		logging.info(f"Processing '{sampleid}'")
+		ws = db[config["workspaces"]["samples"]][sampleid]
 		recipe = config["recipes"]["qc"]
 		run_recipe(ws, recipe)
 
@@ -160,7 +144,7 @@ def qc(sampleids: List[str], file: str = None) -> None:
 @click.option('--method', default='svc', type=click.Choice(['svc', 'dendrogram', 'cluster']))
 def split(subset: str = None, method: str = 'svc') -> None:
 
-	config = load_config()
+	config = Config.load()
 
 	if subset:
 
@@ -272,7 +256,7 @@ def split(subset: str = None, method: str = 'svc') -> None:
 @click.option('--subset', default=None)
 @click.option('--overwrite', is_flag=True)
 def merge(subset: str = None, overwrite: bool = False) -> None:
-	config = load_config()
+	config = Config.load()
 	deck = PunchcardDeck(config['paths']['build'])
 
 	if subset:
@@ -301,7 +285,7 @@ def merge(subset: str = None, overwrite: bool = False) -> None:
 		logging.info("Submitting jobs")
 		for subset in deck.get_leaves():
 			# Use CPUs and memory from subset config
-			config = load_config(subset)
+			config = Config.load(subset)
 			n_cpus = config.execution.n_cpus
 			memory = config.execution.memory
 			# Remove agg file and export directory

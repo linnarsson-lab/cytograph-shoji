@@ -49,24 +49,26 @@ class QualityControl:
 			good_cells = ~ws[:].DoubletFlag
 		else:
 			good_cells = ws[:].DoubletScore < self.doublet_threshold
-		logging.info(f" QualityControl: Removed {n_cells - good_cells.sum()} doublets")
+		logging.info(f" QualityControl: Marked {n_cells - good_cells.sum()} doublets")
 
 		enough_umis = ws[:].TotalUMIs >= self.min_umis
 		good_cells &= enough_umis
-		logging.info(f" QualityControl: Removed {n_cells - enough_umis.sum()} cells with too few UMIs")
+		logging.info(f" QualityControl: Marked {n_cells - enough_umis.sum()} cells with too few UMIs")
 
 		good_mito_fraction = ws[:].MitoFraction < self.max_mt_fraction
 		good_cells &= good_mito_fraction
-		logging.info(f" QualityControl: Removed {n_cells - good_mito_fraction.sum()} cells with too high mitochondrial UMI fraction")
+		logging.info(f" QualityControl: Marked {n_cells - good_mito_fraction.sum()} cells with too high mitochondrial UMI fraction")
 
 		good_unspliced_fraction = ws[:].UnsplicedFraction >= self.min_unspliced_fraction
 		good_cells &= good_unspliced_fraction
-		logging.info(f" QualityControl: Removed {n_cells - good_unspliced_fraction.sum()} cells with too low unspliced UMI fraction")
+		logging.info(f" QualityControl: Marked {n_cells - good_unspliced_fraction.sum()} cells with too low unspliced UMI fraction")
 
 		passed_qc = True
-		if good_cells.sum() / n_cells < self.min_fraction_good_cells:
+		good_fraction = good_cells.sum() / n_cells
+		if good_fraction < self.min_fraction_good_cells:
 			logging.warning(f" QualityControl: Sample failed QC because only {good_cells.sum()} of {n_cells} cells passed")
 			passed_qc = False
-
+		else:
+			logging.info(f" QualityControl: {good_cells.sum()} of {n_cells} cells ({int(100 * good_fraction)}%) passed QC")
 		return (good_cells, np.array(passed_qc, dtype=bool))
 

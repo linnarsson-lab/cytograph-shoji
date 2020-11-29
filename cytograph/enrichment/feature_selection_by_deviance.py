@@ -39,9 +39,10 @@ class FeatureSelectionByDeviance:
 		species = cg.Species(ws[:].Species)
 		mask_genes = species.mask(ws, self.mask)
 
-		logging.info("FeatureSelectionByDeviance: Computing D_j")
+		logging.info("FeatureSelectionByDeviance: Loading deviance")
 		d = ws[:].Deviance
 
+		logging.info("FeatureSelectionByDeviance: Removing invalid and masked genes")
 		if "ValidGenes" in ws:
 			valid = ws.ValidGenes[:]
 		else:
@@ -49,5 +50,12 @@ class FeatureSelectionByDeviance:
 		if self.mask is not None:
 			valid = np.logical_and(valid, np.logical_not(mask_genes))
 
-		genes = np.where(valid)[0][np.argsort(d)][-self.n_genes:]
+		temp = []
+		for gene in np.argsort(-d):
+			if valid[gene]:
+				temp.append(gene)
+			if len(temp) >= self.n_genes:
+				break
+		genes = np.array(temp)
+		logging.info(f"FeatureSelectionByDeviance: Selected the top {len(genes)} genes")
 		return genes

@@ -23,10 +23,3 @@ class Tempname:
 		if os.path.exists(self.temp_path) and exc_type is None:
 			os.rename(self.temp_path, self.path)
 
-
-def run_recipe(ws: shoji.WorkspaceManager, recipe: Dict) -> None:
-	for fname, args in recipe.items():
-		logging.info(f"{fname}: {args}")
-		getattr(cg, fname)(**args).fit(ws, save=True)
-		logging.info(f"{fname}: Done.")
-		logging.info("")

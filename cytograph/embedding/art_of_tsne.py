@@ -2,7 +2,7 @@ import logging
 from typing import Callable, Union
 from cytograph import creates
 import numpy as np
-from openTSNE import TSNEEmbedding, affinity, callbacks, initialization
+from openTSNE import TSNEEmbedding, affinity, initialization
 import shoji
 
 
@@ -33,11 +33,12 @@ class ArtOfTsne:
 		"""
 		if self.init_method == "random":
 			init_method = initialization.random
-		elif init_method == "pca":
+		elif self.init_method == "pca":
 			init_method = initialization.pca
-		X = ws[:][self.tensor_name]
+		X = ws[self.tensor_name][...]
 		n = X.shape[0]
 		if n > 100_000:
+			exaggeration = self.exaggeration
 			if self.exaggeration == -1:
 				exaggeration = 1 + n / 333_333
 			# Subsample, optimize, then add the remaining cells and optimize again
@@ -73,14 +74,14 @@ class ArtOfTsne:
 				init_full,
 				affinities,
 				negative_gradient_method="fft",
-				n_jobs=-1,
-				callbacks=[callbacks.ErrorLogger()]
+				n_jobs=-1
 			)
 			logging.info(f"Optimizing, stage 1")
 			Z.optimize(n_iter=250, inplace=True, exaggeration=12, momentum=0.5, learning_rate=n / 12, n_jobs=-1)
 			logging.info(f"Optimizing, stage 2")
 			Z.optimize(n_iter=750, inplace=True, exaggeration=exaggeration, momentum=0.8, learning_rate=n / 12, n_jobs=-1)
 		elif n > 3_000:
+			exaggeration = self.exaggeration
 			if exaggeration == -1:
 				exaggeration = 1
 			# Use multiscale perplexity
@@ -96,12 +97,12 @@ class ArtOfTsne:
 				init,
 				affinities_multiscale_mixture,
 				negative_gradient_method="fft",
-				n_jobs=-1,
-				callbacks=[callbacks.ErrorLogger()]
+				n_jobs=-1
 			)
 			Z.optimize(n_iter=250, inplace=True, exaggeration=12, momentum=0.5, learning_rate=n / 12, n_jobs=-1)
 			Z.optimize(n_iter=750, inplace=True, exaggeration=exaggeration, momentum=0.8, learning_rate=n / 12, n_jobs=-1)
 		else:
+			exaggeration = self.exaggeration
 			if exaggeration == -1:
 				exaggeration = 1
 			# Just a plain TSNE with high learning rate
@@ -121,9 +122,8 @@ class ArtOfTsne:
 				aff,
 				learning_rate=lr,
 				n_jobs=-1,
-				negative_gradient_method="fft",
-				callbacks=[callbacks.ErrorLogger()]
+				negative_gradient_method="fft"
 			)
 			Z.optimize(250, exaggeration=12, momentum=0.5, inplace=True, n_jobs=-1)
 			Z.optimize(750, exaggeration=exaggeration, momentum=0.8, inplace=True, n_jobs=-1)
-		return np.array(Z)
+		return Z

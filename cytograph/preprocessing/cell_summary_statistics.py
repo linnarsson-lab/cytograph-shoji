@@ -41,8 +41,8 @@ class CellSummaryStatistics:
 		"""
 
 		logging.info(" CellSummaryStatistics: Loading 'Expression' and 'Unspliced' tensors")
-		x = ws[:].Expression
-		u = ws[:].Unspliced
+		x = ws.Expression[...]
+		u = ws.Unspliced[...]
 
 		mito_genes = ws[:].Chromosome == "MT"
 
@@ -73,4 +73,5 @@ class CellSummaryStatistics:
 			logging.info(f" CellSummaryStatistics: Average cell cycle UMI fraction was not calculated because species not given")
 		else:
 			logging.info(f" CellSummaryStatistics: Average cell cycle UMI fraction {100*cc.mean():.2f}%")
+			logging.info(f" CellSummaryStatistics: Fraction of cycling cells {100 * (cc > 0.01).sum() / cc.shape[0]:.2f}%")
 		return (nnz, n_UMIs, mt_ratio, unspliced_ratio, cc)

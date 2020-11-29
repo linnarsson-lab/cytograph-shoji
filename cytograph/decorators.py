@@ -2,6 +2,9 @@ from typing import Tuple, Optional, Callable, Union
 import functools
 import numpy as np
 import shoji
+import fdb
+import sys
+import logging
 
 
 def requires(name: str, dtype: Optional[str], dims: Optional[Tuple[Union[str, int, None], ...]]) -> Callable:
@@ -80,10 +83,14 @@ def creates(name: str, dtype: str, dims: Tuple[Optional[Union[str, int]], ...], 
 			else:
 				try:
 					inits = inits.astype("object" if dtype == "string" else dtype)
-				except AttributeError as e:
-					print(e)
+				except AttributeError:
 					raise AttributeError("@creates() decorator handles only numpy ndarrays; use np.array(x, dtype=...) to wrap scalars")
-			ws[name] = shoji.Tensor(dtype, dims, inits=inits)
+			try:
+				ws[name] = shoji.Tensor(dtype, dims, inits=np.array(inits))
+			except fdb.impl.FDBError as e:
+				if e.code == 2101:
+					logging.error(f"Result tensor '{name}' was too large to fit in transaction; make it smaller, or use atomic=False")
+					sys.exit(1)
 			if len(result.args) == 1:
 				if len(result.stored) == 1:
 					return result.stored[0]
