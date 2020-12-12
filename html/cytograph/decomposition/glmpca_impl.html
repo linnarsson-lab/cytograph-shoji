@@ -1,0 +1,1179 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.8.4" />
+<title>cytograph.decomposition.glmpca_impl API documentation</title>
+<meta name="description" content="Python implementation of the generalized PCA for dimension reduction of non-normally distributed data. The original R implementation is at …" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/highlight.min.js" integrity="sha256-eOgo0OtLL4cdq7RdwRUiGKLX9XsIJ7nGhWEKbohmVAQ=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>cytograph.decomposition.glmpca_impl</code></h1>
+</header>
+<section id="section-intro">
+<p>Python implementation of the generalized PCA for dimension reduction of non-normally distributed data. The original R implementation is at <a href="https://github.com/willtownes/glmpca">https://github.com/willtownes/glmpca</a></p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">&#34;&#34;&#34;
+Python implementation of the generalized PCA for dimension reduction of non-normally distributed data. The original R implementation is at https://github.com/willtownes/glmpca
+&#34;&#34;&#34;
+import numpy as np
+from numpy import log
+from scipy.special import digamma, polygamma
+import statsmodels.genmod.families as smf
+from decimal import Decimal
+from tqdm import trange
+
+
+def trigamma(x):
+    return polygamma(1, x)
+
+
+def rowSums(x):
+    return x.sum(1)
+
+
+def rowMeans(x):
+    return x.mean(1)
+
+
+def colSums(x):
+    return x.sum(0)
+
+
+def colMeans(x):
+    return x.mean(0)
+
+
+def colNorms(x):
+    &#34;&#34;&#34;
+    compute the L2 norms of columns of an array
+    &#34;&#34;&#34;
+    return np.sqrt(colSums(x**2))
+
+
+def ncol(x):
+    return x.shape[1]
+
+
+def nrow(x):
+    return x.shape[0]
+
+
+def crossprod(A, B):
+    return (A.T)@B
+
+
+def tcrossprod(A, B):
+    return A@(B.T)
+
+
+def cvec1(n):
+    &#34;&#34;&#34;returns a column vector of ones with length N&#34;&#34;&#34;
+    return np.ones((n, 1))
+
+
+def ortho(U, V, A, X=1, G=None, Z=0):
+    &#34;&#34;&#34;
+    U is NxL array of cell factors
+    V is JxL array of loadings onto genes
+    X is NxKo array of cell specific covariates
+    A is JxKo array of coefficients of X
+    Z is JxKf array of gene specific covariates
+    G is NxKf array of coefficients of Z
+    assume the data Y is of dimension JxN
+    imputed expression: E[Y] = g^{-1}(R) where R = VU&#39;+AX&#39;+ZG&#39;
+    &#34;&#34;&#34;
+    if np.all(X == 1): X = cvec1(nrow(U))
+    if np.all(Z == 0): Z = np.zeros((nrow(V), 1))
+    if np.all(G == 0): G = None
+    # we assume A is not null or zero
+    # remove correlation between U and A
+    # at minimum, this will cause factors to have mean zero
+    betax = np.linalg.lstsq(X, U, rcond=None)[0]  # extract coef from linreg
+    factors = U - X@betax  # residuals from linear regression
+    A += tcrossprod(V, betax)
+    # remove correlation between V and G
+    if G is None:
+        loadings = V
+    else:  # G is not empty
+        betaz = np.linalg.lstsq(Z, V, rcond=None)[0]  # extract coef from linreg
+        loadings = V - Z@betaz  # residuals from regression
+        G += tcrossprod(factors, betaz)
+    # rotate factors to make loadings orthornormal
+    loadings, d, Qt = np.linalg.svd(loadings, full_matrices=False)
+    factors = tcrossprod(factors, Qt) * d  # d vector broadcasts across cols
+    # arrange latent dimensions in decreasing L2 norm
+    o = (-colNorms(factors)).argsort()
+    factors = factors[:, o]
+    loadings = loadings[:, o]
+    return {&#34;factors&#34;: factors, &#34;loadings&#34;: loadings, &#34;coefX&#34;: A, &#34;coefZ&#34;: G}
+
+
+def mat_binom_dev(X, P, n):
+    &#34;&#34;&#34;
+    binomial deviance for two arrays
+    X,P are JxN arrays
+    n is vector of length N (same as cols of X,P)
+    &#34;&#34;&#34;
+    with np.errstate(divide=&#39;ignore&#39;, invalid=&#39;ignore&#39;):
+        term1 = X * log(X / (n * P))
+    term1 = term1[np.isfinite(term1)].sum()
+    # nn= x&lt;n
+    nx = n - X
+    with np.errstate(divide=&#39;ignore&#39;, invalid=&#39;ignore&#39;):
+        term2 = nx * log(nx / (n * (1 - P)))
+    term2 = term2[np.isfinite(term2)].sum()
+    return 2 * (term1 + term2)
+
+
+class GlmpcaError(ValueError):
+    pass
+
+
+class GlmpcaFamily(object):
+    &#34;&#34;&#34;thin wrapper around the statsmodels.genmod.families.Family class&#34;&#34;&#34;
+    # TO DO: would it be better to use inheritance?
+
+    def __init__(self, fam, nb_theta=None, mult_n=None):
+        if fam == &#34;poi&#34;:
+            self.family = smf.Poisson()
+        elif fam == &#34;nb&#34;:
+            if nb_theta is None:
+                raise GlmpcaError(&#34;Negative binomial dispersion parameter &#39;nb_theta&#39; must be specified&#34;)
+            self.family = smf.NegativeBinomial(alpha=1 / nb_theta)
+        elif fam in (&#34;mult&#34;, &#34;bern&#34;):
+            self.family = smf.Binomial()
+            if fam == &#34;mult&#34; and mult_n is None:
+                raise GlmpcaError(&#34;Multinomial sample size parameter vector &#39;mult_n&#39; must be specified&#34;)
+        else:
+            raise GlmpcaError(&#34;unrecognized family type&#34;)
+        # variance function, determined by GLM family
+        vfunc = self.family.variance
+        # inverse link func, mu as a function of linear predictor R
+        ilfunc = self.family.link.inverse
+        # derivative of inverse link function, dmu/dR
+        self.glmpca_fam = fam
+        if fam == &#34;poi&#34;:
+            def infograd(Y, R):
+                M = ilfunc(R)  # ilfunc=exp
+                return {&#34;grad&#34;: (Y - M), &#34;info&#34;: M}
+        elif fam == &#34;nb&#34;:
+            def infograd(Y, R):
+                M = ilfunc(R)  # ilfunc=exp
+                W = 1 / vfunc(M)
+                return {&#34;grad&#34;: (Y - M) * W * M, &#34;info&#34;: W * (M**2)}
+            self.nb_theta = nb_theta
+        elif fam == &#34;mult&#34;:
+            def infograd(Y, R):
+                P = ilfunc(R)  # ilfunc=expit, P very small probabilities
+                return {&#34;grad&#34;: Y - (mult_n * P), &#34;info&#34;: mult_n * vfunc(P)}
+            self.mult_n = mult_n
+        elif fam == &#34;bern&#34;:
+            def infograd(Y, R):
+                P = ilfunc(R)
+                return {&#34;grad&#34;: Y - P, &#34;info&#34;: vfunc(P)}
+        else:  # this is not actually used but keeping for future reference
+            # this is most generic formula for GLM but computationally slow
+            raise GlmpcaError(&#34;invalid fam&#34;)
+        self.infograd = infograd
+        # create deviance function
+        if fam == &#34;mult&#34;:
+            def dev_func(Y, R):
+                return mat_binom_dev(Y, ilfunc(R), mult_n)
+        else:
+            def dev_func(Y, R):
+                return self.family.deviance(Y, ilfunc(R))
+        self.dev_func = dev_func
+
+    def __str__(self):
+        return &#34;GlmpcaFamily object of type {}&#34;.format(self.glmpca_fam)
+
+
+def remove_intercept(X):
+    cm = colMeans(X)
+    try:
+        X -= cm
+    except TypeError as err:
+        if X.dtype != cm.dtype:
+            X = X.astype(cm.dtype) - cm
+        else:
+            raise err
+    return X[:, colNorms(X) &gt; 1e-12]
+
+
+def glmpca_init(Y, fam, sz=None, nb_theta=None):
+    &#34;&#34;&#34;
+    create the glmpca_family object and
+    initialize the A array (regression coefficients of X)
+    Y is the data (JxN array)
+    fam is the likelihood
+    sz optional vector of size factors, default: sz=colMeans(Y) or colSums(Y)
+    sz is ignored unless fam is &#39;poi&#39; or &#39;nb&#39;
+    &#34;&#34;&#34;
+    if sz is not None and len(sz) != ncol(Y):
+        raise GlmpcaError(&#34;size factor must have length equal to columns of Y&#34;)
+    if fam == &#34;mult&#34;: mult_n = colSums(Y)
+    else: mult_n = None
+    gf = GlmpcaFamily(fam, nb_theta, mult_n)
+    if fam in (&#34;poi&#34;, &#34;nb&#34;):
+        if sz is None: sz = colMeans(Y)  # size factors
+        offsets = gf.family.link(sz)
+        
+        def rfunc(U, V):
+            return offsets + tcrossprod(V, U)  # linear predictor
+        a1 = gf.family.link(rowSums(Y) / np.sum(sz))
+    else:
+        def rfunc(U, V):
+            return tcrossprod(V, U)
+        if fam == &#34;mult&#34;:  # offsets incorporated via family object
+            a1 = gf.family.link(rowSums(Y) / np.sum(mult_n))
+        else:  # no offsets (eg, bernoulli)
+            a1 = gf.family.link(rowMeans(Y))
+    if np.any(np.isinf(a1)):
+        raise GlmpcaError(&#34;Some rows were all zero, please remove them.&#34;)
+    return {&#34;gf&#34;: gf, &#34;rfunc&#34;: rfunc, &#34;intercepts&#34;: a1}
+
+
+def est_nb_theta(y, mu, th):
+    &#34;&#34;&#34;
+    given count data y and predicted means mu&gt;0, and a neg binom theta &#34;th&#34;
+    use Newton&#39;s Method to update theta based on the negative binomial likelihood
+    note this uses observed rather than expected information
+    regularization:
+    let u=log(theta). We use the prior u~N(0,1) as penalty
+    equivalently we assume theta~lognormal(0,1) so the mode is at 1 (geometric distr)
+    dtheta/du=e^u=theta
+    d2theta/du2=theta
+    dL/dtheta * dtheta/du
+    &#34;&#34;&#34;
+    # n= length(y)
+    u = log(th)
+    # dL/dtheta*dtheta/du
+    score = th * np.sum(digamma(th + y) - digamma(th) + log(th) + 1 - log(th + mu) - (y + th) / (mu + th))
+    # d^2L/dtheta^2 * (dtheta/du)^2
+    info1 = -(th**2) * np.sum(trigamma(th + mu) - trigamma(th) + 1 / th - 2 / (mu + th) + (y + th) / (mu + th)**2)
+    # dL/dtheta*d^2theta/du^2 = score
+    info = info1 - score
+    # L2 penalty on u=log(th)
+    return np.exp(u + (score - u) / (info + 1))
+    # grad= score-u
+    # exp(u+sign(grad)*min(maxstep,abs(grad)))
+
+
+def glmpca(Y, L, fam=&#34;poi&#34;, ctl = {&#34;maxIter&#34;: 1000, &#34;eps&#34;: 1e-4, &#34;optimizeTheta&#34;: True}, penalty = 1,
+           verbose = False, init = {&#34;factors&#34;: None, &#34;loadings&#34;: None},
+           nb_theta = 100, X = None, Z = None, sz = None):
+    &#34;&#34;&#34;
+    GLM-PCA
+
+    This function implements the GLM-PCA dimensionality reduction method for high-dimensional count data.
+
+    The basic model is R = AX&#39;+ZG&#39;+VU&#39;, where E[Y]=M=linkinv(R). Regression coefficients are A and G,
+    latent factors are U, and loadings are V. The objective function being optimized is the deviance between
+    Y and M, plus an L2 (ridge) penalty on U and V. Note that glmpca uses a random initialization, so
+    for fully reproducible results one should set the random seed.
+
+    Parameters
+    ----------
+    Y: array_like of count data with features as rows and observations as
+      columns.
+    L: the desired number of latent dimensions (integer).
+    fam: string describing the likelihood to use for the data. Possible values include:
+    - poi: Poisson
+    - nb: negative binomial
+    - mult: binomial approximation to multinomial
+    - bern: Bernoulli
+    ctl: a dictionary of control parameters for optimization. Valid keys:
+    - maxIter: an integer, maximum number of iterations
+    - eps: a float, maximum relative change in deviance tolerated for convergence
+    - optimizeTheta: a bool, indicating if the overdispersion parameter of the NB
+      distribution is optimized (default), or fixed to the value provided in nb_theta.
+    penalty: the L2 penalty for the latent factors (default = 1).
+      Regression coefficients are not penalized.
+    verbose: logical value indicating whether the current deviance should
+      be printed after each iteration (default = False).
+    init: a dictionary containing initial estimates for the factors (U) and
+      loadings (V) matrices.
+    nb_theta: negative binomial dispersion parameter. Smaller values mean more dispersion
+      if nb_theta goes to infinity, this is equivalent to Poisson
+      Note that the alpha in the statsmodels package is 1/nb_theta.
+      If ctl[&#34;optimizeTheta&#34;] is True, this is used as initial value for optimization
+    X: array_like of column (observations) covariates. Any column with all
+      same values (eg. 1 for intercept) will be removed. This is because we force
+      the intercept and want to avoid collinearity.
+    Z: array_like of row (feature) covariates, usually not needed.
+    sz: numeric vector of size factors to use in place of total counts.
+
+    Returns
+    -------
+    A dictionary with the following elements
+    - factors: an array U whose rows match the columns (observations) of Y. It is analogous to the principal components in PCA. Each column of the factors array is a different latent dimension.
+    - loadings: an array V whose rows match the rows (features/dimensions) of Y. It is analogous to loadings in PCA. Each column of the loadings array is a different latent dimension.
+    - coefX: an array A of coefficients for the observation-specific covariates array X. Each row of coefX corresponds to a row of Y and each column corresponds to a column of X. The first column of coefX contains feature-specific intercepts which are included by default.
+    - coefZ: a array G of coefficients for the feature-specific covariates array Z. Each row of coefZ corresponds to a column of Y and each column corresponds to a column of Z. By default no such covariates are included and this is returned as None.
+    - dev: a vector of deviance values. The length of the vector is the number of iterations it took for GLM-PCA&#39;s optimizer to converge. The deviance should generally decrease over time. If it fluctuates wildly, this often indicates numerical instability, which can be improved by increasing the penalty parameter.
+    - glmpca_family: an object of class GlmpcaFamily. This is a minor wrapper to the family object used by the statsmodels package for fitting standard GLMs. It contains various internal functions and parameters needed to optimize the GLM-PCA objective function. For the negative binomial case, it also contains the final estimated value of the dispersion parameter nb_theta.
+
+    Examples
+    -------
+    1) create a simple dataset with two clusters and visualize the latent structure
+    &gt;&gt;&gt; from numpy import array,exp,random,repeat
+    &gt;&gt;&gt; from matplotlib.pyplot import scatter
+    &gt;&gt;&gt; from glmpca import glmpca
+    &gt;&gt;&gt; mu= exp(random.randn(20,100))
+    &gt;&gt;&gt; mu[range(10),:] *= exp(random.randn(100))
+    &gt;&gt;&gt; clust= repeat([&#34;red&#34;,&#34;black&#34;],10)
+    &gt;&gt;&gt; Y= random.poisson(mu)
+    &gt;&gt;&gt; res= glmpca(Y.T, 2)
+    &gt;&gt;&gt; factors= res[&#34;factors&#34;]
+    &gt;&gt;&gt; scatter(factors[:,0],factors[:,1],c=clust)
+
+    References
+    ----------
+    .. [1] Townes FW, Hicks SC, Aryee MJ, and Irizarry RA. &#34;Feature selection and dimension reduction for single-cell RNA-seq based on a multinomial model&#34;, biorXiv, 2019. https://www.biorxiv.org/content/10.1101/574574v1
+    .. [2] Townes FW. &#34;Generalized principal component analysis&#34;, arXiv, 2019. https://arxiv.org/abs/1907.02647
+
+    &#34;&#34;&#34;
+    # For negative binomial, convergence only works if starting with nb_theta large
+    Y = np.array(Y)
+    if fam not in (&#34;poi&#34;, &#34;nb&#34;, &#34;mult&#34;, &#34;bern&#34;): raise GlmpcaError(&#34;invalid fam&#34;)
+    J, N = Y.shape
+    # sanity check inputs
+    if fam in (&#34;poi&#34;, &#34;nb&#34;, &#34;mult&#34;, &#34;bern&#34;) and np.min(Y) &lt; 0:
+        raise GlmpcaError(&#34;for count data, the minimum value must be &gt;=0&#34;)
+    if fam == &#34;bern&#34; and np.max(Y) &gt; 1:
+        raise GlmpcaError(&#34;for Bernoulli model, the maximum value must be &lt;=1&#34;)
+
+    # preprocess covariates and set updateable indices
+    if X is not None:
+        if nrow(X) != ncol(Y):
+            raise GlmpcaError(&#34;X rows must match columns of Y&#34;)
+        # we force an intercept, so remove it from X to prevent collinearity
+        X = remove_intercept(X)
+    else:
+        X = np.zeros((N, 0))  # empty array to prevent dim mismatch errors with hstack later
+    Ko = ncol(X) + 1
+    if Z is not None:
+        if nrow(Z) != nrow(Y):
+            raise GlmpcaError(&#34;Z rows must match rows of Y&#34;)
+    else:
+        Z = np.zeros((J, 0))  # empty array to prevent dim mismatch errors with hstack later
+    Kf = ncol(Z)
+    lid = (Ko + Kf) + np.array(range(L))
+    uid = Ko + np.array(range(Kf + L))
+    vid = np.concatenate((np.array(range(Ko)), lid))
+    Ku = len(uid)
+    Kv = len(vid)
+
+    # create GlmpcaFamily object
+    gnt = glmpca_init(Y, fam, sz, nb_theta)
+    gf = gnt[&#34;gf&#34;]
+    rfunc = gnt[&#34;rfunc&#34;]
+    a1 = gnt[&#34;intercepts&#34;]
+
+    # initialize U,V, with row-specific intercept terms
+    U = np.hstack((cvec1(N), X, np.random.randn(N, Ku) * 1e-5 / Ku))
+    if init[&#34;factors&#34;] is not None:
+        L0 = np.min([L, ncol(init[&#34;factors&#34;])])
+        U[:, (Ko + Kf) + np.array(range(L0))] = init[&#34;factors&#34;][:, range(L0)]
+    # a1 = naive MLE for gene intercept only, must convert to column vector first with [:,None]
+    V = np.hstack((a1[:, None], np.random.randn(J, (Ko - 1)) * 1e-5 / Kv))
+    # note in the above line the randn can be an empty array if Ko=1, which is OK!
+    V = np.hstack((V, Z, np.random.randn(J, L) * 1e-5 / Kv))
+    if init[&#34;loadings&#34;] is not None:
+        L0 = np.min([L, ncol(init[&#34;loadings&#34;])])
+        V[:, (Ko + Kf) + np.array(range(L0))] = init[&#34;loadings&#34;][:, range(L0)]
+
+    # run optimization
+    dev = np.repeat(np.nan, ctl[&#34;maxIter&#34;])
+    for t in trange(ctl[&#34;maxIter&#34;]):
+        dev[t] = gf.dev_func(Y, rfunc(U, V))
+        if not np.isfinite(dev[t]):
+            raise GlmpcaError(&#34;Numerical divergence (deviance no longer finite), try increasing the penalty to improve stability of optimization.&#34;)
+        if t &gt; 10 and np.abs(dev[t] - dev[t - 1]) / (0.1 + np.abs(dev[t - 1])) &lt; ctl[&#34;eps&#34;]:
+            break
+        if verbose:
+            msg = &#34;Iteration: {:d} | deviance={:.4E}&#34;.format(t, Decimal(dev[t]))
+            if fam == &#34;nb&#34;: msg += &#34; | nb_theta: {:.3E}&#34;.format(nb_theta)
+            print(msg)
+
+        # (k in lid) ensures no penalty on regression coefficients:
+        for k in vid:
+            ig = gf.infograd(Y, rfunc(U, V))
+            grads = ig[&#34;grad&#34;]@U[:, k] - penalty * V[:, k] * (k in lid)
+            infos = ig[&#34;info&#34;]@(U[:, k]**2) + penalty * (k in lid)
+            V[:, k] += grads / infos
+        for k in uid:
+            ig = gf.infograd(Y, rfunc(U, V))
+            grads = crossprod(ig[&#34;grad&#34;], V[:, k]) - penalty * U[:, k] * (k in lid)
+            infos = crossprod(ig[&#34;info&#34;], V[:, k]**2) + penalty * (k in lid)
+            U[:, k] += grads / infos
+        if fam == &#34;nb&#34;:
+            if ctl[&#34;optimizeTheta&#34;]:
+                nb_theta = est_nb_theta(Y, gf.family.link.inverse(rfunc(U, V)), nb_theta)
+            gf = GlmpcaFamily(fam, nb_theta)
+    # postprocessing: include row and column labels for regression coefficients
+    if ncol(Z) == 0: G = None
+    else: G = U[:, Ko + np.array(range(Kf))]
+    X = np.hstack((cvec1(N), X))
+    A = V[:, range(Ko)]
+    res = ortho(U[:, lid], V[:, lid], A, X=X, G=G, Z=Z)
+    res[&#34;dev&#34;] = dev[range(t + 1)]
+    res[&#34;glmpca_family&#34;] = gf
+
+#                factors: an array U whose rows match the columns (observations) of Y. It is analogous to the principal components in PCA. Each column of the factors array is a different latent dimension.  
+# - loadings: an array V whose rows match the rows (features/dimensions) of Y. It is analogous to loadings in PCA. Each column of the loadings array is a different latent dimension.  
+# - coefX: an array A of coefficients for the observation-specific covariates array X. Each row of coefX corresponds to a row of Y and each column corresponds to a column of X. The first column of coefX contains feature-specific intercepts which are included by default.  
+# - coefZ: a array G of coefficients for the feature-specific covariates array Z. Each row of coefZ corresponds to a column of Y and each column corresponds to a column of Z. By default no such covariates are included and this is returned as None.  
+# - dev: a vector of deviance values. The length of the vector is the number of iterations it took for GLM-PCA&#39;s optimizer to converge. The deviance should generally decrease over time. If it fluctuates wildly, this often indicates numerical instability, which can be improved by increasing the penalty parameter.  
+# - glmpca_family: an object of class GlmpcaFamily. This is a minor wrapper to the family object used by the statsmodels package for fitting standard GLMs. It contains various internal functions and parameters needed to optimize the GLM-PCA objective function. For the negative binomial case, it also contains the final estimated value of the dispersion parameter nb_theta.  
+
+    return res[&#34;factors&#34;], res[&#34;loadings&#34;], res[&#34;coefX&#34;]</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="cytograph.decomposition.glmpca_impl.colMeans"><code class="name flex">
+<span>def <span class="ident">colMeans</span></span>(<span>x)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def colMeans(x):
+    return x.mean(0)</code></pre>
+</details>
+</dd>
+<dt id="cytograph.decomposition.glmpca_impl.colNorms"><code class="name flex">
+<span>def <span class="ident">colNorms</span></span>(<span>x)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>compute the L2 norms of columns of an array</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def colNorms(x):
+    &#34;&#34;&#34;
+    compute the L2 norms of columns of an array
+    &#34;&#34;&#34;
+    return np.sqrt(colSums(x**2))</code></pre>
+</details>
+</dd>
+<dt id="cytograph.decomposition.glmpca_impl.colSums"><code class="name flex">
+<span>def <span class="ident">colSums</span></span>(<span>x)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def colSums(x):
+    return x.sum(0)</code></pre>
+</details>
+</dd>
+<dt id="cytograph.decomposition.glmpca_impl.crossprod"><code class="name flex">
+<span>def <span class="ident">crossprod</span></span>(<span>A, B)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def crossprod(A, B):
+    return (A.T)@B</code></pre>
+</details>
+</dd>
+<dt id="cytograph.decomposition.glmpca_impl.cvec1"><code class="name flex">
+<span>def <span class="ident">cvec1</span></span>(<span>n)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>returns a column vector of ones with length N</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def cvec1(n):
+    &#34;&#34;&#34;returns a column vector of ones with length N&#34;&#34;&#34;
+    return np.ones((n, 1))</code></pre>
+</details>
+</dd>
+<dt id="cytograph.decomposition.glmpca_impl.est_nb_theta"><code class="name flex">
+<span>def <span class="ident">est_nb_theta</span></span>(<span>y, mu, th)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>given count data y and predicted means mu&gt;0, and a neg binom theta "th"
+use Newton's Method to update theta based on the negative binomial likelihood
+note this uses observed rather than expected information
+regularization:
+let u=log(theta). We use the prior u~N(0,1) as penalty
+equivalently we assume theta~lognormal(0,1) so the mode is at 1 (geometric distr)
+dtheta/du=e^u=theta
+d2theta/du2=theta
+dL/dtheta * dtheta/du</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def est_nb_theta(y, mu, th):
+    &#34;&#34;&#34;
+    given count data y and predicted means mu&gt;0, and a neg binom theta &#34;th&#34;
+    use Newton&#39;s Method to update theta based on the negative binomial likelihood
+    note this uses observed rather than expected information
+    regularization:
+    let u=log(theta). We use the prior u~N(0,1) as penalty
+    equivalently we assume theta~lognormal(0,1) so the mode is at 1 (geometric distr)
+    dtheta/du=e^u=theta
+    d2theta/du2=theta
+    dL/dtheta * dtheta/du
+    &#34;&#34;&#34;
+    # n= length(y)
+    u = log(th)
+    # dL/dtheta*dtheta/du
+    score = th * np.sum(digamma(th + y) - digamma(th) + log(th) + 1 - log(th + mu) - (y + th) / (mu + th))
+    # d^2L/dtheta^2 * (dtheta/du)^2
+    info1 = -(th**2) * np.sum(trigamma(th + mu) - trigamma(th) + 1 / th - 2 / (mu + th) + (y + th) / (mu + th)**2)
+    # dL/dtheta*d^2theta/du^2 = score
+    info = info1 - score
+    # L2 penalty on u=log(th)
+    return np.exp(u + (score - u) / (info + 1))</code></pre>
+</details>
+</dd>
+<dt id="cytograph.decomposition.glmpca_impl.glmpca"><code class="name flex">
+<span>def <span class="ident">glmpca</span></span>(<span>Y, L, fam='poi', ctl={'maxIter': 1000, 'eps': 0.0001, 'optimizeTheta': True}, penalty=1, verbose=False, init={'factors': None, 'loadings': None}, nb_theta=100, X=None, Z=None, sz=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>GLM-PCA</p>
+<p>This function implements the GLM-PCA dimensionality reduction method for high-dimensional count data.</p>
+<p>The basic model is R = AX'+ZG'+VU', where E[Y]=M=linkinv(R). Regression coefficients are A and G,
+latent factors are U, and loadings are V. The objective function being optimized is the deviance between
+Y and M, plus an L2 (ridge) penalty on U and V. Note that glmpca uses a random initialization, so
+for fully reproducible results one should set the random seed.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>Y</code></strong> :&ensp;<code>array_like</code> of <code>count data with features as rows and observations as</code></dt>
+<dd>&nbsp;</dd>
+</dl>
+<p>columns.
+L: the desired number of latent dimensions (integer).
+fam: string describing the likelihood to use for the data. Possible values include:
+- poi: Poisson
+- nb: negative binomial
+- mult: binomial approximation to multinomial
+- bern: Bernoulli
+ctl: a dictionary of control parameters for optimization. Valid keys:
+- maxIter: an integer, maximum number of iterations
+- eps: a float, maximum relative change in deviance tolerated for convergence
+- optimizeTheta: a bool, indicating if the overdispersion parameter of the NB
+distribution is optimized (default), or fixed to the value provided in nb_theta.
+penalty: the L2 penalty for the latent factors (default = 1).
+Regression coefficients are not penalized.
+verbose: logical value indicating whether the current deviance should
+be printed after each iteration (default = False).
+init: a dictionary containing initial estimates for the factors (U) and
+loadings (V) matrices.
+nb_theta: negative binomial dispersion parameter. Smaller values mean more dispersion
+if nb_theta goes to infinity, this is equivalent to Poisson
+Note that the alpha in the statsmodels package is 1/nb_theta.
+If ctl["optimizeTheta"] is True, this is used as initial value for optimization
+X: array_like of column (observations) covariates. Any column with all
+same values (eg. 1 for intercept) will be removed. This is because we force
+the intercept and want to avoid collinearity.
+Z: array_like of row (feature) covariates, usually not needed.
+sz: numeric vector of size factors to use in place of total counts.</p>
+<h2 id="returns">Returns</h2>
+<p>A dictionary with the following elements
+- factors: an array U whose rows match the columns (observations) of Y. It is analogous to the principal components in PCA. Each column of the factors array is a different latent dimension.
+- loadings: an array V whose rows match the rows (features/dimensions) of Y. It is analogous to loadings in PCA. Each column of the loadings array is a different latent dimension.
+- coefX: an array A of coefficients for the observation-specific covariates array X. Each row of coefX corresponds to a row of Y and each column corresponds to a column of X. The first column of coefX contains feature-specific intercepts which are included by default.
+- coefZ: a array G of coefficients for the feature-specific covariates array Z. Each row of coefZ corresponds to a column of Y and each column corresponds to a column of Z. By default no such covariates are included and this is returned as None.
+- dev: a vector of deviance values. The length of the vector is the number of iterations it took for GLM-PCA's optimizer to converge. The deviance should generally decrease over time. If it fluctuates wildly, this often indicates numerical instability, which can be improved by increasing the penalty parameter.
+- glmpca_family: an object of class GlmpcaFamily. This is a minor wrapper to the family object used by the statsmodels package for fitting standard GLMs. It contains various internal functions and parameters needed to optimize the GLM-PCA objective function. For the negative binomial case, it also contains the final estimated value of the dispersion parameter nb_theta.</p>
+<h2 id="examples">Examples</h2>
+<p>1) create a simple dataset with two clusters and visualize the latent structure</p>
+<pre><code class="python">&gt;&gt;&gt; from numpy import array,exp,random,repeat
+&gt;&gt;&gt; from matplotlib.pyplot import scatter
+&gt;&gt;&gt; from glmpca import glmpca
+&gt;&gt;&gt; mu= exp(random.randn(20,100))
+&gt;&gt;&gt; mu[range(10),:] *= exp(random.randn(100))
+&gt;&gt;&gt; clust= repeat([&quot;red&quot;,&quot;black&quot;],10)
+&gt;&gt;&gt; Y= random.poisson(mu)
+&gt;&gt;&gt; res= glmpca(Y.T, 2)
+&gt;&gt;&gt; factors= res[&quot;factors&quot;]
+&gt;&gt;&gt; scatter(factors[:,0],factors[:,1],c=clust)
+</code></pre>
+<h2 id="references">References</h2>
+<p>.. [1] Townes FW, Hicks SC, Aryee MJ, and Irizarry RA. "Feature selection and dimension reduction for single-cell RNA-seq based on a multinomial model", biorXiv, 2019. <a href="https://www.biorxiv.org/content/10.1101/574574v1">https://www.biorxiv.org/content/10.1101/574574v1</a>
+.. [2] Townes FW. "Generalized principal component analysis", arXiv, 2019. <a href="https://arxiv.org/abs/1907.02647">https://arxiv.org/abs/1907.02647</a></p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def glmpca(Y, L, fam=&#34;poi&#34;, ctl = {&#34;maxIter&#34;: 1000, &#34;eps&#34;: 1e-4, &#34;optimizeTheta&#34;: True}, penalty = 1,
+           verbose = False, init = {&#34;factors&#34;: None, &#34;loadings&#34;: None},
+           nb_theta = 100, X = None, Z = None, sz = None):
+    &#34;&#34;&#34;
+    GLM-PCA
+
+    This function implements the GLM-PCA dimensionality reduction method for high-dimensional count data.
+
+    The basic model is R = AX&#39;+ZG&#39;+VU&#39;, where E[Y]=M=linkinv(R). Regression coefficients are A and G,
+    latent factors are U, and loadings are V. The objective function being optimized is the deviance between
+    Y and M, plus an L2 (ridge) penalty on U and V. Note that glmpca uses a random initialization, so
+    for fully reproducible results one should set the random seed.
+
+    Parameters
+    ----------
+    Y: array_like of count data with features as rows and observations as
+      columns.
+    L: the desired number of latent dimensions (integer).
+    fam: string describing the likelihood to use for the data. Possible values include:
+    - poi: Poisson
+    - nb: negative binomial
+    - mult: binomial approximation to multinomial
+    - bern: Bernoulli
+    ctl: a dictionary of control parameters for optimization. Valid keys:
+    - maxIter: an integer, maximum number of iterations
+    - eps: a float, maximum relative change in deviance tolerated for convergence
+    - optimizeTheta: a bool, indicating if the overdispersion parameter of the NB
+      distribution is optimized (default), or fixed to the value provided in nb_theta.
+    penalty: the L2 penalty for the latent factors (default = 1).
+      Regression coefficients are not penalized.
+    verbose: logical value indicating whether the current deviance should
+      be printed after each iteration (default = False).
+    init: a dictionary containing initial estimates for the factors (U) and
+      loadings (V) matrices.
+    nb_theta: negative binomial dispersion parameter. Smaller values mean more dispersion
+      if nb_theta goes to infinity, this is equivalent to Poisson
+      Note that the alpha in the statsmodels package is 1/nb_theta.
+      If ctl[&#34;optimizeTheta&#34;] is True, this is used as initial value for optimization
+    X: array_like of column (observations) covariates. Any column with all
+      same values (eg. 1 for intercept) will be removed. This is because we force
+      the intercept and want to avoid collinearity.
+    Z: array_like of row (feature) covariates, usually not needed.
+    sz: numeric vector of size factors to use in place of total counts.
+
+    Returns
+    -------
+    A dictionary with the following elements
+    - factors: an array U whose rows match the columns (observations) of Y. It is analogous to the principal components in PCA. Each column of the factors array is a different latent dimension.
+    - loadings: an array V whose rows match the rows (features/dimensions) of Y. It is analogous to loadings in PCA. Each column of the loadings array is a different latent dimension.
+    - coefX: an array A of coefficients for the observation-specific covariates array X. Each row of coefX corresponds to a row of Y and each column corresponds to a column of X. The first column of coefX contains feature-specific intercepts which are included by default.
+    - coefZ: a array G of coefficients for the feature-specific covariates array Z. Each row of coefZ corresponds to a column of Y and each column corresponds to a column of Z. By default no such covariates are included and this is returned as None.
+    - dev: a vector of deviance values. The length of the vector is the number of iterations it took for GLM-PCA&#39;s optimizer to converge. The deviance should generally decrease over time. If it fluctuates wildly, this often indicates numerical instability, which can be improved by increasing the penalty parameter.
+    - glmpca_family: an object of class GlmpcaFamily. This is a minor wrapper to the family object used by the statsmodels package for fitting standard GLMs. It contains various internal functions and parameters needed to optimize the GLM-PCA objective function. For the negative binomial case, it also contains the final estimated value of the dispersion parameter nb_theta.
+
+    Examples
+    -------
+    1) create a simple dataset with two clusters and visualize the latent structure
+    &gt;&gt;&gt; from numpy import array,exp,random,repeat
+    &gt;&gt;&gt; from matplotlib.pyplot import scatter
+    &gt;&gt;&gt; from glmpca import glmpca
+    &gt;&gt;&gt; mu= exp(random.randn(20,100))
+    &gt;&gt;&gt; mu[range(10),:] *= exp(random.randn(100))
+    &gt;&gt;&gt; clust= repeat([&#34;red&#34;,&#34;black&#34;],10)
+    &gt;&gt;&gt; Y= random.poisson(mu)
+    &gt;&gt;&gt; res= glmpca(Y.T, 2)
+    &gt;&gt;&gt; factors= res[&#34;factors&#34;]
+    &gt;&gt;&gt; scatter(factors[:,0],factors[:,1],c=clust)
+
+    References
+    ----------
+    .. [1] Townes FW, Hicks SC, Aryee MJ, and Irizarry RA. &#34;Feature selection and dimension reduction for single-cell RNA-seq based on a multinomial model&#34;, biorXiv, 2019. https://www.biorxiv.org/content/10.1101/574574v1
+    .. [2] Townes FW. &#34;Generalized principal component analysis&#34;, arXiv, 2019. https://arxiv.org/abs/1907.02647
+
+    &#34;&#34;&#34;
+    # For negative binomial, convergence only works if starting with nb_theta large
+    Y = np.array(Y)
+    if fam not in (&#34;poi&#34;, &#34;nb&#34;, &#34;mult&#34;, &#34;bern&#34;): raise GlmpcaError(&#34;invalid fam&#34;)
+    J, N = Y.shape
+    # sanity check inputs
+    if fam in (&#34;poi&#34;, &#34;nb&#34;, &#34;mult&#34;, &#34;bern&#34;) and np.min(Y) &lt; 0:
+        raise GlmpcaError(&#34;for count data, the minimum value must be &gt;=0&#34;)
+    if fam == &#34;bern&#34; and np.max(Y) &gt; 1:
+        raise GlmpcaError(&#34;for Bernoulli model, the maximum value must be &lt;=1&#34;)
+
+    # preprocess covariates and set updateable indices
+    if X is not None:
+        if nrow(X) != ncol(Y):
+            raise GlmpcaError(&#34;X rows must match columns of Y&#34;)
+        # we force an intercept, so remove it from X to prevent collinearity
+        X = remove_intercept(X)
+    else:
+        X = np.zeros((N, 0))  # empty array to prevent dim mismatch errors with hstack later
+    Ko = ncol(X) + 1
+    if Z is not None:
+        if nrow(Z) != nrow(Y):
+            raise GlmpcaError(&#34;Z rows must match rows of Y&#34;)
+    else:
+        Z = np.zeros((J, 0))  # empty array to prevent dim mismatch errors with hstack later
+    Kf = ncol(Z)
+    lid = (Ko + Kf) + np.array(range(L))
+    uid = Ko + np.array(range(Kf + L))
+    vid = np.concatenate((np.array(range(Ko)), lid))
+    Ku = len(uid)
+    Kv = len(vid)
+
+    # create GlmpcaFamily object
+    gnt = glmpca_init(Y, fam, sz, nb_theta)
+    gf = gnt[&#34;gf&#34;]
+    rfunc = gnt[&#34;rfunc&#34;]
+    a1 = gnt[&#34;intercepts&#34;]
+
+    # initialize U,V, with row-specific intercept terms
+    U = np.hstack((cvec1(N), X, np.random.randn(N, Ku) * 1e-5 / Ku))
+    if init[&#34;factors&#34;] is not None:
+        L0 = np.min([L, ncol(init[&#34;factors&#34;])])
+        U[:, (Ko + Kf) + np.array(range(L0))] = init[&#34;factors&#34;][:, range(L0)]
+    # a1 = naive MLE for gene intercept only, must convert to column vector first with [:,None]
+    V = np.hstack((a1[:, None], np.random.randn(J, (Ko - 1)) * 1e-5 / Kv))
+    # note in the above line the randn can be an empty array if Ko=1, which is OK!
+    V = np.hstack((V, Z, np.random.randn(J, L) * 1e-5 / Kv))
+    if init[&#34;loadings&#34;] is not None:
+        L0 = np.min([L, ncol(init[&#34;loadings&#34;])])
+        V[:, (Ko + Kf) + np.array(range(L0))] = init[&#34;loadings&#34;][:, range(L0)]
+
+    # run optimization
+    dev = np.repeat(np.nan, ctl[&#34;maxIter&#34;])
+    for t in trange(ctl[&#34;maxIter&#34;]):
+        dev[t] = gf.dev_func(Y, rfunc(U, V))
+        if not np.isfinite(dev[t]):
+            raise GlmpcaError(&#34;Numerical divergence (deviance no longer finite), try increasing the penalty to improve stability of optimization.&#34;)
+        if t &gt; 10 and np.abs(dev[t] - dev[t - 1]) / (0.1 + np.abs(dev[t - 1])) &lt; ctl[&#34;eps&#34;]:
+            break
+        if verbose:
+            msg = &#34;Iteration: {:d} | deviance={:.4E}&#34;.format(t, Decimal(dev[t]))
+            if fam == &#34;nb&#34;: msg += &#34; | nb_theta: {:.3E}&#34;.format(nb_theta)
+            print(msg)
+
+        # (k in lid) ensures no penalty on regression coefficients:
+        for k in vid:
+            ig = gf.infograd(Y, rfunc(U, V))
+            grads = ig[&#34;grad&#34;]@U[:, k] - penalty * V[:, k] * (k in lid)
+            infos = ig[&#34;info&#34;]@(U[:, k]**2) + penalty * (k in lid)
+            V[:, k] += grads / infos
+        for k in uid:
+            ig = gf.infograd(Y, rfunc(U, V))
+            grads = crossprod(ig[&#34;grad&#34;], V[:, k]) - penalty * U[:, k] * (k in lid)
+            infos = crossprod(ig[&#34;info&#34;], V[:, k]**2) + penalty * (k in lid)
+            U[:, k] += grads / infos
+        if fam == &#34;nb&#34;:
+            if ctl[&#34;optimizeTheta&#34;]:
+                nb_theta = est_nb_theta(Y, gf.family.link.inverse(rfunc(U, V)), nb_theta)
+            gf = GlmpcaFamily(fam, nb_theta)
+    # postprocessing: include row and column labels for regression coefficients
+    if ncol(Z) == 0: G = None
+    else: G = U[:, Ko + np.array(range(Kf))]
+    X = np.hstack((cvec1(N), X))
+    A = V[:, range(Ko)]
+    res = ortho(U[:, lid], V[:, lid], A, X=X, G=G, Z=Z)
+    res[&#34;dev&#34;] = dev[range(t + 1)]
+    res[&#34;glmpca_family&#34;] = gf
+
+#                factors: an array U whose rows match the columns (observations) of Y. It is analogous to the principal components in PCA. Each column of the factors array is a different latent dimension.  
+# - loadings: an array V whose rows match the rows (features/dimensions) of Y. It is analogous to loadings in PCA. Each column of the loadings array is a different latent dimension.  
+# - coefX: an array A of coefficients for the observation-specific covariates array X. Each row of coefX corresponds to a row of Y and each column corresponds to a column of X. The first column of coefX contains feature-specific intercepts which are included by default.  
+# - coefZ: a array G of coefficients for the feature-specific covariates array Z. Each row of coefZ corresponds to a column of Y and each column corresponds to a column of Z. By default no such covariates are included and this is returned as None.  
+# - dev: a vector of deviance values. The length of the vector is the number of iterations it took for GLM-PCA&#39;s optimizer to converge. The deviance should generally decrease over time. If it fluctuates wildly, this often indicates numerical instability, which can be improved by increasing the penalty parameter.  
+# - glmpca_family: an object of class GlmpcaFamily. This is a minor wrapper to the family object used by the statsmodels package for fitting standard GLMs. It contains various internal functions and parameters needed to optimize the GLM-PCA objective function. For the negative binomial case, it also contains the final estimated value of the dispersion parameter nb_theta.  
+
+    return res[&#34;factors&#34;], res[&#34;loadings&#34;], res[&#34;coefX&#34;]</code></pre>
+</details>
+</dd>
+<dt id="cytograph.decomposition.glmpca_impl.glmpca_init"><code class="name flex">
+<span>def <span class="ident">glmpca_init</span></span>(<span>Y, fam, sz=None, nb_theta=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>create the glmpca_family object and
+initialize the A array (regression coefficients of X)
+Y is the data (JxN array)
+fam is the likelihood
+sz optional vector of size factors, default: sz=colMeans(Y) or colSums(Y)
+sz is ignored unless fam is 'poi' or 'nb'</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def glmpca_init(Y, fam, sz=None, nb_theta=None):
+    &#34;&#34;&#34;
+    create the glmpca_family object and
+    initialize the A array (regression coefficients of X)
+    Y is the data (JxN array)
+    fam is the likelihood
+    sz optional vector of size factors, default: sz=colMeans(Y) or colSums(Y)
+    sz is ignored unless fam is &#39;poi&#39; or &#39;nb&#39;
+    &#34;&#34;&#34;
+    if sz is not None and len(sz) != ncol(Y):
+        raise GlmpcaError(&#34;size factor must have length equal to columns of Y&#34;)
+    if fam == &#34;mult&#34;: mult_n = colSums(Y)
+    else: mult_n = None
+    gf = GlmpcaFamily(fam, nb_theta, mult_n)
+    if fam in (&#34;poi&#34;, &#34;nb&#34;):
+        if sz is None: sz = colMeans(Y)  # size factors
+        offsets = gf.family.link(sz)
+        
+        def rfunc(U, V):
+            return offsets + tcrossprod(V, U)  # linear predictor
+        a1 = gf.family.link(rowSums(Y) / np.sum(sz))
+    else:
+        def rfunc(U, V):
+            return tcrossprod(V, U)
+        if fam == &#34;mult&#34;:  # offsets incorporated via family object
+            a1 = gf.family.link(rowSums(Y) / np.sum(mult_n))
+        else:  # no offsets (eg, bernoulli)
+            a1 = gf.family.link(rowMeans(Y))
+    if np.any(np.isinf(a1)):
+        raise GlmpcaError(&#34;Some rows were all zero, please remove them.&#34;)
+    return {&#34;gf&#34;: gf, &#34;rfunc&#34;: rfunc, &#34;intercepts&#34;: a1}</code></pre>
+</details>
+</dd>
+<dt id="cytograph.decomposition.glmpca_impl.mat_binom_dev"><code class="name flex">
+<span>def <span class="ident">mat_binom_dev</span></span>(<span>X, P, n)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>binomial deviance for two arrays
+X,P are JxN arrays
+n is vector of length N (same as cols of X,P)</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def mat_binom_dev(X, P, n):
+    &#34;&#34;&#34;
+    binomial deviance for two arrays
+    X,P are JxN arrays
+    n is vector of length N (same as cols of X,P)
+    &#34;&#34;&#34;
+    with np.errstate(divide=&#39;ignore&#39;, invalid=&#39;ignore&#39;):
+        term1 = X * log(X / (n * P))
+    term1 = term1[np.isfinite(term1)].sum()
+    # nn= x&lt;n
+    nx = n - X
+    with np.errstate(divide=&#39;ignore&#39;, invalid=&#39;ignore&#39;):
+        term2 = nx * log(nx / (n * (1 - P)))
+    term2 = term2[np.isfinite(term2)].sum()
+    return 2 * (term1 + term2)</code></pre>
+</details>
+</dd>
+<dt id="cytograph.decomposition.glmpca_impl.ncol"><code class="name flex">
+<span>def <span class="ident">ncol</span></span>(<span>x)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def ncol(x):
+    return x.shape[1]</code></pre>
+</details>
+</dd>
+<dt id="cytograph.decomposition.glmpca_impl.nrow"><code class="name flex">
+<span>def <span class="ident">nrow</span></span>(<span>x)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def nrow(x):
+    return x.shape[0]</code></pre>
+</details>
+</dd>
+<dt id="cytograph.decomposition.glmpca_impl.ortho"><code class="name flex">
+<span>def <span class="ident">ortho</span></span>(<span>U, V, A, X=1, G=None, Z=0)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>U is NxL array of cell factors
+V is JxL array of loadings onto genes
+X is NxKo array of cell specific covariates
+A is JxKo array of coefficients of X
+Z is JxKf array of gene specific covariates
+G is NxKf array of coefficients of Z
+assume the data Y is of dimension JxN
+imputed expression: E[Y] = g^{-1}(R) where R = VU'+AX'+ZG'</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def ortho(U, V, A, X=1, G=None, Z=0):
+    &#34;&#34;&#34;
+    U is NxL array of cell factors
+    V is JxL array of loadings onto genes
+    X is NxKo array of cell specific covariates
+    A is JxKo array of coefficients of X
+    Z is JxKf array of gene specific covariates
+    G is NxKf array of coefficients of Z
+    assume the data Y is of dimension JxN
+    imputed expression: E[Y] = g^{-1}(R) where R = VU&#39;+AX&#39;+ZG&#39;
+    &#34;&#34;&#34;
+    if np.all(X == 1): X = cvec1(nrow(U))
+    if np.all(Z == 0): Z = np.zeros((nrow(V), 1))
+    if np.all(G == 0): G = None
+    # we assume A is not null or zero
+    # remove correlation between U and A
+    # at minimum, this will cause factors to have mean zero
+    betax = np.linalg.lstsq(X, U, rcond=None)[0]  # extract coef from linreg
+    factors = U - X@betax  # residuals from linear regression
+    A += tcrossprod(V, betax)
+    # remove correlation between V and G
+    if G is None:
+        loadings = V
+    else:  # G is not empty
+        betaz = np.linalg.lstsq(Z, V, rcond=None)[0]  # extract coef from linreg
+        loadings = V - Z@betaz  # residuals from regression
+        G += tcrossprod(factors, betaz)
+    # rotate factors to make loadings orthornormal
+    loadings, d, Qt = np.linalg.svd(loadings, full_matrices=False)
+    factors = tcrossprod(factors, Qt) * d  # d vector broadcasts across cols
+    # arrange latent dimensions in decreasing L2 norm
+    o = (-colNorms(factors)).argsort()
+    factors = factors[:, o]
+    loadings = loadings[:, o]
+    return {&#34;factors&#34;: factors, &#34;loadings&#34;: loadings, &#34;coefX&#34;: A, &#34;coefZ&#34;: G}</code></pre>
+</details>
+</dd>
+<dt id="cytograph.decomposition.glmpca_impl.remove_intercept"><code class="name flex">
+<span>def <span class="ident">remove_intercept</span></span>(<span>X)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def remove_intercept(X):
+    cm = colMeans(X)
+    try:
+        X -= cm
+    except TypeError as err:
+        if X.dtype != cm.dtype:
+            X = X.astype(cm.dtype) - cm
+        else:
+            raise err
+    return X[:, colNorms(X) &gt; 1e-12]</code></pre>
+</details>
+</dd>
+<dt id="cytograph.decomposition.glmpca_impl.rowMeans"><code class="name flex">
+<span>def <span class="ident">rowMeans</span></span>(<span>x)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def rowMeans(x):
+    return x.mean(1)</code></pre>
+</details>
+</dd>
+<dt id="cytograph.decomposition.glmpca_impl.rowSums"><code class="name flex">
+<span>def <span class="ident">rowSums</span></span>(<span>x)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def rowSums(x):
+    return x.sum(1)</code></pre>
+</details>
+</dd>
+<dt id="cytograph.decomposition.glmpca_impl.tcrossprod"><code class="name flex">
+<span>def <span class="ident">tcrossprod</span></span>(<span>A, B)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def tcrossprod(A, B):
+    return A@(B.T)</code></pre>
+</details>
+</dd>
+<dt id="cytograph.decomposition.glmpca_impl.trigamma"><code class="name flex">
+<span>def <span class="ident">trigamma</span></span>(<span>x)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def trigamma(x):
+    return polygamma(1, x)</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="cytograph.decomposition.glmpca_impl.GlmpcaError"><code class="flex name class">
+<span>class <span class="ident">GlmpcaError</span></span>
+<span>(</span><span>...)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Inappropriate argument value (of correct type).</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class GlmpcaError(ValueError):
+    pass</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>builtins.ValueError</li>
+<li>builtins.Exception</li>
+<li>builtins.BaseException</li>
+</ul>
+</dd>
+<dt id="cytograph.decomposition.glmpca_impl.GlmpcaFamily"><code class="flex name class">
+<span>class <span class="ident">GlmpcaFamily</span></span>
+<span>(</span><span>fam, nb_theta=None, mult_n=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>thin wrapper around the statsmodels.genmod.families.Family class</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class GlmpcaFamily(object):
+    &#34;&#34;&#34;thin wrapper around the statsmodels.genmod.families.Family class&#34;&#34;&#34;
+    # TO DO: would it be better to use inheritance?
+
+    def __init__(self, fam, nb_theta=None, mult_n=None):
+        if fam == &#34;poi&#34;:
+            self.family = smf.Poisson()
+        elif fam == &#34;nb&#34;:
+            if nb_theta is None:
+                raise GlmpcaError(&#34;Negative binomial dispersion parameter &#39;nb_theta&#39; must be specified&#34;)
+            self.family = smf.NegativeBinomial(alpha=1 / nb_theta)
+        elif fam in (&#34;mult&#34;, &#34;bern&#34;):
+            self.family = smf.Binomial()
+            if fam == &#34;mult&#34; and mult_n is None:
+                raise GlmpcaError(&#34;Multinomial sample size parameter vector &#39;mult_n&#39; must be specified&#34;)
+        else:
+            raise GlmpcaError(&#34;unrecognized family type&#34;)
+        # variance function, determined by GLM family
+        vfunc = self.family.variance
+        # inverse link func, mu as a function of linear predictor R
+        ilfunc = self.family.link.inverse
+        # derivative of inverse link function, dmu/dR
+        self.glmpca_fam = fam
+        if fam == &#34;poi&#34;:
+            def infograd(Y, R):
+                M = ilfunc(R)  # ilfunc=exp
+                return {&#34;grad&#34;: (Y - M), &#34;info&#34;: M}
+        elif fam == &#34;nb&#34;:
+            def infograd(Y, R):
+                M = ilfunc(R)  # ilfunc=exp
+                W = 1 / vfunc(M)
+                return {&#34;grad&#34;: (Y - M) * W * M, &#34;info&#34;: W * (M**2)}
+            self.nb_theta = nb_theta
+        elif fam == &#34;mult&#34;:
+            def infograd(Y, R):
+                P = ilfunc(R)  # ilfunc=expit, P very small probabilities
+                return {&#34;grad&#34;: Y - (mult_n * P), &#34;info&#34;: mult_n * vfunc(P)}
+            self.mult_n = mult_n
+        elif fam == &#34;bern&#34;:
+            def infograd(Y, R):
+                P = ilfunc(R)
+                return {&#34;grad&#34;: Y - P, &#34;info&#34;: vfunc(P)}
+        else:  # this is not actually used but keeping for future reference
+            # this is most generic formula for GLM but computationally slow
+            raise GlmpcaError(&#34;invalid fam&#34;)
+        self.infograd = infograd
+        # create deviance function
+        if fam == &#34;mult&#34;:
+            def dev_func(Y, R):
+                return mat_binom_dev(Y, ilfunc(R), mult_n)
+        else:
+            def dev_func(Y, R):
+                return self.family.deviance(Y, ilfunc(R))
+        self.dev_func = dev_func
+
+    def __str__(self):
+        return &#34;GlmpcaFamily object of type {}&#34;.format(self.glmpca_fam)</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="cytograph.decomposition" href="index.html">cytograph.decomposition</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="two-column">
+<li><code><a title="cytograph.decomposition.glmpca_impl.colMeans" href="#cytograph.decomposition.glmpca_impl.colMeans">colMeans</a></code></li>
+<li><code><a title="cytograph.decomposition.glmpca_impl.colNorms" href="#cytograph.decomposition.glmpca_impl.colNorms">colNorms</a></code></li>
+<li><code><a title="cytograph.decomposition.glmpca_impl.colSums" href="#cytograph.decomposition.glmpca_impl.colSums">colSums</a></code></li>
+<li><code><a title="cytograph.decomposition.glmpca_impl.crossprod" href="#cytograph.decomposition.glmpca_impl.crossprod">crossprod</a></code></li>
+<li><code><a title="cytograph.decomposition.glmpca_impl.cvec1" href="#cytograph.decomposition.glmpca_impl.cvec1">cvec1</a></code></li>
+<li><code><a title="cytograph.decomposition.glmpca_impl.est_nb_theta" href="#cytograph.decomposition.glmpca_impl.est_nb_theta">est_nb_theta</a></code></li>
+<li><code><a title="cytograph.decomposition.glmpca_impl.glmpca" href="#cytograph.decomposition.glmpca_impl.glmpca">glmpca</a></code></li>
+<li><code><a title="cytograph.decomposition.glmpca_impl.glmpca_init" href="#cytograph.decomposition.glmpca_impl.glmpca_init">glmpca_init</a></code></li>
+<li><code><a title="cytograph.decomposition.glmpca_impl.mat_binom_dev" href="#cytograph.decomposition.glmpca_impl.mat_binom_dev">mat_binom_dev</a></code></li>
+<li><code><a title="cytograph.decomposition.glmpca_impl.ncol" href="#cytograph.decomposition.glmpca_impl.ncol">ncol</a></code></li>
+<li><code><a title="cytograph.decomposition.glmpca_impl.nrow" href="#cytograph.decomposition.glmpca_impl.nrow">nrow</a></code></li>
+<li><code><a title="cytograph.decomposition.glmpca_impl.ortho" href="#cytograph.decomposition.glmpca_impl.ortho">ortho</a></code></li>
+<li><code><a title="cytograph.decomposition.glmpca_impl.remove_intercept" href="#cytograph.decomposition.glmpca_impl.remove_intercept">remove_intercept</a></code></li>
+<li><code><a title="cytograph.decomposition.glmpca_impl.rowMeans" href="#cytograph.decomposition.glmpca_impl.rowMeans">rowMeans</a></code></li>
+<li><code><a title="cytograph.decomposition.glmpca_impl.rowSums" href="#cytograph.decomposition.glmpca_impl.rowSums">rowSums</a></code></li>
+<li><code><a title="cytograph.decomposition.glmpca_impl.tcrossprod" href="#cytograph.decomposition.glmpca_impl.tcrossprod">tcrossprod</a></code></li>
+<li><code><a title="cytograph.decomposition.glmpca_impl.trigamma" href="#cytograph.decomposition.glmpca_impl.trigamma">trigamma</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="cytograph.decomposition.glmpca_impl.GlmpcaError" href="#cytograph.decomposition.glmpca_impl.GlmpcaError">GlmpcaError</a></code></h4>
+</li>
+<li>
+<h4><code><a title="cytograph.decomposition.glmpca_impl.GlmpcaFamily" href="#cytograph.decomposition.glmpca_impl.GlmpcaFamily">GlmpcaFamily</a></code></h4>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.8.4</a>.</p>
+</footer>
+</body>
+</html>

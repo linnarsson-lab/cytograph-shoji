@@ -83,7 +83,7 @@ class GLMPCA:
 			logging.info(f" GLMPCA: Optimizing {data.shape[0]} cells × {data.shape[1]} genes with one covariate")
 		else:
 			logging.info(f" GLMPCA: Optimizing {data.shape[0]} cells × {data.shape[1]} genes with {covariates.shape[1]} covariates")
-		factors, loadings, _ = glmpca(data.T, self.n_factors, ctl = {"maxIter": 1000, "eps": self.epsilon, "optimizeTheta": True}, penalty=self.penalty, fam=self.family, X=covariates, sz=size_factors)
+		factors, loadings, _ = glmpca(data.T, self.n_factors, ctl = {"maxIter": 200, "eps": self.epsilon, "optimizeTheta": True}, penalty=self.penalty, fam=self.family, X=covariates, sz=size_factors)
 		loadings_all = np.zeros_like(loadings, shape=(ws.genes.length, self.n_factors))
 		loadings_all[ws.SelectedFeatures[...]] = loadings
 		return factors, loadings_all

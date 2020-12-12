@@ -1,17 +1,17 @@
 from typing import Tuple
 import numpy as np
 import shoji
-from .utils import div0
-from cytograph import requires, creates
+from ..utils import div0
+from cytograph import requires, creates, Module
 import logging
 
 
-class Log2Normalizer:
+class Log2Normalizer(Module):
 	"""
 	Normalize and log2-transform a dataset, dealing properly
 	with edge cases such as division by zero.
 	"""
-	def __init__(self, level: int = 0) -> None:
+	def __init__(self, level: int = 0, **kwargs) -> None:
 		"""
 		Normalize and log2-transform a dataset.
 		
@@ -21,6 +21,7 @@ class Log2Normalizer:
 		Remarks:
 			Requires the tensors TotalUMIs, MeanExpression and StdevExpression
 		"""
+		super().__init__(**kwargs)
 		self.log2_mu = None  # type: np.ndarray
 		self.totals = None  # type: np.ndarray
 		self.level = level
@@ -30,16 +31,20 @@ class Log2Normalizer:
 	@creates("Log2Level", "uint16", ())
 	@creates("Log2Mean", "float32", ("cells",))
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> Tuple[int, np.ndarray]:
+		# Create symbolic names for the required tensors, which might be renamed by the user
+		Expression = self.requires["Expression"]
+		TotalUMIs = self.requires["TotalUMIs"]
+
 		logging.info(" Log2Normalizer: Computing normalized log2 mean")
 		n_genes = ws.genes.length
 		n_cells = ws.cells.length
 		self.log2_mu = np.zeros(n_genes)
-		self.totals = ws[:].TotalUMIs
+		self.totals = ws[TotalUMIs][...]
 		if self.level == 0:
 			self.level = np.median(self.totals)
 
 		for ix in range(0, n_cells, 1000):
-			vals = ws.Expression[ix: ix + 1000][:, :].astype("float")
+			vals = ws[Expression][ix: ix + 1000][:, :].astype("float")
 			# Rescale to the median total UMI count, plus 1 (to avoid log of zero), then log transform
 			vals = np.log2(div0(vals.T, self.totals) * self.level + 1).T
 			self.log2_mu[ix: ix + 1000] = np.mean(vals, axis=1)

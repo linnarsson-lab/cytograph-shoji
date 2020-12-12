@@ -2,13 +2,13 @@ from typing import Tuple
 import shoji
 import numpy as np
 import cytograph as cg
-from cytograph import requires, creates
+from cytograph import requires, creates, Module
 import logging
 
 
-class CellSummaryStatistics:
-	def __init__(self) -> None:
-		pass
+class CellSummaryStatistics(Module):
+	def __init__(self, **kwargs) -> None:
+		super().__init__(**kwargs)
 
 	@requires("Expression", "uint16", ("cells", "genes"))
 	@requires("Chromosome", "string", ("genes",))
@@ -39,12 +39,11 @@ class CellSummaryStatistics:
 			The complete Expression and Unspliced tensors are loaded into memory
 			If species is None, cell cycle scores are set to 0
 		"""
-
 		logging.info(" CellSummaryStatistics: Loading 'Expression' and 'Unspliced' tensors")
-		x = ws.Expression[...]
-		u = ws.Unspliced[...]
+		x = self.Expression[...]
+		u = self.Unspliced[...]
 
-		mito_genes = ws[:].Chromosome == "MT"
+		mito_genes = self.Chromosome[...] == "MT"
 
 		logging.info(f" CellSummaryStatistics: Computing summary statistics for {ws.cells.length} cells")
 		nnz = np.count_nonzero(x, axis=1)
@@ -52,9 +51,9 @@ class CellSummaryStatistics:
 		mt_ratio = np.sum(x[:, mito_genes], axis=1) / n_UMIs
 		unspliced_ratio = np.sum(u, axis=1) / n_UMIs
 
-		species = cg.Species(ws[:].Species)
+		species = cg.Species(self.Species[:])
 		if species.name in ["Homo sapiens", "Mus musculus"]:
-			genes = ws[:].Gene
+			genes = self.Gene[...]
 			g1_indices = np.isin(genes, species.genes.g1)
 			s_indices = np.isin(genes, species.genes.s)
 			g2m_indices = np.isin(genes, species.genes.g2m)

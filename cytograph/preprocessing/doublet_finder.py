@@ -32,15 +32,15 @@ from sklearn.decomposition import PCA
 from sklearn.neighbors import NearestNeighbors
 import shoji
 from cytograph.enrichment import FeatureSelectionByVariance
-from cytograph import requires, creates
+from cytograph import requires, creates, Module
 from sklearn.neighbors import KernelDensity
 from sklearn.cluster import KMeans
 from unidip import UniDip
 
 
-# TODO: make it possible to run doublet finder on sets of cells from same batch
-class DoubletFinder:
-	def __init__(self, proportion_artificial: float = 0.2, fixed_threshold: float = None, max_threshold: float = 1, k: int = None) -> None:
+class DoubletFinder(Module):
+	def __init__(self, proportion_artificial: float = 0.2, fixed_threshold: float = None, max_threshold: float = 1, k: int = None, **kwargs) -> None:
+		super().__init__(**kwargs)
 		self.proportion_artificial = proportion_artificial
 		self.fixed_threshold = fixed_threshold
 		self.max_threshold = max_threshold
@@ -68,11 +68,12 @@ class DoubletFinder:
 		n_genes = ws.genes.length
 		n_doublets = int(n_real_cells / (1 - self.proportion_artificial) - n_real_cells)
 		doublets = np.zeros((n_genes, n_doublets))
+		expression = ws[self.requires["Expression"]][...]
 		for i in range(n_doublets):
 			(a, b) = np.random.choice(n_real_cells, size=2, replace=False)
-			doublets[:, i] = ws.Expression[a] + ws.Expression[b]
+			doublets[:, i] = expression[a] + expression[b]
 
-		data_wdoublets = np.concatenate((ws.Expression[:].T, doublets), axis=1)  # Transpose the expression matrix to be (genes, cells)
+		data_wdoublets = np.concatenate((expression.T, doublets), axis=1)  # Transpose the expression matrix to be (genes, cells)
 		logging.info(" DoubletFinder: Feature selection and dimensionality reduction")
 		genes = FeatureSelectionByVariance(2000).fit(ws)
 		f = np.divide(data_wdoublets.sum(axis=0), 10e6)

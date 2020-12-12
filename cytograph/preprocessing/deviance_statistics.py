@@ -1,13 +1,13 @@
 import shoji
 import numpy as np
-from cytograph import requires, creates
-from .utils import div0
+from cytograph import requires, creates, Module
+from ..utils import div0
 import logging
 
 
-class DevianceStatistics:
-	def __init__(self) -> None:
-		pass
+class DevianceStatistics(Module):
+	def __init__(self, **kwargs) -> None:
+		super().__init__(**kwargs)
 
 	@requires("Expression", "uint16", ("cells", "genes"))
 	@requires("TotalUMIs", "uint32", ("cells",))
@@ -27,14 +27,15 @@ class DevianceStatistics:
 		Remarks:
 			See equation D_j on p. 14 of https://doi.org/10.1186/s13059-019-1861-6
 		"""
+		# Create symbolic names for the required tensors, which might be renamed by the user
 		logging.info(" DevianceStatistics: Computing binomial deviance statistics for genes")
-		n = ws.TotalUMIs[...]
+		n = self.TotalUMIs[...]
 		n_sum = n.sum()
-		gn = ws.GeneTotalUMIs[...]
+		gn = self.GeneTotalUMIs[...]
 		d_j = np.zeros((1, ws.genes.length))
 		for ix in range(0, ws.cells.length, 1000):
 			pi_hat_j = (gn / n_sum)[None, :]
-			y_ji = ws.Expression[ix: ix + 1000]
+			y_ji = self.Expression[ix: ix + 1000]
 			n_i = n[ix: ix + 1000][:, None]
 			with np.errstate(divide='ignore', invalid='ignore'):
 				# This would be faster as a numba nested for loop

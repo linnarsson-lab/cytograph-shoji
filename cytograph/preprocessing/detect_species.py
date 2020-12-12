@@ -1,19 +1,18 @@
-from typing import Tuple
+from typing import Dict
 import shoji
 import numpy as np
-import cytograph as cg
-from cytograph import requires, creates
+from cytograph import requires, creates, Module
 import logging
 
 
-class DetectSpecies:
-	def __init__(self) -> None:
-		pass
+class DetectSpecies(Module):
+	def __init__(self, **kwargs) -> None:
+		super().__init__(**kwargs)
 
 	@requires("Gene", "string", ("genes",))
 	@creates("Species", "string", ())
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> str:
-		genes = ws[:].Gene
+		genes = self.Gene[...]
 		for gene, species in {
 			"ACTB": "Homo sapiens",
 			"Tspy1": "Rattus norvegicus",

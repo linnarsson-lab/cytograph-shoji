@@ -1,24 +1,29 @@
 recipes:
   qc:
-    DetectSpecies: {}
-    CellSummaryStatistics: {}
-    GeneSummaryStatistics: {}
-    DoubletFinder: {}
-    QualityControl: {min_umis: 1000, min_unspliced_fraction: 0.1, min_fraction_good_cells: 0.6}
+    - DetectSpecies: {}
+    - CellSummaryStatistics: {}
+    - GeneSummaryStatistics: {}
+    - DoubletFinder: {}
+    - QualityControl: {min_umis: 1000, min_unspliced_fraction: 0.1, min_fraction_good_cells: 0.6}
 
   punchcard:
     - InitializeWorkspace: {from_workspace: "samples.TenX204_1", tensors: [Gene, Accession, Chromosome, Strand, Start, End]}
-    - CollectCells: {tensors: [Expression, Age, CellCycleFraction, Chemistry, Donor, DoubletFlag, DoubletScore, Expression, MitoFraction, NGenes, SampleName, Sex, Spliced, Tissue, TotalUMIs, Unspliced, UnsplicedFraction, ValidCells]}
+    - LoadSampleMetadata: {db: "/Users/stelin/sqlite3_chromium.db", tensors: [Age, AgeUnit, AgeText, Donor, Chemistry, Sex, Tissue, Roi, Name]}
+    - CollectCells: {tensors: [Expression, Age, CellCycleFraction, Chemistry, Donor, DoubletFlag, DoubletScore, Expression, MitoFraction, NGenes, Name, Sex, Spliced, Tissue, TotalUMIs, Unspliced, UnsplicedFraction, ValidCells]}
     - DetectSpecies: {}
     - GeneSummaryStatistics: {}  # Must recompute this since we pooled a different set of cells
     - DevianceStatistics: {}
     - FeatureSelectionByDeviance: {n_genes: 2000, mask: [cellcycle, ieg, mt]}
-    - GLMPCA: {n_factors: 50, batch_keys: [Chemistry], penalty: 1, family: "mult", epsilon: 0.00001}
-    - RnnManifold: {k: 25, tensor_name: GLMPCAFactors, metric: euclidean}
-    - ArtOfTsne: {tensor_name: GLMPCAFactors, metric: euclidean}
-    - PolishedLouvain: {}
+    - ResidualsPCA: {n_factors: 50}
+    - Harmony: {batch_keys: [Chemistry]}
+    - RnnManifold: {k: 25, metric: euclidean}
+    - ArtOfTsne: {metric: euclidean}
+    - PolishedLeiden: {}
     - Aggregate: {tensor: Expression, using: mean, into: MeanExpression}
     - Aggregate: {tensor: Clusters, using: first, into: ClusterID}
+    - Aggregate: {tensor: Clusters, using: count, into: NCells}
+    - Enrichment: {}
+    - Dendrogram: {}
 
 paths:
   builds: "/proj/cytograph/"  # This is a filesystem path to the builds folder, under which build results are stored

@@ -28,7 +28,8 @@ setup(
 		'click',
 		'leidenalg',
 		'unidip',
-		'opentsne'
+		'opentsne',
+		'fastcluster'
 	],
 	include_package_data=True,
 	entry_points='''

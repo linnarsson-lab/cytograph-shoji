@@ -32,6 +32,9 @@ class CollectCells:
 				source_ws = db[config["workspace"]][source]
 			elif source in db[config["workspaces"]["samples"]]:
 				source_ws = db[config["workspaces"]["samples"]][source]
+			else:
+				logging.error(f"Source {source} not found!")
+				sys.exit(1)
 			d: Dict[str, np.ndarray] = {}
 			onlyif = punchcard.sources_onlyif[ix]
 			if onlyif is not None:

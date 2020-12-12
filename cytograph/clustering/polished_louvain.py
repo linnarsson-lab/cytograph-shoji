@@ -8,7 +8,7 @@ from sklearn.cluster import DBSCAN
 from sklearn.decomposition import PCA
 from sklearn.neighbors import NearestNeighbors
 import scipy.sparse as sparse
-from cytograph import requires, creates
+from cytograph import requires, creates, Module
 import shoji
 
 
@@ -46,8 +46,9 @@ def is_outlier(points: np.ndarray, thresh: float = 3.5) -> np.ndarray:
 	return modified_z_score > thresh
 
 
-class PolishedLouvain:
-	def __init__(self, resolution: float = 1.0, min_cells: int = 10) -> None:
+class PolishedLouvain(Module):
+	def __init__(self, resolution: float = 1.0, min_cells: int = 10, **kwargs) -> None:
+		super().__init__(**kwargs)
 		self.resolution = resolution
 		self.min_cells = min_cells
 
@@ -88,7 +89,9 @@ class PolishedLouvain:
 		clusterer = DBSCAN(eps=epsilon, min_samples=round(min_pts * 0.5))
 		return clusterer.fit_predict(xy)
 
-	@requires("TSNE", "float32", ("cells", 2))
+	@requires("Embedding", "float32", ("cells", 2))
+	@requires("ManifoldIndices", "uint32", (None, 2))
+	@requires("ManifoldWeights", "float32", (None))
 	@creates("Clusters", "uint32", ("cells",))
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> np.ndarray:
 		"""
@@ -100,17 +103,18 @@ class PolishedLouvain:
 		Returns:
 			labels:	The cluster labels
 		"""
-		xy = ws[:].TSNE
-		knn = sparse.coo_matrix((ws[:].RNN_data, (ws[:].RNN_row, ws[:].RNN_col)))
-
-		logging.info("PolishedLouvain: Louvain community detection")
+		logging.info(" PolishedLouvain: Louvain community detection")
+		rc = self.ManifoldIndices[...]
+		knn = sparse.coo_matrix((self.ManifoldWeights[...], (rc[:, 0].T, rc[:, 1].T)))
 		g = nx.from_scipy_sparse_matrix(knn)
 		partitions = community.best_partition(g, resolution=self.resolution, randomize=False)
 		labels = np.array([partitions[key] for key in range(knn.shape[0])])
+		logging.info(f" PolishedLouvain: Found {labels.max() + 1} initial clusters")
 
-		# Mark outliers using DBSCAN
-		logging.info("PolishedLouvain: Using DBSCAN to mark outliers")
-		nn = NearestNeighbors(n_neighbors=10, algorithm="ball_tree", n_jobs=4)
+		# Mark outliers using DBSCAN on the embedding
+		logging.info(" PolishedLouvain: Using DBSCAN to mark outliers")
+		xy = self.Embedding[...]
+		nn = NearestNeighbors(n_neighbors=10, algorithm="ball_tree", n_jobs=-1)
 		nn.fit(xy)
 		knn = nn.kneighbors_graph(mode='distance')
 		k_radius = knn.max(axis=1).toarray()
@@ -118,11 +122,10 @@ class PolishedLouvain:
 		clusterer = DBSCAN(eps=epsilon, min_samples=10)
 		outliers = (clusterer.fit_predict(xy) == -1)
 		labels[outliers] = -1
+		logging.info(f" PolishedLouvain: Found {labels.max() + 1} clusters after marking outliers using DBSCAN")
 
 		# Mark outliers as cells in bad neighborhoods
-		logging.info("PolishedLouvain: Using neighborhood to mark outliers")
-		nn = NearestNeighbors(n_neighbors=10, algorithm="ball_tree", n_jobs=4)
-		nn.fit(xy)
+		logging.info(" PolishedLouvain: Using neighborhood to mark outliers")
 		knn = nn.kneighbors_graph(mode='connectivity').tocoo()
 		temp = []
 		for ix in range(labels.shape[0]):
@@ -141,9 +144,10 @@ class PolishedLouvain:
 		retain = sorted(list(set(labels)))
 		d = dict(zip(retain, np.arange(-1, len(set(retain)))))
 		labels = np.array([d[x] if x in d else -1 for x in labels])
+		logging.info(f" PolishedLouvain: Found {labels.max() + 1} clusters after marking outliers using neighborhood")
 
 		# Break clusters based on the embedding
-		logging.info("PolishedLouvain: Breaking clusters")
+		logging.info(" PolishedLouvain: Breaking clusters")
 		max_label = 0
 		labels2 = np.copy(labels)
 		for lbl in range(labels.max() + 1):
@@ -157,9 +161,10 @@ class PolishedLouvain:
 			max_label = max_label + np.max(adjusted) + 1
 			labels2[cluster] = new_labels
 		labels = labels2
+		logging.info(f" PolishedLouvain: Found {labels.max() + 1} clusters after breaking clusters on the embedding")
 
 		# Set the local cluster label to the local majority vote
-		logging.info("PolishedLouvain: Smoothing cluster identity on the embedding")
+		logging.info(" PolishedLouvain: Smoothing cluster identity on the embedding")
 		nn = NearestNeighbors(n_neighbors=10, algorithm="ball_tree", n_jobs=4)
 		nn.fit(xy)
 		knn = nn.kneighbors_graph(mode='connectivity').tocoo()
@@ -168,9 +173,10 @@ class PolishedLouvain:
 			neighbors = knn.col[np.where(knn.row == ix)[0]]
 			temp.append(mode(labels[neighbors])[0][0])
 		labels = np.array(temp)
+		logging.info(f" PolishedLouvain: Found {labels.max() + 1} clusters after smoothing clusters on the embedding")
 
 		# Mark tiny clusters as outliers
-		logging.info("PolishedLouvain: Marking tiny clusters as outliers")
+		logging.info(" PolishedLouvain: Marking tiny clusters as outliers")
 		ix, counts = np.unique(labels, return_counts=True)
 		labels[np.isin(labels, ix[counts < self.min_cells])] = -1
 
@@ -181,9 +187,10 @@ class PolishedLouvain:
 		retain = sorted(retain)
 		d = dict(zip(retain, np.arange(-1, len(set(retain)))))
 		labels = np.array([d[x] if x in d else -1 for x in labels])
+		logging.info(f" PolishedLouvain: Found {labels.max() + 1} clusters after marking tiny clusters as outliers")
 
 		if np.all(labels < 0):
-			logging.warn("PolishedLouvain: All cells were determined to be outliers!")
+			logging.warn(" PolishedLouvain: All cells were determined to be outliers!")
 			return np.zeros_like(labels)
 
 		if np.any(labels == -1):
@@ -192,5 +199,5 @@ class PolishedLouvain:
 			nn.fit(xy[labels >= 0])
 			nearest = nn.kneighbors(xy[labels == -1], n_neighbors=1, return_distance=False)
 			labels[labels == -1] = labels[labels >= 0][nearest.flat[:]]
-
+		logging.info(f" PolishedLouvain: Found {labels.max() + 1} clusters")
 		return labels

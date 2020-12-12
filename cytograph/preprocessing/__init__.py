@@ -1,5 +1,4 @@
 from .log2_normalizer import Log2Normalizer
-from .utils import div0
 from .doublet_finder import DoubletFinder
 from .cell_summary_statistics import CellSummaryStatistics
 from .gene_summary_statistics import GeneSummaryStatistics

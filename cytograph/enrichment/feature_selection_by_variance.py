@@ -2,18 +2,19 @@ from typing import List
 import numpy as np
 from sklearn.svm import SVR
 import cytograph as cg
-from cytograph import requires, creates
+from cytograph import requires, creates, Module
 import shoji
 import logging
 
 
-class FeatureSelectionByVariance:
-	def __init__(self, n_genes: int, mask: List[str] = None) -> None:
+class FeatureSelectionByVariance(Module):
+	def __init__(self, n_genes: int, mask: List[str] = None, **kwargs) -> None:
 		"""
 		Args:
 			n_genes		Number of genes to select
 			mask		Optional mask (numpy bool array) indicating genes that should not be selected
 		"""
+		super().__init__(**kwargs)
 		self.n_genes = n_genes
 		self.mask = mask if mask is not None else []
 
@@ -35,13 +36,18 @@ class FeatureSelectionByVariance:
 		Remarks:
 			If the tensor "ValidGenes" exists, only ValidGenes == True genes will be selected
 		"""
+		# Create symbolic names for the required tensors, which might be renamed by the user
+		Species = self.requires["Species"]
+		MeanExpression = self.requires["MeanExpression"]
+		StdevExpression = self.requires["StdevExpression"]
+
 		n_genes = ws.genes.length
-		species = cg.Species(ws[:].Species)
+		species = cg.Species(ws[Species][:])
 		mask_genes = species.mask(ws, self.mask)
 
 		logging.info(" FeatureSelectionByVariance: Fitting CV vs mean")
-		mu = ws[:].MeanExpression
-		sd = ws[:].StdevExpression
+		mu = ws[MeanExpression][...]
+		sd = ws[StdevExpression][...]
 
 		if "ValidGenes" in ws:
 			valid = ws.ValidGenes[:]

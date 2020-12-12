@@ -1,0 +1,1219 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.8.4" />
+<title>cytograph.manifold.balanced_knn API documentation</title>
+<meta name="description" content="" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/highlight.min.js" integrity="sha256-eOgo0OtLL4cdq7RdwRUiGKLX9XsIJ7nGhWEKbohmVAQ=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>cytograph.manifold.balanced_knn</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">import logging
+from typing import Tuple, Any
+
+import numpy as np
+from numba import jit
+from pynndescent import NNDescent
+from scipy import sparse
+from sklearn.neighbors import NearestNeighbors
+
+from cytograph.metrics import jensen_shannon_distance
+
+
+@jit(nopython=True)
+def balance_knn_loop(dsi: np.ndarray, dist: np.ndarray, lsi: np.ndarray, maxl: int, k: int, return_distance: bool) -&gt; Tuple:
+        &#34;&#34;&#34;Fast and greedy algorythm to balance a K-NN graph so that no node is the NN to more than maxl other nodes
+
+                Arguments
+                ---------
+                dsi : np.ndarray  (samples, K)
+                        distance sorted indexes (as returned by sklearn NN)
+                dist : np.ndarray  (samples, K)
+                        the actual distance corresponding to the sorted indexes
+                lsi : np.ndarray (samples,)
+                        degree of connectivity (l) sorted indexes
+                maxl : int
+                        max degree of connectivity (from others to self) allowed
+                k : int
+                        number of neighbours in the final graph
+                return_distance : bool
+                        wether to return distance
+
+                Returns
+                -------
+                dsi_new : np.ndarray (samples, k+1)
+                        indexes of the NN, first column is the sample itself
+                dist_new : np.ndarray (samples, k+1)
+                        distances to the NN
+                l: np.ndarray (samples)
+                        l[i] is the number of connections from other samples to the sample i
+
+        &#34;&#34;&#34;
+        assert dsi.shape[1] &gt;= k, &#34;sight needs to be bigger than k&#34;
+        # numba signature &#34;Tuple((int64[:,:], float32[:, :], int64[:]))(int64[:,:], int64[:], int64, int64, bool)&#34;
+        dsi_new = -1 * np.ones((dsi.shape[0], k + 1), np.int64)  # maybe d.shape[0]
+        l = np.zeros(dsi.shape[0], np.int64)
+        if return_distance:
+                dist_new = np.zeros(dsi_new.shape, np.float64)
+        for i in range(dsi.shape[0]):  # For every node
+                el = lsi[i]
+                p = 0
+                j = 0
+                for j in range(dsi.shape[1]):  # For every other node it is connected (sight)
+                        if p &gt;= k:
+                                break
+                        m = dsi[el, j]
+                        if el == m:
+                                dsi_new[el, 0] = el
+                                continue
+                        if l[m] &gt;= maxl:
+                                continue
+                        dsi_new[el, p + 1] = m
+                        l[m] = l[m] + 1
+                        if return_distance:
+                                dist_new[el, p + 1] = dist[el, j]
+                        p += 1
+                if (j == dsi.shape[1] - 1) and (p &lt; k):
+                        while p &lt; k:
+                                dsi_new[el, p + 1] = el
+                                dist_new[el, p + 1] = dist[el, 0]
+                                p += 1
+        if not return_distance:
+                dist_new = np.ones_like(dsi_new, np.float64)
+        return dist_new, dsi_new, l
+
+
+def knn_balance(dsi: np.ndarray, dist: np.ndarray = None, maxl: int = 200, k: int = 60) -&gt; Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        &#34;&#34;&#34;Balance a K-NN graph so that no node is the NN to more than maxl other nodes
+
+                Arguments
+                ---------
+                dsi : np.ndarray  (samples, K)
+                        distance sorted indexes (as returned by sklearn NN)
+                dist : np.ndarray  (samples, K)
+                        the actual distance corresponding to the sorted indexes
+                maxl : int
+                        max degree of connectivity allowed
+                k : int
+                        number of neighbours in the final graph
+
+                Returns
+                -------
+                dist_new : np.ndarray (samples, k+1)
+                        distances to the NN
+                dsi_new : np.ndarray (samples, k+1)
+                        indexes of the NN, first column is the sample itself
+                l: np.ndarray (samples)
+                        l[i] is the number of connections from other samples to the sample i
+
+
+        &#34;&#34;&#34;
+        l = np.bincount(dsi.flat[:], minlength=dsi.shape[0])
+        lsi = np.argsort(l, kind=&#34;mergesort&#34;)[::-1]
+        if dist is None:
+                dist = np.ones(dsi.shape, dtype=&#34;float64&#34;)
+                dist[:, 0] = 0
+                return balance_knn_loop(dsi, dist, lsi, maxl, k, return_distance=False)
+        else:
+                return balance_knn_loop(dsi, dist, lsi, maxl, k, return_distance=True)
+
+
+class BalancedKNN:
+        &#34;&#34;&#34;Greedy algorythm to balance a K-nearest neighbour graph
+
+        It has an API similar to scikit-learn
+
+        Parameters
+        ----------
+        k : int  (default=50)
+                the number of neighbours in the final graph
+        sight_k : int  (default=100)
+                the number of neighbours in the initialization graph
+                It correspondent to the farthest neighbour that a sample is allowed to connect to
+                when no closest neighbours are allowed. If sight_k is reached then the matrix is filled
+                with the sample itself
+        maxl : int  (default=200)
+                max degree of connectivity allowed. Avoids the presence of hubs in the graph, it is the
+                maximum number of neighbours that are allowed to contact a node before the node is blocked
+        mode : str (default=&#34;connectivity&#34;)
+                decide wich kind of utput &#34;distance&#34; or &#34;connectivity&#34;
+        n_jobs : int  (default=4)
+                parallelization of the standard KNN search preformed at initialization
+        &#34;&#34;&#34;
+        def __init__(self, k: int = 50, sight_k: int = 100, maxl: int = 200, mode: str = &#34;distance&#34;, metric: str = &#34;euclidean&#34;, minkowski_p: int = 20, n_jobs: int = 4) -&gt; None:
+                self.k = k
+                self.sight_k = sight_k
+                self.maxl = maxl
+                self.mode = mode
+                self.metric = metric
+                self.n_jobs = n_jobs
+                self.dist_new = self.dsi_new = self.l = None  # type: np.ndarray
+                self.bknn = None  # type: sparse.csr_matrix
+                self.minkowski_p = minkowski_p
+
+        @property
+        def n_samples(self) -&gt; int:
+                return self.data.shape[0]
+
+        def fit(self, data: np.ndarray, sight_k: int = None) -&gt; Any:
+                &#34;&#34;&#34;Fits the model
+
+                data: np.ndarray (samples, features)
+                        np
+                sight_k: int
+                        the farthest point that a node is allowed to connect to when its closest neighbours are not allowed
+                &#34;&#34;&#34;
+                self.data = data
+                self.fitdata = data
+                if sight_k is not None:
+                        self.sight_k = sight_k
+                logging.debug(f&#34;First search the {self.sight_k} nearest neighbours for {self.n_samples}&#34;)
+                np.random.seed(13)
+                self.nn = NNDescent(data=self.fitdata, metric=self.metric, n_jobs=-1)
+                return self
+
+        def kneighbors(self, X: np.ndarray = None, maxl: int = None, mode: str = &#34;distance&#34;) -&gt; Tuple[np.ndarray, np.ndarray, np.ndarray]:
+                &#34;&#34;&#34;Finds the K-neighbors of a point.
+
+                        Returns indices of and distances to the neighbors of each point.
+
+                        Parameters
+                        ----------
+                        X : array-like, shape (n_query, n_features),
+                                The query point or points.
+                                If not provided, neighbors of each indexed point are returned.
+                                In this case, the query point is not considered its own neighbor.
+
+                        maxl: int
+                                max degree of connectivity allowed
+
+                        mode : &#34;distance&#34; or &#34;connectivity&#34;
+                                Decides the kind of output
+
+                        Returns
+                        -------
+                        dist_new : np.ndarray (samples, k+1)
+                                distances to the NN
+                        dsi_new : np.ndarray (samples, k+1)
+                                indexes of the NN, first column is the sample itself
+                        l: np.ndarray (samples)
+                                l[i] is the number of connections from other samples to the sample i
+
+                        NOTE:
+                        First column (0) correspond to the sample itself, the nearest nenigbour is at the second column (1)
+
+                &#34;&#34;&#34;
+                if X is not None:
+                        self.data = X
+                if maxl is not None:
+                        self.maxl = maxl
+                if mode == &#34;distance&#34;:
+                        self.dsi, self.dist = self.nn.query(self.data, k=self.sight_k + 1)
+                else:
+                        self.dsi, _ = self.nn.query(self.data, k=self.sight_k + 1)
+                        self.dist = np.ones_like(self.dsi, dtype=&#39;float64&#39;)
+                        self.dist[:, 0] = 0
+                logging.debug(f&#34;Using the initialization network to find a {self.k}-NN graph with maximum connectivity of {self.maxl}&#34;)
+                self.dist_new, self.dsi_new, self.l = knn_balance(self.dsi, self.dist, maxl=self.maxl, k=self.k)
+                return self.dist_new, self.dsi_new, self.l
+
+        def kneighbors_graph(self, X: np.ndarray = None, maxl: int = None, mode: str = &#34;distance&#34;) -&gt; sparse.csr_matrix:
+                &#34;&#34;&#34;Retrun the K-neighbors graph as a sparse csr matrix
+
+                        Parameters
+                        ----------
+                        X : array-like, shape (n_query, n_features),
+                                The query point or points.
+                                If not provided, neighbors of each indexed point are returned.
+                                In this case, the query point is not considered its own neighbor.
+
+                        maxl: int
+                                max degree of connectivity allowed
+
+                        mode : &#34;distance&#34; or &#34;connectivity&#34;
+                                Decides the kind of output
+
+                        Returns
+                        -------
+                        neighbor_graph : scipy.sparse.csr_matrix
+                                The values are either distances or connectivity dependig of the mode parameter
+
+                        NOTE: The diagonal will be zero even though the value 0 is actually stored
+
+                &#34;&#34;&#34;
+                dist_new, dsi_new, _ = self.kneighbors(X=X, maxl=maxl, mode=mode)
+                logging.debug(&#34;Returning sparse matrix&#34;)
+                self.bknn = sparse.csr_matrix((np.ravel(dist_new), np.ravel(dsi_new), np.arange(0, dist_new.shape[0] * dist_new.shape[1] + 1, dist_new.shape[1])), (self.n_samples, self.n_samples))
+                return self.bknn
+
+        def smooth_data(self, data_to_smooth: np.ndarray, X: np.ndarray = None, maxl: int = None, mutual: bool = False, only_increase: bool = True) -&gt; np.ndarray:
+                &#34;&#34;&#34;Use the wights learned from knn to smooth any data matrix
+
+                Arguments
+                ---------
+                data_to_smooth: (features, samples) !! NOTE !! this is different from the input (for speed issues)
+                        if the data is provided (samples, features), this will be detected and
+                        the correct operation performed at cost of some effciency
+                        In the case where samples == samples then the shape (features, samples) will be assumed
+                
+                &#34;&#34;&#34;
+                if self.bknn is None:
+                        assert (X is None) and (maxl is None), &#34;graph was already fit with different parameters&#34;
+                        self.kneighbors_graph(X=X, maxl=maxl, mode=self.mode)
+                if mutual:
+                        connectivity = make_mutual(self.bknn &gt; 0)
+                else:
+                        connectivity = self.bknn.T &gt; 0
+                connectivity = connectivity.tolil()
+                connectivity.setdiag(1)
+                w = connectivity_to_weights(connectivity).T
+                assert np.allclose(w.sum(0), 1), &#34;weight matrix need to sum to one over the columns&#34;
+                if data_to_smooth.shape[1] == w.shape[0]:
+                        result = sparse.csr_matrix.dot(data_to_smooth, w)
+                elif data_to_smooth.shape[0] == w.shape[0]:
+                        result = sparse.csr_matrix.dot(data_to_smooth.T, w).T
+                else:
+                        raise ValueError(f&#34;Incorrect size of matrix, none of the axis correspond to the one of graph. {w.shape}&#34;)
+
+                if only_increase:
+                        return np.maximum(result, data_to_smooth)
+                else:
+                        return result
+
+
+# Mutual KNN version
+
+
+def knn_distance_matrix(data: np.ndarray, metric: str = None, k: int = 40, mode: str = &#39;connectivity&#39;, n_jobs: int = 4) -&gt; sparse.csr_matrix:
+        &#34;&#34;&#34;Calculate a nearest neighbour distance matrix
+
+        Notice that k is meant as the actual number of neighbors NOT INCLUDING itself
+        To achieve that we call kneighbors_graph with X = None
+        &#34;&#34;&#34;
+        np.random.seed(13)
+        if metric == &#34;correlation&#34;:
+                nn = NearestNeighbors(n_neighbors=k, metric=&#34;correlation&#34;, algorithm=&#34;brute&#34;, n_jobs=n_jobs)
+                nn.fit(data)
+                return nn.kneighbors_graph(X=None, mode=mode)
+        else:
+                nn = NearestNeighbors(n_neighbors=k, n_jobs=n_jobs, )
+                nn.fit(data)
+                return nn.kneighbors_graph(X=None, mode=mode)
+        
+
+def make_mutual(knn: sparse.csr.csr_matrix) -&gt; sparse.coo_matrix:
+        &#34;&#34;&#34;Removes edges between neighbours that are not mutual
+        &#34;&#34;&#34;
+        return knn.minimum(knn.T)
+
+
+def connectivity_to_weights(mknn: sparse.csr.csr_matrix, axis: int = 1) -&gt; sparse.lil_matrix:
+        &#34;&#34;&#34;Convert a binary connectivity matrix to weights ready to be multiplied to smooth a data matrix
+        &#34;&#34;&#34;
+        if type(mknn) is not sparse.csr.csr_matrix:
+                mknn = mknn.tocsr()
+        return mknn.multiply(1. / sparse.csr_matrix.sum(mknn, axis=axis))
+
+
+def min_n(row_data: np.ndarray, row_indices: np.ndarray, n: int) -&gt; Tuple[np.ndarray, np.ndarray]:
+        &#34;&#34;&#34;Find the smallest entry and smallest indices of a row
+        &#34;&#34;&#34;
+        i = row_data.argsort()[:n]
+        # i = row_data.argpartition(-n)[-n:]
+        top_values = row_data[i]
+        top_indices = row_indices[i]  # do the sparse indices matter?
+        return top_values, top_indices
+        
+
+def take_top(matrix: sparse.spmatrix, n: int) -&gt; sparse.lil_matrix:
+        &#34;&#34;&#34;Filter the top nearest neighbours from a sprse distance matrix
+        &#34;&#34;&#34;
+        arr_ll = matrix.tolil(copy=True)
+        for i in range(arr_ll.shape[0]):
+                d, r = min_n(np.array(arr_ll.data[i]), np.array(arr_ll.rows[i]), n)
+                arr_ll.data[i] = d.tolist()
+                arr_ll.rows[i] = r.tolist()
+        return arr_ll
+
+
+# Common functions
+
+def convolve_by_sparse_weights(data: np.ndarray, w: sparse.csr_matrix) -&gt; np.ndarray:
+        &#34;&#34;&#34;Use the wights learned from knn to convolve any data matrix
+
+        NOTE: A improved implementation could detect wich one is sparse and wich kind of sparse and perform faster computation
+        &#34;&#34;&#34;
+        w_ = w.T
+        assert np.allclose(w_.sum(0), 1), &#34;weight matrix need to sum to one over the columns&#34;
+        return sparse.csr_matrix.dot(data, w_)
+
+
+def knn_smooth_weights(matrix: np.ndarray, metric: str = &#34;euclidean&#34;, k_search: int = 20, k_mutual: int = 10, n_jobs: int = 10) -&gt; Tuple[sparse.spmatrix, sparse.csr_matrix]:
+        &#34;&#34;&#34;Find the weights to smooth the dataset using efficient sparse matrix operations
+        
+        Arguments:
+                matrix: (genes, cells)
+                        expression matrix
+                metric
+                k_search : int
+                        the first k nearest neighbour search number of neighbours
+                k_mutual : int
+                        the number of mutual neighbours to select
+                n_jobs
+                return_knn
+                
+        Retruns
+                weights (, knn)
+        &#34;&#34;&#34;
+        assert k_search &gt;= k_mutual, &#34;k_search needs to be bigger than k_mutual&#34;
+        knn = knn_distance_matrix(matrix.T, metric=metric, k=k_search, mode=&#34;distance&#34;, n_jobs=n_jobs)
+        mknn = make_mutual(knn)
+        top_mknn = take_top(mknn, k_mutual)
+        top_mknn.setdiag(1)
+        connectivity = top_mknn &gt; 0
+        w = connectivity_to_weights(connectivity)
+        return w, knn</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="cytograph.manifold.balanced_knn.balance_knn_loop"><code class="name flex">
+<span>def <span class="ident">balance_knn_loop</span></span>(<span>dsi: numpy.ndarray, dist: numpy.ndarray, lsi: numpy.ndarray, maxl: int, k: int, return_distance: bool) ‑> Tuple</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Fast and greedy algorythm to balance a K-NN graph so that no node is the NN to more than maxl other nodes</p>
+<h2 id="arguments">Arguments</h2>
+<dl>
+<dt><strong><code>dsi</code></strong> :&ensp;<code>np.ndarray
+(samples, K)</code></dt>
+<dd>distance sorted indexes (as returned by sklearn NN)</dd>
+<dt><strong><code>dist</code></strong> :&ensp;<code>np.ndarray
+(samples, K)</code></dt>
+<dd>the actual distance corresponding to the sorted indexes</dd>
+<dt><strong><code>lsi</code></strong> :&ensp;<code>np.ndarray (samples,)</code></dt>
+<dd>degree of connectivity (l) sorted indexes</dd>
+<dt><strong><code>maxl</code></strong> :&ensp;<code>int</code></dt>
+<dd>max degree of connectivity (from others to self) allowed</dd>
+<dt><strong><code>k</code></strong> :&ensp;<code>int</code></dt>
+<dd>number of neighbours in the final graph</dd>
+<dt><strong><code>return_distance</code></strong> :&ensp;<code>bool</code></dt>
+<dd>wether to return distance</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>dsi_new</code></strong> :&ensp;<code>np.ndarray (samples, k+1)</code></dt>
+<dd>indexes of the NN, first column is the sample itself</dd>
+<dt><strong><code>dist_new</code></strong> :&ensp;<code>np.ndarray (samples, k+1)</code></dt>
+<dd>distances to the NN</dd>
+<dt><strong><code>l</code></strong> :&ensp;<code>np.ndarray (samples)</code></dt>
+<dd>l[i] is the number of connections from other samples to the sample i</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@jit(nopython=True)
+def balance_knn_loop(dsi: np.ndarray, dist: np.ndarray, lsi: np.ndarray, maxl: int, k: int, return_distance: bool) -&gt; Tuple:
+        &#34;&#34;&#34;Fast and greedy algorythm to balance a K-NN graph so that no node is the NN to more than maxl other nodes
+
+                Arguments
+                ---------
+                dsi : np.ndarray  (samples, K)
+                        distance sorted indexes (as returned by sklearn NN)
+                dist : np.ndarray  (samples, K)
+                        the actual distance corresponding to the sorted indexes
+                lsi : np.ndarray (samples,)
+                        degree of connectivity (l) sorted indexes
+                maxl : int
+                        max degree of connectivity (from others to self) allowed
+                k : int
+                        number of neighbours in the final graph
+                return_distance : bool
+                        wether to return distance
+
+                Returns
+                -------
+                dsi_new : np.ndarray (samples, k+1)
+                        indexes of the NN, first column is the sample itself
+                dist_new : np.ndarray (samples, k+1)
+                        distances to the NN
+                l: np.ndarray (samples)
+                        l[i] is the number of connections from other samples to the sample i
+
+        &#34;&#34;&#34;
+        assert dsi.shape[1] &gt;= k, &#34;sight needs to be bigger than k&#34;
+        # numba signature &#34;Tuple((int64[:,:], float32[:, :], int64[:]))(int64[:,:], int64[:], int64, int64, bool)&#34;
+        dsi_new = -1 * np.ones((dsi.shape[0], k + 1), np.int64)  # maybe d.shape[0]
+        l = np.zeros(dsi.shape[0], np.int64)
+        if return_distance:
+                dist_new = np.zeros(dsi_new.shape, np.float64)
+        for i in range(dsi.shape[0]):  # For every node
+                el = lsi[i]
+                p = 0
+                j = 0
+                for j in range(dsi.shape[1]):  # For every other node it is connected (sight)
+                        if p &gt;= k:
+                                break
+                        m = dsi[el, j]
+                        if el == m:
+                                dsi_new[el, 0] = el
+                                continue
+                        if l[m] &gt;= maxl:
+                                continue
+                        dsi_new[el, p + 1] = m
+                        l[m] = l[m] + 1
+                        if return_distance:
+                                dist_new[el, p + 1] = dist[el, j]
+                        p += 1
+                if (j == dsi.shape[1] - 1) and (p &lt; k):
+                        while p &lt; k:
+                                dsi_new[el, p + 1] = el
+                                dist_new[el, p + 1] = dist[el, 0]
+                                p += 1
+        if not return_distance:
+                dist_new = np.ones_like(dsi_new, np.float64)
+        return dist_new, dsi_new, l</code></pre>
+</details>
+</dd>
+<dt id="cytograph.manifold.balanced_knn.connectivity_to_weights"><code class="name flex">
+<span>def <span class="ident">connectivity_to_weights</span></span>(<span>mknn: scipy.sparse.csr.csr_matrix, axis: int = 1) ‑> scipy.sparse.lil.lil_matrix</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Convert a binary connectivity matrix to weights ready to be multiplied to smooth a data matrix</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def connectivity_to_weights(mknn: sparse.csr.csr_matrix, axis: int = 1) -&gt; sparse.lil_matrix:
+        &#34;&#34;&#34;Convert a binary connectivity matrix to weights ready to be multiplied to smooth a data matrix
+        &#34;&#34;&#34;
+        if type(mknn) is not sparse.csr.csr_matrix:
+                mknn = mknn.tocsr()
+        return mknn.multiply(1. / sparse.csr_matrix.sum(mknn, axis=axis))</code></pre>
+</details>
+</dd>
+<dt id="cytograph.manifold.balanced_knn.convolve_by_sparse_weights"><code class="name flex">
+<span>def <span class="ident">convolve_by_sparse_weights</span></span>(<span>data: numpy.ndarray, w: scipy.sparse.csr.csr_matrix) ‑> numpy.ndarray</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Use the wights learned from knn to convolve any data matrix</p>
+<p>NOTE: A improved implementation could detect wich one is sparse and wich kind of sparse and perform faster computation</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def convolve_by_sparse_weights(data: np.ndarray, w: sparse.csr_matrix) -&gt; np.ndarray:
+        &#34;&#34;&#34;Use the wights learned from knn to convolve any data matrix
+
+        NOTE: A improved implementation could detect wich one is sparse and wich kind of sparse and perform faster computation
+        &#34;&#34;&#34;
+        w_ = w.T
+        assert np.allclose(w_.sum(0), 1), &#34;weight matrix need to sum to one over the columns&#34;
+        return sparse.csr_matrix.dot(data, w_)</code></pre>
+</details>
+</dd>
+<dt id="cytograph.manifold.balanced_knn.knn_balance"><code class="name flex">
+<span>def <span class="ident">knn_balance</span></span>(<span>dsi: numpy.ndarray, dist: numpy.ndarray = None, maxl: int = 200, k: int = 60) ‑> Tuple[numpy.ndarray, numpy.ndarray, numpy.ndarray]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Balance a K-NN graph so that no node is the NN to more than maxl other nodes</p>
+<h2 id="arguments">Arguments</h2>
+<dl>
+<dt><strong><code>dsi</code></strong> :&ensp;<code>np.ndarray
+(samples, K)</code></dt>
+<dd>distance sorted indexes (as returned by sklearn NN)</dd>
+<dt><strong><code>dist</code></strong> :&ensp;<code>np.ndarray
+(samples, K)</code></dt>
+<dd>the actual distance corresponding to the sorted indexes</dd>
+<dt><strong><code>maxl</code></strong> :&ensp;<code>int</code></dt>
+<dd>max degree of connectivity allowed</dd>
+<dt><strong><code>k</code></strong> :&ensp;<code>int</code></dt>
+<dd>number of neighbours in the final graph</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>dist_new</code></strong> :&ensp;<code>np.ndarray (samples, k+1)</code></dt>
+<dd>distances to the NN</dd>
+<dt><strong><code>dsi_new</code></strong> :&ensp;<code>np.ndarray (samples, k+1)</code></dt>
+<dd>indexes of the NN, first column is the sample itself</dd>
+<dt><strong><code>l</code></strong> :&ensp;<code>np.ndarray (samples)</code></dt>
+<dd>l[i] is the number of connections from other samples to the sample i</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def knn_balance(dsi: np.ndarray, dist: np.ndarray = None, maxl: int = 200, k: int = 60) -&gt; Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        &#34;&#34;&#34;Balance a K-NN graph so that no node is the NN to more than maxl other nodes
+
+                Arguments
+                ---------
+                dsi : np.ndarray  (samples, K)
+                        distance sorted indexes (as returned by sklearn NN)
+                dist : np.ndarray  (samples, K)
+                        the actual distance corresponding to the sorted indexes
+                maxl : int
+                        max degree of connectivity allowed
+                k : int
+                        number of neighbours in the final graph
+
+                Returns
+                -------
+                dist_new : np.ndarray (samples, k+1)
+                        distances to the NN
+                dsi_new : np.ndarray (samples, k+1)
+                        indexes of the NN, first column is the sample itself
+                l: np.ndarray (samples)
+                        l[i] is the number of connections from other samples to the sample i
+
+
+        &#34;&#34;&#34;
+        l = np.bincount(dsi.flat[:], minlength=dsi.shape[0])
+        lsi = np.argsort(l, kind=&#34;mergesort&#34;)[::-1]
+        if dist is None:
+                dist = np.ones(dsi.shape, dtype=&#34;float64&#34;)
+                dist[:, 0] = 0
+                return balance_knn_loop(dsi, dist, lsi, maxl, k, return_distance=False)
+        else:
+                return balance_knn_loop(dsi, dist, lsi, maxl, k, return_distance=True)</code></pre>
+</details>
+</dd>
+<dt id="cytograph.manifold.balanced_knn.knn_distance_matrix"><code class="name flex">
+<span>def <span class="ident">knn_distance_matrix</span></span>(<span>data: numpy.ndarray, metric: str = None, k: int = 40, mode: str = 'connectivity', n_jobs: int = 4) ‑> scipy.sparse.csr.csr_matrix</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Calculate a nearest neighbour distance matrix</p>
+<p>Notice that k is meant as the actual number of neighbors NOT INCLUDING itself
+To achieve that we call kneighbors_graph with X = None</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def knn_distance_matrix(data: np.ndarray, metric: str = None, k: int = 40, mode: str = &#39;connectivity&#39;, n_jobs: int = 4) -&gt; sparse.csr_matrix:
+        &#34;&#34;&#34;Calculate a nearest neighbour distance matrix
+
+        Notice that k is meant as the actual number of neighbors NOT INCLUDING itself
+        To achieve that we call kneighbors_graph with X = None
+        &#34;&#34;&#34;
+        np.random.seed(13)
+        if metric == &#34;correlation&#34;:
+                nn = NearestNeighbors(n_neighbors=k, metric=&#34;correlation&#34;, algorithm=&#34;brute&#34;, n_jobs=n_jobs)
+                nn.fit(data)
+                return nn.kneighbors_graph(X=None, mode=mode)
+        else:
+                nn = NearestNeighbors(n_neighbors=k, n_jobs=n_jobs, )
+                nn.fit(data)
+                return nn.kneighbors_graph(X=None, mode=mode)</code></pre>
+</details>
+</dd>
+<dt id="cytograph.manifold.balanced_knn.knn_smooth_weights"><code class="name flex">
+<span>def <span class="ident">knn_smooth_weights</span></span>(<span>matrix: numpy.ndarray, metric: str = 'euclidean', k_search: int = 20, k_mutual: int = 10, n_jobs: int = 10) ‑> Tuple[scipy.sparse.base.spmatrix, scipy.sparse.csr.csr_matrix]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Find the weights to smooth the dataset using efficient sparse matrix operations</p>
+<h2 id="arguments">Arguments</h2>
+<p>matrix: (genes, cells)
+expression matrix
+metric
+k_search : int
+the first k nearest neighbour search number of neighbours
+k_mutual : int
+the number of mutual neighbours to select
+n_jobs
+return_knn</p>
+<p>Retruns
+weights (, knn)</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def knn_smooth_weights(matrix: np.ndarray, metric: str = &#34;euclidean&#34;, k_search: int = 20, k_mutual: int = 10, n_jobs: int = 10) -&gt; Tuple[sparse.spmatrix, sparse.csr_matrix]:
+        &#34;&#34;&#34;Find the weights to smooth the dataset using efficient sparse matrix operations
+        
+        Arguments:
+                matrix: (genes, cells)
+                        expression matrix
+                metric
+                k_search : int
+                        the first k nearest neighbour search number of neighbours
+                k_mutual : int
+                        the number of mutual neighbours to select
+                n_jobs
+                return_knn
+                
+        Retruns
+                weights (, knn)
+        &#34;&#34;&#34;
+        assert k_search &gt;= k_mutual, &#34;k_search needs to be bigger than k_mutual&#34;
+        knn = knn_distance_matrix(matrix.T, metric=metric, k=k_search, mode=&#34;distance&#34;, n_jobs=n_jobs)
+        mknn = make_mutual(knn)
+        top_mknn = take_top(mknn, k_mutual)
+        top_mknn.setdiag(1)
+        connectivity = top_mknn &gt; 0
+        w = connectivity_to_weights(connectivity)
+        return w, knn</code></pre>
+</details>
+</dd>
+<dt id="cytograph.manifold.balanced_knn.make_mutual"><code class="name flex">
+<span>def <span class="ident">make_mutual</span></span>(<span>knn: scipy.sparse.csr.csr_matrix) ‑> scipy.sparse.coo.coo_matrix</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Removes edges between neighbours that are not mutual</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def make_mutual(knn: sparse.csr.csr_matrix) -&gt; sparse.coo_matrix:
+        &#34;&#34;&#34;Removes edges between neighbours that are not mutual
+        &#34;&#34;&#34;
+        return knn.minimum(knn.T)</code></pre>
+</details>
+</dd>
+<dt id="cytograph.manifold.balanced_knn.min_n"><code class="name flex">
+<span>def <span class="ident">min_n</span></span>(<span>row_data: numpy.ndarray, row_indices: numpy.ndarray, n: int) ‑> Tuple[numpy.ndarray, numpy.ndarray]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Find the smallest entry and smallest indices of a row</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def min_n(row_data: np.ndarray, row_indices: np.ndarray, n: int) -&gt; Tuple[np.ndarray, np.ndarray]:
+        &#34;&#34;&#34;Find the smallest entry and smallest indices of a row
+        &#34;&#34;&#34;
+        i = row_data.argsort()[:n]
+        # i = row_data.argpartition(-n)[-n:]
+        top_values = row_data[i]
+        top_indices = row_indices[i]  # do the sparse indices matter?
+        return top_values, top_indices</code></pre>
+</details>
+</dd>
+<dt id="cytograph.manifold.balanced_knn.take_top"><code class="name flex">
+<span>def <span class="ident">take_top</span></span>(<span>matrix: scipy.sparse.base.spmatrix, n: int) ‑> scipy.sparse.lil.lil_matrix</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Filter the top nearest neighbours from a sprse distance matrix</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def take_top(matrix: sparse.spmatrix, n: int) -&gt; sparse.lil_matrix:
+        &#34;&#34;&#34;Filter the top nearest neighbours from a sprse distance matrix
+        &#34;&#34;&#34;
+        arr_ll = matrix.tolil(copy=True)
+        for i in range(arr_ll.shape[0]):
+                d, r = min_n(np.array(arr_ll.data[i]), np.array(arr_ll.rows[i]), n)
+                arr_ll.data[i] = d.tolist()
+                arr_ll.rows[i] = r.tolist()
+        return arr_ll</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="cytograph.manifold.balanced_knn.BalancedKNN"><code class="flex name class">
+<span>class <span class="ident">BalancedKNN</span></span>
+<span>(</span><span>k: int = 50, sight_k: int = 100, maxl: int = 200, mode: str = 'distance', metric: str = 'euclidean', minkowski_p: int = 20, n_jobs: int = 4)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Greedy algorythm to balance a K-nearest neighbour graph</p>
+<p>It has an API similar to scikit-learn</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>k</code></strong> :&ensp;<code>int
+(default=50)</code></dt>
+<dd>the number of neighbours in the final graph</dd>
+<dt><strong><code>sight_k</code></strong> :&ensp;<code>int
+(default=100)</code></dt>
+<dd>the number of neighbours in the initialization graph
+It correspondent to the farthest neighbour that a sample is allowed to connect to
+when no closest neighbours are allowed. If sight_k is reached then the matrix is filled
+with the sample itself</dd>
+<dt><strong><code>maxl</code></strong> :&ensp;<code>int
+(default=200)</code></dt>
+<dd>max degree of connectivity allowed. Avoids the presence of hubs in the graph, it is the
+maximum number of neighbours that are allowed to contact a node before the node is blocked</dd>
+<dt><strong><code>mode</code></strong> :&ensp;<code>str (default="connectivity")</code></dt>
+<dd>decide wich kind of utput "distance" or "connectivity"</dd>
+<dt><strong><code>n_jobs</code></strong> :&ensp;<code>int
+(default=4)</code></dt>
+<dd>parallelization of the standard KNN search preformed at initialization</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class BalancedKNN:
+        &#34;&#34;&#34;Greedy algorythm to balance a K-nearest neighbour graph
+
+        It has an API similar to scikit-learn
+
+        Parameters
+        ----------
+        k : int  (default=50)
+                the number of neighbours in the final graph
+        sight_k : int  (default=100)
+                the number of neighbours in the initialization graph
+                It correspondent to the farthest neighbour that a sample is allowed to connect to
+                when no closest neighbours are allowed. If sight_k is reached then the matrix is filled
+                with the sample itself
+        maxl : int  (default=200)
+                max degree of connectivity allowed. Avoids the presence of hubs in the graph, it is the
+                maximum number of neighbours that are allowed to contact a node before the node is blocked
+        mode : str (default=&#34;connectivity&#34;)
+                decide wich kind of utput &#34;distance&#34; or &#34;connectivity&#34;
+        n_jobs : int  (default=4)
+                parallelization of the standard KNN search preformed at initialization
+        &#34;&#34;&#34;
+        def __init__(self, k: int = 50, sight_k: int = 100, maxl: int = 200, mode: str = &#34;distance&#34;, metric: str = &#34;euclidean&#34;, minkowski_p: int = 20, n_jobs: int = 4) -&gt; None:
+                self.k = k
+                self.sight_k = sight_k
+                self.maxl = maxl
+                self.mode = mode
+                self.metric = metric
+                self.n_jobs = n_jobs
+                self.dist_new = self.dsi_new = self.l = None  # type: np.ndarray
+                self.bknn = None  # type: sparse.csr_matrix
+                self.minkowski_p = minkowski_p
+
+        @property
+        def n_samples(self) -&gt; int:
+                return self.data.shape[0]
+
+        def fit(self, data: np.ndarray, sight_k: int = None) -&gt; Any:
+                &#34;&#34;&#34;Fits the model
+
+                data: np.ndarray (samples, features)
+                        np
+                sight_k: int
+                        the farthest point that a node is allowed to connect to when its closest neighbours are not allowed
+                &#34;&#34;&#34;
+                self.data = data
+                self.fitdata = data
+                if sight_k is not None:
+                        self.sight_k = sight_k
+                logging.debug(f&#34;First search the {self.sight_k} nearest neighbours for {self.n_samples}&#34;)
+                np.random.seed(13)
+                self.nn = NNDescent(data=self.fitdata, metric=self.metric, n_jobs=-1)
+                return self
+
+        def kneighbors(self, X: np.ndarray = None, maxl: int = None, mode: str = &#34;distance&#34;) -&gt; Tuple[np.ndarray, np.ndarray, np.ndarray]:
+                &#34;&#34;&#34;Finds the K-neighbors of a point.
+
+                        Returns indices of and distances to the neighbors of each point.
+
+                        Parameters
+                        ----------
+                        X : array-like, shape (n_query, n_features),
+                                The query point or points.
+                                If not provided, neighbors of each indexed point are returned.
+                                In this case, the query point is not considered its own neighbor.
+
+                        maxl: int
+                                max degree of connectivity allowed
+
+                        mode : &#34;distance&#34; or &#34;connectivity&#34;
+                                Decides the kind of output
+
+                        Returns
+                        -------
+                        dist_new : np.ndarray (samples, k+1)
+                                distances to the NN
+                        dsi_new : np.ndarray (samples, k+1)
+                                indexes of the NN, first column is the sample itself
+                        l: np.ndarray (samples)
+                                l[i] is the number of connections from other samples to the sample i
+
+                        NOTE:
+                        First column (0) correspond to the sample itself, the nearest nenigbour is at the second column (1)
+
+                &#34;&#34;&#34;
+                if X is not None:
+                        self.data = X
+                if maxl is not None:
+                        self.maxl = maxl
+                if mode == &#34;distance&#34;:
+                        self.dsi, self.dist = self.nn.query(self.data, k=self.sight_k + 1)
+                else:
+                        self.dsi, _ = self.nn.query(self.data, k=self.sight_k + 1)
+                        self.dist = np.ones_like(self.dsi, dtype=&#39;float64&#39;)
+                        self.dist[:, 0] = 0
+                logging.debug(f&#34;Using the initialization network to find a {self.k}-NN graph with maximum connectivity of {self.maxl}&#34;)
+                self.dist_new, self.dsi_new, self.l = knn_balance(self.dsi, self.dist, maxl=self.maxl, k=self.k)
+                return self.dist_new, self.dsi_new, self.l
+
+        def kneighbors_graph(self, X: np.ndarray = None, maxl: int = None, mode: str = &#34;distance&#34;) -&gt; sparse.csr_matrix:
+                &#34;&#34;&#34;Retrun the K-neighbors graph as a sparse csr matrix
+
+                        Parameters
+                        ----------
+                        X : array-like, shape (n_query, n_features),
+                                The query point or points.
+                                If not provided, neighbors of each indexed point are returned.
+                                In this case, the query point is not considered its own neighbor.
+
+                        maxl: int
+                                max degree of connectivity allowed
+
+                        mode : &#34;distance&#34; or &#34;connectivity&#34;
+                                Decides the kind of output
+
+                        Returns
+                        -------
+                        neighbor_graph : scipy.sparse.csr_matrix
+                                The values are either distances or connectivity dependig of the mode parameter
+
+                        NOTE: The diagonal will be zero even though the value 0 is actually stored
+
+                &#34;&#34;&#34;
+                dist_new, dsi_new, _ = self.kneighbors(X=X, maxl=maxl, mode=mode)
+                logging.debug(&#34;Returning sparse matrix&#34;)
+                self.bknn = sparse.csr_matrix((np.ravel(dist_new), np.ravel(dsi_new), np.arange(0, dist_new.shape[0] * dist_new.shape[1] + 1, dist_new.shape[1])), (self.n_samples, self.n_samples))
+                return self.bknn
+
+        def smooth_data(self, data_to_smooth: np.ndarray, X: np.ndarray = None, maxl: int = None, mutual: bool = False, only_increase: bool = True) -&gt; np.ndarray:
+                &#34;&#34;&#34;Use the wights learned from knn to smooth any data matrix
+
+                Arguments
+                ---------
+                data_to_smooth: (features, samples) !! NOTE !! this is different from the input (for speed issues)
+                        if the data is provided (samples, features), this will be detected and
+                        the correct operation performed at cost of some effciency
+                        In the case where samples == samples then the shape (features, samples) will be assumed
+                
+                &#34;&#34;&#34;
+                if self.bknn is None:
+                        assert (X is None) and (maxl is None), &#34;graph was already fit with different parameters&#34;
+                        self.kneighbors_graph(X=X, maxl=maxl, mode=self.mode)
+                if mutual:
+                        connectivity = make_mutual(self.bknn &gt; 0)
+                else:
+                        connectivity = self.bknn.T &gt; 0
+                connectivity = connectivity.tolil()
+                connectivity.setdiag(1)
+                w = connectivity_to_weights(connectivity).T
+                assert np.allclose(w.sum(0), 1), &#34;weight matrix need to sum to one over the columns&#34;
+                if data_to_smooth.shape[1] == w.shape[0]:
+                        result = sparse.csr_matrix.dot(data_to_smooth, w)
+                elif data_to_smooth.shape[0] == w.shape[0]:
+                        result = sparse.csr_matrix.dot(data_to_smooth.T, w).T
+                else:
+                        raise ValueError(f&#34;Incorrect size of matrix, none of the axis correspond to the one of graph. {w.shape}&#34;)
+
+                if only_increase:
+                        return np.maximum(result, data_to_smooth)
+                else:
+                        return result</code></pre>
+</details>
+<h3>Instance variables</h3>
+<dl>
+<dt id="cytograph.manifold.balanced_knn.BalancedKNN.n_samples"><code class="name">var <span class="ident">n_samples</span> : int</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def n_samples(self) -&gt; int:
+        return self.data.shape[0]</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="cytograph.manifold.balanced_knn.BalancedKNN.fit"><code class="name flex">
+<span>def <span class="ident">fit</span></span>(<span>self, data: numpy.ndarray, sight_k: int = None) ‑> Any</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Fits the model</p>
+<p>data: np.ndarray (samples, features)
+np
+sight_k: int
+the farthest point that a node is allowed to connect to when its closest neighbours are not allowed</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def fit(self, data: np.ndarray, sight_k: int = None) -&gt; Any:
+        &#34;&#34;&#34;Fits the model
+
+        data: np.ndarray (samples, features)
+                np
+        sight_k: int
+                the farthest point that a node is allowed to connect to when its closest neighbours are not allowed
+        &#34;&#34;&#34;
+        self.data = data
+        self.fitdata = data
+        if sight_k is not None:
+                self.sight_k = sight_k
+        logging.debug(f&#34;First search the {self.sight_k} nearest neighbours for {self.n_samples}&#34;)
+        np.random.seed(13)
+        self.nn = NNDescent(data=self.fitdata, metric=self.metric, n_jobs=-1)
+        return self</code></pre>
+</details>
+</dd>
+<dt id="cytograph.manifold.balanced_knn.BalancedKNN.kneighbors"><code class="name flex">
+<span>def <span class="ident">kneighbors</span></span>(<span>self, X: numpy.ndarray = None, maxl: int = None, mode: str = 'distance') ‑> Tuple[numpy.ndarray, numpy.ndarray, numpy.ndarray]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Finds the K-neighbors of a point.</p>
+<p>Returns indices of and distances to the neighbors of each point.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>X</code></strong> :&ensp;<code>array-like, shape (n_query, n_features),</code></dt>
+<dd>The query point or points.
+If not provided, neighbors of each indexed point are returned.
+In this case, the query point is not considered its own neighbor.</dd>
+<dt><strong><code>maxl</code></strong> :&ensp;<code>int</code></dt>
+<dd>max degree of connectivity allowed</dd>
+<dt><strong><code>mode</code></strong> :&ensp;<code>"distance"</code> or <code>"connectivity"</code></dt>
+<dd>Decides the kind of output</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>dist_new</code></strong> :&ensp;<code>np.ndarray (samples, k+1)</code></dt>
+<dd>distances to the NN</dd>
+<dt><strong><code>dsi_new</code></strong> :&ensp;<code>np.ndarray (samples, k+1)</code></dt>
+<dd>indexes of the NN, first column is the sample itself</dd>
+<dt><strong><code>l</code></strong> :&ensp;<code>np.ndarray (samples)</code></dt>
+<dd>l[i] is the number of connections from other samples to the sample i</dd>
+<dt><code>NOTE:</code></dt>
+<dd>&nbsp;</dd>
+<dt><code>First column (0) correspond to the sample itself, the nearest nenigbour is at the second column (1)</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def kneighbors(self, X: np.ndarray = None, maxl: int = None, mode: str = &#34;distance&#34;) -&gt; Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        &#34;&#34;&#34;Finds the K-neighbors of a point.
+
+                Returns indices of and distances to the neighbors of each point.
+
+                Parameters
+                ----------
+                X : array-like, shape (n_query, n_features),
+                        The query point or points.
+                        If not provided, neighbors of each indexed point are returned.
+                        In this case, the query point is not considered its own neighbor.
+
+                maxl: int
+                        max degree of connectivity allowed
+
+                mode : &#34;distance&#34; or &#34;connectivity&#34;
+                        Decides the kind of output
+
+                Returns
+                -------
+                dist_new : np.ndarray (samples, k+1)
+                        distances to the NN
+                dsi_new : np.ndarray (samples, k+1)
+                        indexes of the NN, first column is the sample itself
+                l: np.ndarray (samples)
+                        l[i] is the number of connections from other samples to the sample i
+
+                NOTE:
+                First column (0) correspond to the sample itself, the nearest nenigbour is at the second column (1)
+
+        &#34;&#34;&#34;
+        if X is not None:
+                self.data = X
+        if maxl is not None:
+                self.maxl = maxl
+        if mode == &#34;distance&#34;:
+                self.dsi, self.dist = self.nn.query(self.data, k=self.sight_k + 1)
+        else:
+                self.dsi, _ = self.nn.query(self.data, k=self.sight_k + 1)
+                self.dist = np.ones_like(self.dsi, dtype=&#39;float64&#39;)
+                self.dist[:, 0] = 0
+        logging.debug(f&#34;Using the initialization network to find a {self.k}-NN graph with maximum connectivity of {self.maxl}&#34;)
+        self.dist_new, self.dsi_new, self.l = knn_balance(self.dsi, self.dist, maxl=self.maxl, k=self.k)
+        return self.dist_new, self.dsi_new, self.l</code></pre>
+</details>
+</dd>
+<dt id="cytograph.manifold.balanced_knn.BalancedKNN.kneighbors_graph"><code class="name flex">
+<span>def <span class="ident">kneighbors_graph</span></span>(<span>self, X: numpy.ndarray = None, maxl: int = None, mode: str = 'distance') ‑> scipy.sparse.csr.csr_matrix</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Retrun the K-neighbors graph as a sparse csr matrix</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>X</code></strong> :&ensp;<code>array-like, shape (n_query, n_features),</code></dt>
+<dd>The query point or points.
+If not provided, neighbors of each indexed point are returned.
+In this case, the query point is not considered its own neighbor.</dd>
+<dt><strong><code>maxl</code></strong> :&ensp;<code>int</code></dt>
+<dd>max degree of connectivity allowed</dd>
+<dt><strong><code>mode</code></strong> :&ensp;<code>"distance"</code> or <code>"connectivity"</code></dt>
+<dd>Decides the kind of output</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>neighbor_graph</code></strong> :&ensp;<code>scipy.sparse.csr_matrix</code></dt>
+<dd>The values are either distances or connectivity dependig of the mode parameter</dd>
+<dt><strong><code>NOTE</code></strong> :&ensp;<code>The diagonal will be zero even though the value 0 is actually stored</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def kneighbors_graph(self, X: np.ndarray = None, maxl: int = None, mode: str = &#34;distance&#34;) -&gt; sparse.csr_matrix:
+        &#34;&#34;&#34;Retrun the K-neighbors graph as a sparse csr matrix
+
+                Parameters
+                ----------
+                X : array-like, shape (n_query, n_features),
+                        The query point or points.
+                        If not provided, neighbors of each indexed point are returned.
+                        In this case, the query point is not considered its own neighbor.
+
+                maxl: int
+                        max degree of connectivity allowed
+
+                mode : &#34;distance&#34; or &#34;connectivity&#34;
+                        Decides the kind of output
+
+                Returns
+                -------
+                neighbor_graph : scipy.sparse.csr_matrix
+                        The values are either distances or connectivity dependig of the mode parameter
+
+                NOTE: The diagonal will be zero even though the value 0 is actually stored
+
+        &#34;&#34;&#34;
+        dist_new, dsi_new, _ = self.kneighbors(X=X, maxl=maxl, mode=mode)
+        logging.debug(&#34;Returning sparse matrix&#34;)
+        self.bknn = sparse.csr_matrix((np.ravel(dist_new), np.ravel(dsi_new), np.arange(0, dist_new.shape[0] * dist_new.shape[1] + 1, dist_new.shape[1])), (self.n_samples, self.n_samples))
+        return self.bknn</code></pre>
+</details>
+</dd>
+<dt id="cytograph.manifold.balanced_knn.BalancedKNN.smooth_data"><code class="name flex">
+<span>def <span class="ident">smooth_data</span></span>(<span>self, data_to_smooth: numpy.ndarray, X: numpy.ndarray = None, maxl: int = None, mutual: bool = False, only_increase: bool = True) ‑> numpy.ndarray</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Use the wights learned from knn to smooth any data matrix</p>
+<h2 id="arguments">Arguments</h2>
+<dl>
+<dt><strong><code>data_to_smooth</code></strong> :&ensp;<code>(features, samples) !! NOTE !! this is different from the input (for speed issues)</code></dt>
+<dd>if the data is provided (samples, features), this will be detected and
+the correct operation performed at cost of some effciency
+In the case where samples == samples then the shape (features, samples) will be assumed</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def smooth_data(self, data_to_smooth: np.ndarray, X: np.ndarray = None, maxl: int = None, mutual: bool = False, only_increase: bool = True) -&gt; np.ndarray:
+        &#34;&#34;&#34;Use the wights learned from knn to smooth any data matrix
+
+        Arguments
+        ---------
+        data_to_smooth: (features, samples) !! NOTE !! this is different from the input (for speed issues)
+                if the data is provided (samples, features), this will be detected and
+                the correct operation performed at cost of some effciency
+                In the case where samples == samples then the shape (features, samples) will be assumed
+        
+        &#34;&#34;&#34;
+        if self.bknn is None:
+                assert (X is None) and (maxl is None), &#34;graph was already fit with different parameters&#34;
+                self.kneighbors_graph(X=X, maxl=maxl, mode=self.mode)
+        if mutual:
+                connectivity = make_mutual(self.bknn &gt; 0)
+        else:
+                connectivity = self.bknn.T &gt; 0
+        connectivity = connectivity.tolil()
+        connectivity.setdiag(1)
+        w = connectivity_to_weights(connectivity).T
+        assert np.allclose(w.sum(0), 1), &#34;weight matrix need to sum to one over the columns&#34;
+        if data_to_smooth.shape[1] == w.shape[0]:
+                result = sparse.csr_matrix.dot(data_to_smooth, w)
+        elif data_to_smooth.shape[0] == w.shape[0]:
+                result = sparse.csr_matrix.dot(data_to_smooth.T, w).T
+        else:
+                raise ValueError(f&#34;Incorrect size of matrix, none of the axis correspond to the one of graph. {w.shape}&#34;)
+
+        if only_increase:
+                return np.maximum(result, data_to_smooth)
+        else:
+                return result</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="cytograph.manifold" href="index.html">cytograph.manifold</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="cytograph.manifold.balanced_knn.balance_knn_loop" href="#cytograph.manifold.balanced_knn.balance_knn_loop">balance_knn_loop</a></code></li>
+<li><code><a title="cytograph.manifold.balanced_knn.connectivity_to_weights" href="#cytograph.manifold.balanced_knn.connectivity_to_weights">connectivity_to_weights</a></code></li>
+<li><code><a title="cytograph.manifold.balanced_knn.convolve_by_sparse_weights" href="#cytograph.manifold.balanced_knn.convolve_by_sparse_weights">convolve_by_sparse_weights</a></code></li>
+<li><code><a title="cytograph.manifold.balanced_knn.knn_balance" href="#cytograph.manifold.balanced_knn.knn_balance">knn_balance</a></code></li>
+<li><code><a title="cytograph.manifold.balanced_knn.knn_distance_matrix" href="#cytograph.manifold.balanced_knn.knn_distance_matrix">knn_distance_matrix</a></code></li>
+<li><code><a title="cytograph.manifold.balanced_knn.knn_smooth_weights" href="#cytograph.manifold.balanced_knn.knn_smooth_weights">knn_smooth_weights</a></code></li>
+<li><code><a title="cytograph.manifold.balanced_knn.make_mutual" href="#cytograph.manifold.balanced_knn.make_mutual">make_mutual</a></code></li>
+<li><code><a title="cytograph.manifold.balanced_knn.min_n" href="#cytograph.manifold.balanced_knn.min_n">min_n</a></code></li>
+<li><code><a title="cytograph.manifold.balanced_knn.take_top" href="#cytograph.manifold.balanced_knn.take_top">take_top</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="cytograph.manifold.balanced_knn.BalancedKNN" href="#cytograph.manifold.balanced_knn.BalancedKNN">BalancedKNN</a></code></h4>
+<ul class="">
+<li><code><a title="cytograph.manifold.balanced_knn.BalancedKNN.fit" href="#cytograph.manifold.balanced_knn.BalancedKNN.fit">fit</a></code></li>
+<li><code><a title="cytograph.manifold.balanced_knn.BalancedKNN.kneighbors" href="#cytograph.manifold.balanced_knn.BalancedKNN.kneighbors">kneighbors</a></code></li>
+<li><code><a title="cytograph.manifold.balanced_knn.BalancedKNN.kneighbors_graph" href="#cytograph.manifold.balanced_knn.BalancedKNN.kneighbors_graph">kneighbors_graph</a></code></li>
+<li><code><a title="cytograph.manifold.balanced_knn.BalancedKNN.n_samples" href="#cytograph.manifold.balanced_knn.BalancedKNN.n_samples">n_samples</a></code></li>
+<li><code><a title="cytograph.manifold.balanced_knn.BalancedKNN.smooth_data" href="#cytograph.manifold.balanced_knn.BalancedKNN.smooth_data">smooth_data</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.8.4</a>.</p>
+</footer>
+</body>
+</html>

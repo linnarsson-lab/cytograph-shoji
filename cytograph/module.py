@@ -1,10 +1,20 @@
-from typing import Tuple, Optional, Callable, Union
+from typing import Tuple, Optional, Callable, Union, Dict
 import functools
 import numpy as np
 import shoji
 import fdb
 import sys
 import logging
+
+
+class Module:
+	def __init__(self, requires: Dict[str, str] = None, creates: Dict[str, str] = None) -> None:
+		self.requires = requires if requires is not None else {}
+		self.creates = creates if creates is not None else {}
+		self.workspace: shoji.WorkspaceManager = None
+
+	def __getattr__(self, name) -> shoji.Tensor:
+		return self.__getattribute__(name)
 
 
 def requires(name: str, dtype: Optional[str], dims: Optional[Tuple[Union[str, int, None], ...]]) -> Callable:
@@ -24,13 +34,23 @@ def requires(name: str, dtype: Optional[str], dims: Optional[Tuple[Union[str, in
 	def decorator(func: Callable) -> Callable:
 		@functools.wraps(func)
 		def wrapper(self, ws: shoji.WorkspaceManager, *args, **kwargs):
-			if name not in ws:
-				raise AttributeError(f"{self.__class__} requires tensor '{name}'")
-			tensor = ws._get_tensor(name)
+			# Check if the output tensor was renamed in the class instance
+			tname = name
+			if not hasattr(self, "requires") or self.requires is None:
+				self.requires = {}
+			if name in self.requires:
+				tname = self.requires[name]
+			else:
+				self.requires[name] = name
+			setattr(self, name, ws[tname])
+			self.workspace = ws
+			if tname not in ws:
+				raise AttributeError(f"{self.__class__} requires tensor '{tname}'")
+			tensor = ws._get_tensor(tname)
 			if dims is not None and tensor.dims != dims:
-					raise ValueError(f"{self.__class__} requires tensor '{name}' with dims='{dims}'")
+					raise ValueError(f"{self.__class__} requires tensor '{tname}' with dims='{dims}'")
 			elif dtype is not None and tensor.dtype != dtype:
-				raise ValueError(f"{self.__class__} requires tensor '{name}' with dtype='{dtype}'")
+				raise ValueError(f"{self.__class__} requires tensor '{tname}' with dtype='{dtype}'")
 			return func(self, ws, *args, **kwargs)
 		return wrapper
 	return decorator
@@ -86,7 +106,12 @@ def creates(name: str, dtype: str, dims: Tuple[Optional[Union[str, int]], ...], 
 				except AttributeError:
 					raise AttributeError("@creates() decorator handles only numpy ndarrays; use np.array(x, dtype=...) to wrap scalars")
 			try:
-				ws[name] = shoji.Tensor(dtype, dims, inits=np.array(inits))
+				# Check if the output tensor was renamed in the class instance
+				tname = name
+				if hasattr(self, "creates") and self.creates is not None:
+					if name in self.creates:
+						tname = self.creates[name]
+				ws[tname] = shoji.Tensor(dtype, dims, inits=np.array(inits))
 			except fdb.impl.FDBError as e:
 				if e.code == 2101:
 					logging.error(f"Result tensor '{name}' was too large to fit in transaction; make it smaller, or use atomic=False")

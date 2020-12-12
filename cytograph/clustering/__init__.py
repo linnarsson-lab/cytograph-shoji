@@ -1,3 +1,5 @@
 from .cluster_validator import ClusterValidator
 from .polished_louvain import PolishedLouvain
-from .louvain import Louvain
+from .aggregate import Aggregate
+from .dendrogram import Dendrogram
+from .polished_leiden import PolishedLeiden
