@@ -68,7 +68,7 @@ class DoubletFinder(Module):
 		n_genes = ws.genes.length
 		n_doublets = int(n_real_cells / (1 - self.proportion_artificial) - n_real_cells)
 		doublets = np.zeros((n_genes, n_doublets))
-		expression = ws[self.requires["Expression"]][...]
+		expression = self.Expression[:]
 		for i in range(n_doublets):
 			(a, b) = np.random.choice(n_real_cells, size=2, replace=False)
 			doublets[:, i] = expression[a] + expression[b]

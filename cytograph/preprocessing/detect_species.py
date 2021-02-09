@@ -12,7 +12,7 @@ class DetectSpecies(Module):
 	@requires("Gene", "string", ("genes",))
 	@creates("Species", "string", ())
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> str:
-		genes = self.Gene[...]
+		genes = self.Gene[:]
 		for gene, species in {
 			"ACTB": "Homo sapiens",
 			"Tspy1": "Rattus norvegicus",

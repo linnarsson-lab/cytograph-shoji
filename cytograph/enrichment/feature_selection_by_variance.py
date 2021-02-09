@@ -36,18 +36,13 @@ class FeatureSelectionByVariance(Module):
 		Remarks:
 			If the tensor "ValidGenes" exists, only ValidGenes == True genes will be selected
 		"""
-		# Create symbolic names for the required tensors, which might be renamed by the user
-		Species = self.requires["Species"]
-		MeanExpression = self.requires["MeanExpression"]
-		StdevExpression = self.requires["StdevExpression"]
-
 		n_genes = ws.genes.length
-		species = cg.Species(ws[Species][:])
+		species = cg.Species(self.Species[:])
 		mask_genes = species.mask(ws, self.mask)
 
 		logging.info(" FeatureSelectionByVariance: Fitting CV vs mean")
-		mu = ws[MeanExpression][...]
-		sd = ws[StdevExpression][...]
+		mu = self.MeanExpression[:]
+		sd = self.StdevExpression[:]
 
 		if "ValidGenes" in ws:
 			valid = ws.ValidGenes[:]

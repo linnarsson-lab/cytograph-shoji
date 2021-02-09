@@ -27,7 +27,7 @@ class ArtOfTsne(Module):
 	@requires("Factors", "float32", ("cells", None))
 	@creates("Embedding", "float32", ("cells", 2))
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> np.ndarray:
-		return self._fit(self.Factors[...])
+		return self._fit(self.Factors[:])
 
 	def _fit(self, X: np.ndarray) -> np.ndarray:
 		"""

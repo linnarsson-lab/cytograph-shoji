@@ -6,6 +6,7 @@ import sys
 import sqlite3 as sqlite
 import os
 import numpy as np
+from cytograph import Module
 
 
 # Here's what was in the db on 2020-12-07 for 10X101_1:
@@ -40,14 +41,16 @@ import numpy as np
 # Editby emelie <class 'str'>
 # Editat 2019-05-30 16:52:20 <class 'str'>
 
-class LoadSampleMetadata:
-	def __init__(self, db: str, tensors: List[str], convert_10x_sample_name: bool = True) -> None:
+class LoadSampleMetadata(Module):
+	def __init__(self, db: str, tensors: List[str], convert_10x_sample_name: bool = True, **kwargs) -> None:
 		"""
 		Args:
 			db 				Full path to the metadata database file (a sqlite .db file)
 			tensors			List of tensors to be created (or overwritten) from metadata
 			convert_10x_sample_name		If true, convert "10X101_2" to "TenX101_2"
 		"""
+		super().__init__(**kwargs)
+
 		self.db = db
 		if not os.path.exists(db):
 			logging.error(f"Samples metadata file '{db}' not found")

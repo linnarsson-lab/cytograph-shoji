@@ -30,10 +30,10 @@ class ResidualsPCA(Module):
 	@creates("Loadings", "float32", ("genes", None))
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> Tuple[np.ndarray, np.ndarray]:
 		logging.info(" ResidualsPCA: Computing Pearson residuals")
-		totals = self.TotalUMIs[...].astype("float32")
-		gene_totals = self.GeneTotalUMIs[ws.SelectedFeatures == True][...].astype("float32")
-		data = ws[ws.SelectedFeatures == True, ...][self.requires["Expression"]]  # self.requires["Expression"] ensures that the user can rename the input tensor if desired
-		expected = totals[:, None] @ (gene_totals[None, :] / self.OverallTotalUMIs[...])
+		totals = self.TotalUMIs[:].astype("float32")
+		gene_totals = self.GeneTotalUMIs[ws.SelectedFeatures == True][:].astype("float32")
+		data = ws[ws.SelectedFeatures == True][self.requires["Expression"]]  # self.requires["Expression"] ensures that the user can rename the input tensor if desired
+		expected = totals[:, None] @ (gene_totals[None, :] / self.OverallTotalUMIs[:])
 		residuals = (data - expected) / np.sqrt(expected + np.power(expected, 2) / 100)
 
 		logging.info(f" ResidualsPCA: Computing principal components")
@@ -41,5 +41,5 @@ class ResidualsPCA(Module):
 		factors = pca.fit_transform(residuals)
 		loadings = pca.components_.T
 		loadings_all = np.zeros_like(loadings, shape=(ws.genes.length, self.n_factors))
-		loadings_all[ws.SelectedFeatures[...]] = loadings
+		loadings_all[ws.SelectedFeatures[:]] = loadings
 		return factors, loadings_all

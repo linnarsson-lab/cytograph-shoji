@@ -18,7 +18,7 @@ class GeneSummaryStatistics(Module):
 	@creates("GeneTotalUMIs", "uint32", ("genes",))
 	@creates("ValidGenes", "bool", ("genes",))
 	@creates("OverallTotalUMIs", "uint64", ())
-	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
 		"""
 		Calculate summary statistics for each gene
 
@@ -43,6 +43,6 @@ class GeneSummaryStatistics(Module):
 		logging.info(f" GeneSummaryStatistics: Average nonzero cells per gene {int(nnz.mean())}")
 		logging.info(f" GeneSummaryStatistics: Average UMIs per gene {int(s.mean())}")
 		logging.info(f" GeneSummaryStatistics: Number of valid genes {valids.sum():,} ({int(valids.sum() / ws.genes.length * 100)}%)")
-		total = self.TotalUMIs[...].sum()
+		total = self.TotalUMIs[:].sum()
 		logging.info(f" GeneSummaryStatistics: Total number of UMIs in dataset {total:,}")
 		return (mu, sd, nnz, s, valids, total)

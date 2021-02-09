@@ -31,9 +31,9 @@ class PrincipalComponents(Module):
 		TotalUMIs = self.requires["TotalUMIs"]
 
 		logging.info(" PrincipalComponents: Loading and normalizing data")
-		totals = ws[TotalUMIs][...].astype("float32")
+		totals = ws[TotalUMIs][:].astype("float32")
 		level = np.median(totals)
-		data = ws[ws[SelectedFeatures] == True, ...][Expression]
+		data = ws[ws[SelectedFeatures] == True][Expression]
 		vals = np.log2(div0(data.T, totals) * level + 1).T  # Transposed back to (cells, genes)
 
 		logging.info(f" PrincipalComponents: Computing principal components")
@@ -41,5 +41,5 @@ class PrincipalComponents(Module):
 		factors = pca.fit_transform(vals)
 		loadings = pca.components_.T
 		loadings_all = np.zeros_like(loadings, shape=(ws.genes.length, self.n_factors))
-		loadings_all[ws.SelectedFeatures[...]] = loadings
+		loadings_all[ws.SelectedFeatures[:]] = loadings
 		return factors, loadings_all

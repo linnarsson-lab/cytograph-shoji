@@ -32,7 +32,7 @@ class FeatureSelectionAndMultilevelEnrichment(Module):
 		MeanExpression = self.requires["MeanExpression"]
 
 		n_clusters = ws.clusters.length
-		x = ws[MeanExpression][...]
+		x = ws[MeanExpression][:]
 		totals = x.sum(axis=1)
 		x_norm = (x.T / totals * np.median(totals)).T
 		gene_sums = x_norm.sum(axis=0)
@@ -52,12 +52,9 @@ class FeatureSelectionAndMultilevelEnrichment(Module):
 		Returns:
 			enrichment		A (n_groups, n_genes) matrix of gene enrichment scores
 		"""
-		MeanExpression = self.requires["MeanExpression"]
-		NCells = self.requires["NCells"]
-
 		n_clusters = labels.max() + 1
-		n_cells = ws[NCells][...]
-		data = (ws[MeanExpression][...].T * n_cells).T
+		n_cells = self.NCells[:]
+		data = (self.MeanExpression[:].T * n_cells).T
 		grouped = np.zeros((n_clusters, data.shape[1]))
 		for j in range(n_clusters):
 			grouped[j, :] = data[labels == j, :].sum(axis=0) / n_cells[labels == j].sum()
@@ -98,14 +95,10 @@ class FeatureSelectionAndMultilevelEnrichment(Module):
 			Note that this module requires aggregate tensors (MeanExpression, NCells)
 		"""
 		# Create symbolic names for the required tensors, which might be renamed by the user
-		Species = self.requires["Species"]
-		Linkage = self.requires["Linkage"]
-		Gene = self.requires["Gene"]
-
 		logging.info(" FeatureSelectionAndMultilevelEnrichment: Selecting features at 2, 4, 8, ... cluster levels")
 		n_clusters = ws.clusters.length
 
-		species = cg.Species(ws[Species][:])
+		species = cg.Species(self.Species[:])
 		mask_genes = species.mask(ws, self.mask)
 
 		n = 2
@@ -113,7 +106,7 @@ class FeatureSelectionAndMultilevelEnrichment(Module):
 
 		# Select from the dendrogram
 		while n <= n_clusters // 2:
-			labels = hc.cut_tree(ws[Linkage][...], n_clusters=n).T[0]
+			labels = hc.cut_tree(self.Linkage[:], n_clusters=n).T[0]
 			enr = self.enrichment_by_cluster_groups(ws, labels)
 			for j in range(n):
 				top = np.argsort(-enr[j, :])

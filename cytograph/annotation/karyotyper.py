@@ -5,6 +5,9 @@ chromosomes = ["chr1", "chr2", "chr3", "chr4", "chr5", "chr6", "chr7", "chr8", "
 
 
 class Karyotyper:
+	"""
+	### NOT YET UPDATED TO cytograph-shoji
+	"""
 	def __init__(self, window: int = 200, use_chr: bool = True) -> None:
 		self.window = window
 		if use_chr:

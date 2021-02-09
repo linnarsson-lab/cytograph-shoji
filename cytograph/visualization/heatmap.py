@@ -1,29 +1,48 @@
 from typing import Dict, List
+import logging
 
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.collections import LineCollection
 
-import loompy
-from cytograph.species import Species
+import shoji
 
 from .colors import colorize
 from .dendrogram import dendrogram
+from cytograph import Module, requires
 
 
-class Heatmap():
-	def __init__(self, genes: np.ndarray, attrs: Dict[str, str], markers: Dict[str, List[str]] = None, layer: str = "pooled") -> None:
-		self.layer = layer
-		self.genes = genes
-		self.markers = markers
-		self.attrs = attrs
+class Heatmap(Module):
+	def __init__(self, attributes: Dict[str, str], markers: Dict[str, List[str]] = None, **kwargs) -> None:
+		super().__init__(**kwargs)
+		self.markers = markers if markers is not None else {}
+		self.attrs = attributes
 	
-	def plot(self, ds: loompy.LoomConnection, dsagg: loompy.LoomConnection, out_file: str = None) -> None:
-		layer = self.layer if self.layer in ds.layers else ""
-		if self.markers is None:
-			self.markers = Species.detect(ds).markers
-		
-		n_clusters = np.max(dsagg.ca.Clusters) + 1
+	@requires("Expression", "uint16", ("cells", "genes"))
+	@requires("Gene", "string", ("genes",))
+	@requires("Clusters", "uint32", ("cells",))
+	@requires("Enrichment", "float32", ("clusters", "genes"))
+	@requires("SelectedFeatures", "bool", ("genes",))
+	@requires("TotalUMIs", "uint32", ("cells",))
+	@requires("GeneTotalUMIs", "uint32", ("genes",))
+	@requires("OverallTotalUMIs", "uint64", ())
+	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> None:
+		logging.info(" Heatmap: Computing Pearson residuals")
+		all_markers = []
+		for kind, markers in self.markers.items():
+			all_markers += markers
+		genes = self.Gene[:]
+		selected = (self.SelectedFeatures[:] == True) | (np.isin(genes, self.markers))
+		selected_genes = genes[selected]
+		totals = self.TotalUMIs[:].astype("float32")
+		gene_totals = self.GeneTotalUMIs[selected].astype("float32")
+		data = self.Expression[:, selected]
+		expected = totals[:, None] @ (gene_totals[None, :] / self.OverallTotalUMIs[:])
+		residuals = (data - expected) / np.sqrt(expected + np.power(expected, 2) / 100)
+
+		clusters = self.Clusters[:]
+		n_clusters = clusters.max() + 1
+		data = np.log(self.Expression[:, self.SelectedFeatures == True] + 1)
 		if np.all(ds.ra.Gene[self.genes] == ds.ra.Gene[:len(self.genes)]):
 			data = np.log(ds[layer][:len(self.genes), :] + 1)
 			enrichment = dsagg.layer["enrichment"][:len(self.genes), :]
@@ -88,7 +107,7 @@ class Heatmap():
 					d = (ds.ca[attr] == val).astype("int")
 					ax = plt.subplot2grid(grid, (offset, 0), rowspan=strip_height)
 					offset += strip_height
-					plt.imshow(np.expand_dims(d, axis=0), aspect='auto', cmap="Greys", interpolation="none")
+					plt.imshow(np.expand_dims(d, axis=0), aspect='auto', cmap="Greys")
 					plt.text(0, 0.9, val, horizontalalignment='right', verticalalignment='top', transform=ax.transAxes, fontsize=7, color="black")
 					plt.axis("off")
 				plt.text(1, 0.9, attr, horizontalalignment='left', verticalalignment='top', transform=ax.transAxes, fontsize=7, color="black")
@@ -96,7 +115,7 @@ class Heatmap():
 				d = colorize(np.nan_to_num(ds.ca[attr]))
 				ax = plt.subplot2grid(grid, (offset, 0), rowspan=strip_height)
 				offset += strip_height
-				plt.imshow(np.expand_dims(d, axis=0), aspect='auto', interpolation="none")
+				plt.imshow(np.expand_dims(d, axis=0), aspect='auto')
 				plt.text(0, 0.9, attr, horizontalalignment='right', verticalalignment='top', transform=ax.transAxes, fontsize=7, color="black")
 			else:
 				d = ds.ca[attr]
@@ -104,7 +123,7 @@ class Heatmap():
 					d = np.log(d + 1)
 				ax = plt.subplot2grid(grid, (offset, 0), rowspan=strip_height)
 				offset += strip_height
-				plt.imshow(np.expand_dims(d, axis=0), aspect='auto', cmap=kind, interpolation="none")
+				plt.imshow(np.expand_dims(d, axis=0), aspect='auto', cmap=kind)
 				plt.text(0, 0.9, attr, horizontalalignment='right', verticalalignment='top', transform=ax.transAxes, fontsize=7, color="black")
 			plt.axis("off")
 
@@ -118,7 +137,7 @@ class Heatmap():
 				vals = vals / (np.percentile(vals, 99) + 0.1)
 				ax = plt.subplot2grid(grid, (offset, 0), rowspan=strip_height)
 				offset += strip_height
-				ax.imshow(np.expand_dims(vals, axis=0), aspect='auto', cmap="viridis", vmin=0, vmax=1, interpolation="none")
+				ax.imshow(np.expand_dims(vals, axis=0), aspect='auto', cmap="viridis", vmin=0, vmax=1)
 				if write_cat:
 					plt.text(1.001, 0.9, cat, horizontalalignment='left', verticalalignment='top', transform=ax.transAxes, fontsize=7, color="black")
 					write_cat = False
@@ -133,10 +152,10 @@ class Heatmap():
 		if n_clusters > 2:
 			tops = np.vstack((clusterborders - 0.5, np.zeros(clusterborders.shape[0]) - 0.5)).T
 			bottoms = np.vstack((clusterborders - 0.5, np.zeros(clusterborders.shape[0]) + data.shape[0] - 0.5)).T
-			lc = LineCollection(zip(tops, bottoms), linewidths=.1, color='white', alpha=0.5)
+			lc = LineCollection(zip(tops, bottoms), linewidths=1, color='white', alpha=0.5)
 			ax.add_collection(lc)
 
-		ax.imshow(data_scaled, aspect='auto', cmap="viridis", vmin=0, vmax=1, interpolation="none", )
+		ax.imshow(data_scaled, aspect='auto', cmap="viridis", vmin=0, vmax=1)
 		n_genes = ds.ra.Gene[self.genes].shape[0]
 		for ix, gene in enumerate(gene_names):
 			xpos = gene_pos[ix]

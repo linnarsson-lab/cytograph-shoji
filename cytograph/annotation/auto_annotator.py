@@ -10,6 +10,9 @@ import loompy
 
 
 class Annotation:
+	"""
+	### NOT YET UPDATED TO cytograph-shoji
+	"""
 	unknown_tags: set = set()
 
 	def __init__(self, category: str, filename: str) -> None:

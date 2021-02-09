@@ -11,10 +11,16 @@ class Aggregate(Module):
 
 		Args:
 			tensor: The tensor to aggregate
-			using: The aggregation function ("sum", "count", "first", "nnz", "mean", "variance", or "sd")
-			into: The name of the newly created aggregate tensor
-			by: Optionally, the name of the tensor to group by when aggregating (default: 'Clusters')
+			using:  The aggregation function ("sum", "count", "first", "nnz", "mean", "variance", or "sd")
+			into:   The name of the newly created aggregate tensor
+			by:     Optionally, the name of the tensor to group by when aggregating (default: 'Clusters')
 			newdim: Optionlly, the name of the newly created (or existing) dimension (default: 'clusters')
+		
+		Remarks:
+			Groups a tensor by the values of another tensor, while applying an aggregation function. For example,
+			to calculate the mean expression by cluster:
+
+			Aggregate{tensor: Expression, using: mean, into: MeanExpression}
 		"""
 		super().__init__(**kwargs)
 		self.tensor = tensor
@@ -24,6 +30,7 @@ class Aggregate(Module):
 		self.newdim = newdim
 
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> np.ndarray:
+		logging.info(f" Aggregate: Grouping by '{self.by}' using '{self.using}'")
 		grouped = ws[:].groupby(self.by)
 		tensor = ws._get_tensor(self.tensor)
 		if self.using == "sum":

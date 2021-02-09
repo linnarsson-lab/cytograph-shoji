@@ -1,12 +1,12 @@
-from typing import List, Dict
+from typing import List
 import sys
 import shoji
-import numpy as np
 import logging
+from cytograph import Module
 
 
-class InitializeWorkspace:
-	def __init__(self, from_workspace: str, tensors: List[str]) -> None:
+class InitializeWorkspace(Module):
+	def __init__(self, from_workspace: str, tensors: List[str], **kwargs) -> None:
 		"""
 		Args:
 			from_workspace	Full shoji path of the workspace to use as template
@@ -16,6 +16,8 @@ class InitializeWorkspace:
 			The new workspace will be initialized by creating
 			cells and genes dimensions, and importing all the tensors listed (supports only scalars and gene tensors)
 		"""
+		super().__init__(**kwargs)
+
 		self.from_workspace = from_workspace
 		self.tensors = tensors
 
@@ -25,22 +27,19 @@ class InitializeWorkspace:
 			ws		shoji workspace
 		"""
 		db = shoji.connect()
-		ws.genes = shoji.Dimension(shape=None)
 		ws.cells = shoji.Dimension(shape=None)
 
 		logging.info(f" InitializeWorkspace: Collecting tensors from '{self.from_workspace}'")
-		d: Dict[str, np.ndarray] = {}
 		for tensor in self.tensors:
 			if tensor not in db[self.from_workspace]:
 				logging.error(f"Tensor '{tensor}' was not found in workspace '{self.from_workspace}'")
 				sys.exit(1)
 			t = db[self.from_workspace][tensor]
-			if t.rank > 0 and t.dims[0] == "genes":
-				ws[tensor] = shoji.Tensor(dtype=t.dtype, dims=t.dims)
-				d[tensor] = t[:]
+			if t.dims[0] == "genes":
+				if "genes" not in ws:
+					ws.genes = shoji.Dimension(shape=t.shape[0])
+				ws[tensor] = shoji.Tensor(dtype=t.dtype, dims=t.dims, inits=t[:])
 			elif t.rank == 0:
 				ws[tensor] = shoji.Tensor(dtype=t.dtype, dims=t.dims, inits=t[:])
 			else:
 				raise ValueError(f"InitializeWorkspace can only import scalars and tensors along 'genes' dimension, but '{tensor}' was rank-{t.rank} and first dimension was '{t.dims[0]}'")
-		ws.genes.append(d)
-		ws.genes = shoji.Dimension(shape=ws.genes.length)  # Fix the length of the genes dimension

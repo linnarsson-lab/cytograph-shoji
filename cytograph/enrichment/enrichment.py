@@ -22,7 +22,7 @@ class Enrichment(Module):
 			enrichment		A (n_clusters, n_genes) matrix of gene enrichment scores
 		"""
 		n_clusters = ws.clusters.length
-		x = self.MeanExpression[...]
+		x = self.MeanExpression[:]
 		totals = x.sum(axis=1)
 		x_norm = (x.T / totals * np.median(totals)).T
 		gene_sums = x_norm.sum(axis=0)

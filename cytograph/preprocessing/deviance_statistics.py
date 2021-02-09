@@ -27,11 +27,10 @@ class DevianceStatistics(Module):
 		Remarks:
 			See equation D_j on p. 14 of https://doi.org/10.1186/s13059-019-1861-6
 		"""
-		# Create symbolic names for the required tensors, which might be renamed by the user
 		logging.info(" DevianceStatistics: Computing binomial deviance statistics for genes")
-		n = self.TotalUMIs[...]
+		n = self.TotalUMIs[:]
 		n_sum = n.sum()
-		gn = self.GeneTotalUMIs[...]
+		gn = self.GeneTotalUMIs[:]
 		d_j = np.zeros((1, ws.genes.length))
 		for ix in range(0, ws.cells.length, 1000):
 			pi_hat_j = (gn / n_sum)[None, :]

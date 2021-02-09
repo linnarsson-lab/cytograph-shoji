@@ -8,6 +8,7 @@ import shoji
 from sklearn.neighbors import NearestNeighbors
 from sklearn.cluster import DBSCAN
 from sklearn.decomposition import PCA
+from sklearn.preprocessing import LabelEncoder
 
 
 class PolishedLeiden(Module):
@@ -15,25 +16,22 @@ class PolishedLeiden(Module):
 		"""
 		Find clusters on the manifold using the Leiden algorithm, then polish clusters on the embedding.
 
-		## Tensors required
-			Embedding        float32   ("cells", 2)
-			ManifoldIndices  uint32    (None, 2)
-			ManifoldWeights  float32   (None)
-		
-		## Tensors created
-			Clusters         uint32    (None, 4)
-
 		Args:
 			resolution: The resolution parameter (typically 0.01 - 1; default: 1)
-			method: The partitioning method ("modularity", "cpm", "surprise", "rb", "rber", or "significance"; default: "modularity")
-			max_size: The maximum size of clusters (default: 0, i.e. no limit)
-			min_size: The minimum size of clusters (default: 25)
+			method:     The partitioning method ("modularity", "cpm", "surprise", "rb", "rber", or "significance"; default: "modularity")
+			max_size:   The maximum size of clusters (default: 0, i.e. no limit)
+			min_size:   The minimum size of clusters (default: 25)
 
 		Remarks:
+			The default method, "modularity", is equivalent to Louvain clustering but the Leiden algorithm is faster
+			and can yield better clusters. The method "surprise" can yield clusters similar to Amos Tanay's Metacell
+			algorithm (i.e. a tiling of the manifold with clusters of similar size), especially if `max_size` is used
+			to cap the cluster size.
+
 			The polishing step consists of two phases. First, the shape of each cluster on the embedding (e.g. TSNE) is
 			considered using Iglewicz-Hoaglin outlier detection, and clusters with too many outliers are re-clustered
 			using DBSCAN on the embedding. Second, all cells in clusters smaller than `min_size` are reassigned
-			to the nearest not-too-small cluster on the embedding.
+			to the nearest not-too-small cluster on the embedding. Not that this can result in clusters larger than `max_size`.
 
 			The resolution parameter has no effect on the default method, "modularity".
 		"""
@@ -145,26 +143,27 @@ class PolishedLeiden(Module):
 		Returns:
 			labels:	The cluster labels
 		"""
-		logging.info(" PolishedLeiden: Loading the graph")
-		rc = self.ManifoldIndices[...]
-		g = igraph.Graph(ws.cells.length, list(zip(rc[:, 0].T.tolist(), rc[:, 1].T.tolist())), directed=False, edge_attrs={'weight': self.ManifoldWeights[...]})
+		logging.info(" PolishedLeiden: Loading graph data")
+		rc = self.ManifoldIndices[:]
+		logging.info(" PolishedLeiden: Constructing the graph")
+		g = igraph.Graph(ws.cells.length, list(zip(rc[:, 0].T.tolist(), rc[:, 1].T.tolist())), directed=False, edge_attrs={'weight': self.ManifoldWeights[:]})
 		logging.info(" PolishedLeiden: Optimizing the graph partitioning")
 		if self.resolution != 1:
-			labels = np.array(la.find_partition(g, self.method, weights=self.ManifoldWeights[...], max_comm_size=self.max_size, resolution_parameter=self.resolution, n_iterations=-1).membership)
+			labels = np.array(la.find_partition(g, self.method, weights=self.ManifoldWeights[:], max_comm_size=self.max_size, resolution_parameter=self.resolution, n_iterations=-1).membership)
 		else:
-			labels = np.array(la.find_partition(g, self.method, weights=self.ManifoldWeights[...], max_comm_size=self.max_size, n_iterations=-1).membership)
+			labels = np.array(la.find_partition(g, self.method, weights=self.ManifoldWeights[:], max_comm_size=self.max_size, n_iterations=-1).membership)
 		logging.info(f" PolishedLeiden: Found {labels.max() + 1} initial clusters")
 
 		# Break clusters based on the embedding
 		logging.info(" PolishedLeiden: Breaking clusters based on the embedding")
-		xy = self.Embedding[...]
+		xy = self.Embedding[:]
 		# Only break clusters that are at least twice as large as the minimum size (note: labels are sorted by cluster size)
 		max_label = np.where(np.bincount(labels) < self.min_size * 2)[0][0]
 		next_label = 0
 		labels2 = np.copy(labels)
 		for lbl in range(max_label):
 			cluster = labels == lbl
-			if cluster.sum() < 10:
+			if cluster.sum() < self.min_size:
 				continue
 			adjusted = self._break_cluster(xy[cluster, :])
 			new_labels = np.copy(adjusted)
@@ -183,6 +182,7 @@ class PolishedLeiden(Module):
 		nn.fit(xy[~too_small])
 		nearest = nn.kneighbors(xy[too_small], n_neighbors=1, return_distance=False)
 		labels[too_small] = labels[~too_small][nearest.flat[:]]
+		labels = LabelEncoder().fit_transform(labels)  # make sure there are no holes in cluster numbering
 
 		logging.info(f" PolishedLeiden: Found {labels.max() + 1} clusters")
 		return labels

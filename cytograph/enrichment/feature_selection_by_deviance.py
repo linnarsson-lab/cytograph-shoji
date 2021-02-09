@@ -37,18 +37,14 @@ class FeatureSelectionByDeviance(Module):
 			See equation D_j on p. 14 of https://doi.org/10.1186/s13059-019-1861-6
 		"""
 		# Create symbolic names for the required tensors, which might be renamed by the user
-		Species = self.requires["Species"]
-		Deviance = self.requires["Deviance"]
-		ValidGenes = self.requires["ValidGenes"]
-
-		species = cg.Species(ws[Species][:])
+		species = cg.Species(self.Species[:])
 		mask_genes = species.mask(ws, self.mask)
 
 		logging.info(" FeatureSelectionByDeviance: Loading deviance")
-		d = ws[Deviance][...]
+		d = self.Deviance[:]
 
 		logging.info(" FeatureSelectionByDeviance: Removing invalid and masked genes")
-		valid = ws[ValidGenes][...]
+		valid = self.ValidGenes[:]
 		if self.mask is not None:
 			valid = np.logical_and(valid, np.logical_not(mask_genes))
 

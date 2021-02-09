@@ -54,7 +54,7 @@ class Workflow:
 		self.punchcard = punchcard
 		self.export_dir = os.path.join(self.config["paths"]["build"], "exported", punchcard.name)
 
-	def process(self) -> None:
+	def process(self, resume_at: int = 0) -> None:
 		ws = self.config["workspaces"]["build"][self.punchcard.name]
 		logging.info(f"Running recipe '{self.punchcard.recipe}' for '{self.punchcard.name}'")
-		run_recipe(ws, self.config["recipes"][self.punchcard.recipe])
+		run_recipe(ws, self.config["recipes"][self.punchcard.recipe][resume_at:])

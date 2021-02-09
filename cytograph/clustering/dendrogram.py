@@ -12,28 +12,20 @@ class Dendrogram(Module):
 		"""
 		Compute a dendrogram of clusters
 
-		## Tensors required
-			SelectedFeatures  bool     ("genes",)
-			MeanExpression    float32  ("clusters", "genes")
-		
-		## Tensors created
-			Linkage           float32  (None, 4)
-			LinkageOrdering   uint32   ("clusters",)
-
 		Remarks:
 			Agglomeration using Ward's linkage on the normalized mean expression per cluster.
-			Expression values are normalized to the median total UMIs, and `log2(x + 1)` transformed.
+			Mean expression values are normalized to the median total UMIs, and `log2(x + 1)` transformed.
 		"""
 		super().__init__(**kwargs)
 
 	@requires("SelectedFeatures", "bool", ("genes",))
-	@requires("MeanExpression", "float32", ("clusters", "genes"))
+	@requires("MeanExpression", "float64", ("clusters", "genes"))
 	@creates("Linkage", "float32", (None, 4))
 	@creates("LinkageOrdering", "uint32", ("clusters",))
 	def fit(self, ws: shoji.WorkspaceManager, save: bool) -> np.ndarray:
-		logging.info(" Dendrogram: Loading enrichment scores for selected genes")
-		selected = self.SelectedFeatures[...]
-		x = self.MeanExpression[...]
+		logging.info(" Dendrogram: Computing normalized expression of selected genes")
+		selected = self.SelectedFeatures[:]
+		x = self.MeanExpression[:]
 		totals = x.sum(axis=1)
 		x = np.log2((x.T / totals * np.median(totals)).T + 1)[:, selected]
 

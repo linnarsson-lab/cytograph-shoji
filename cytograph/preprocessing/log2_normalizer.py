@@ -31,20 +31,16 @@ class Log2Normalizer(Module):
 	@creates("Log2Level", "uint16", ())
 	@creates("Log2Mean", "float32", ("cells",))
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> Tuple[int, np.ndarray]:
-		# Create symbolic names for the required tensors, which might be renamed by the user
-		Expression = self.requires["Expression"]
-		TotalUMIs = self.requires["TotalUMIs"]
-
 		logging.info(" Log2Normalizer: Computing normalized log2 mean")
 		n_genes = ws.genes.length
 		n_cells = ws.cells.length
 		self.log2_mu = np.zeros(n_genes)
-		self.totals = ws[TotalUMIs][...]
+		self.totals = self.TotalUMIs[:]
 		if self.level == 0:
 			self.level = np.median(self.totals)
 
 		for ix in range(0, n_cells, 1000):
-			vals = ws[Expression][ix: ix + 1000][:, :].astype("float")
+			vals = self.Expression[ix: ix + 1000].astype("float")
 			# Rescale to the median total UMI count, plus 1 (to avoid log of zero), then log transform
 			vals = np.log2(div0(vals.T, self.totals) * self.level + 1).T
 			self.log2_mu[ix: ix + 1000] = np.mean(vals, axis=1)

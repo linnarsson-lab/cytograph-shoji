@@ -27,6 +27,7 @@ def requires(name: str, dtype: Optional[str], dims: Optional[Tuple[Union[str, in
 			@requires("Age", "string", ())
 			def fit(self, ws) -> None:
 				# At this point, the requirements will have been checked
+				# and are available as tensors self.Expression and self.Age
 	
 	Remarks:
 		The decorator can only be applied to a method that takes a shoji.WorkspaceManager object as first argument

@@ -40,10 +40,10 @@ class CellSummaryStatistics(Module):
 			If species is None, cell cycle scores are set to 0
 		"""
 		logging.info(" CellSummaryStatistics: Loading 'Expression' and 'Unspliced' tensors")
-		x = self.Expression[...]
-		u = self.Unspliced[...]
+		x = self.Expression[:]
+		u = self.Unspliced[:]
 
-		mito_genes = self.Chromosome[...] == "MT"
+		mito_genes = self.Chromosome[:] == "MT"
 
 		logging.info(f" CellSummaryStatistics: Computing summary statistics for {ws.cells.length} cells")
 		nnz = np.count_nonzero(x, axis=1)
@@ -51,9 +51,9 @@ class CellSummaryStatistics(Module):
 		mt_ratio = np.sum(x[:, mito_genes], axis=1) / n_UMIs
 		unspliced_ratio = np.sum(u, axis=1) / n_UMIs
 
-		species = cg.Species(self.Species[:])
+		species = cg.Species(self.Species[:].item())
 		if species.name in ["Homo sapiens", "Mus musculus"]:
-			genes = self.Gene[...]
+			genes = self.Gene[:]
 			g1_indices = np.isin(genes, species.genes.g1)
 			s_indices = np.isin(genes, species.genes.s)
 			g2m_indices = np.isin(genes, species.genes.g2m)
@@ -62,7 +62,7 @@ class CellSummaryStatistics(Module):
 			g2m = x[:, g2m_indices].sum(axis=1)
 			cc = (g1 + s + g2m) / n_UMIs
 		else:
-			cc = 0
+			cc = np.zeros(nnz.shape[0], dtype="float32")
 
 		logging.info(f" CellSummaryStatistics: Average number of non-zero genes {int(nnz.mean())}")
 		logging.info(f" CellSummaryStatistics: Average total UMIs {int(n_UMIs.mean())}")
