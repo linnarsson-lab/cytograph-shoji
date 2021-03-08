@@ -55,6 +55,7 @@ def requires(name: str, dtype: Optional[str], dims: Optional[Tuple[Union[str, in
                         @requires(&#34;Age&#34;, &#34;string&#34;, ())
                         def fit(self, ws) -&gt; None:
                                 # At this point, the requirements will have been checked
+                                # and are available as tensors self.Expression and self.Age
         
         Remarks:
                 The decorator can only be applied to a method that takes a shoji.WorkspaceManager object as first argument
@@ -161,7 +162,7 @@ def creates(name: str, dtype: str, dims: Tuple[Optional[Union[str, int]], ...], 
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="cytograph.module.creates"><code class="name flex">
-<span>def <span class="ident">creates</span></span>(<span>name: str, dtype: str, dims: Tuple[Union[str, int, NoneType], ...], indices: bool = False) ‑> Callable</span>
+<span>def <span class="ident">creates</span></span>(<span>name: str, dtype: str, dims: Tuple[Union[NoneType, int, str], ...], indices: bool = False) ‑> Callable</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Declare the tensors that are created by a Cytograph fit() method, when save=True</p>
@@ -253,7 +254,7 @@ return (expression, age)
 </details>
 </dd>
 <dt id="cytograph.module.requires"><code class="name flex">
-<span>def <span class="ident">requires</span></span>(<span>name: str, dtype: Union[str, NoneType], dims: Union[Tuple[Union[str, int, NoneType], ...], NoneType]) ‑> Callable</span>
+<span>def <span class="ident">requires</span></span>(<span>name: str, dtype: Union[str, NoneType], dims: Union[Tuple[Union[NoneType, int, str], ...], NoneType]) ‑> Callable</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Declare the tensor requirements of a Cytograph fit() method</p>
@@ -262,7 +263,8 @@ return (expression, age)
 @requires("Expression", "float32", ("cells", "genes"))
 @requires("Age", "string", ())
 def fit(self, ws) -&gt; None:
-# At this point, the requirements will have been checked</p>
+# At this point, the requirements will have been checked
+# and are available as tensors self.Expression and self.Age</p>
 <h2 id="remarks">Remarks</h2>
 <p>The decorator can only be applied to a method that takes a shoji.WorkspaceManager object as first argument</p></div>
 <details class="source">
@@ -279,6 +281,7 @@ def fit(self, ws) -&gt; None:
                         @requires(&#34;Age&#34;, &#34;string&#34;, ())
                         def fit(self, ws) -&gt; None:
                                 # At this point, the requirements will have been checked
+                                # and are available as tensors self.Expression and self.Age
         
         Remarks:
                 The decorator can only be applied to a method that takes a shoji.WorkspaceManager object as first argument
@@ -337,7 +340,8 @@ def fit(self, ws) -&gt; None:
 <li><a title="cytograph.clustering.aggregate.Aggregate" href="clustering/aggregate.html#cytograph.clustering.aggregate.Aggregate">Aggregate</a></li>
 <li><a title="cytograph.clustering.dendrogram.Dendrogram" href="clustering/dendrogram.html#cytograph.clustering.dendrogram.Dendrogram">Dendrogram</a></li>
 <li><a title="cytograph.clustering.polished_leiden.PolishedLeiden" href="clustering/polished_leiden.html#cytograph.clustering.polished_leiden.PolishedLeiden">PolishedLeiden</a></li>
-<li><a title="cytograph.clustering.polished_louvain.PolishedLouvain" href="clustering/polished_louvain.html#cytograph.clustering.polished_louvain.PolishedLouvain">PolishedLouvain</a></li>
+<li><a title="cytograph.clustering.residuals_dendrogram.ResidualsDendrogram" href="clustering/residuals_dendrogram.html#cytograph.clustering.residuals_dendrogram.ResidualsDendrogram">ResidualsDendrogram</a></li>
+<li><a title="cytograph.decomposition.glmpca.GLMPCA" href="decomposition/glmpca.html#cytograph.decomposition.glmpca.GLMPCA">GLMPCA</a></li>
 <li><a title="cytograph.decomposition.harmony.Harmony" href="decomposition/harmony.html#cytograph.decomposition.harmony.Harmony">Harmony</a></li>
 <li><a title="cytograph.decomposition.pca.PrincipalComponents" href="decomposition/pca.html#cytograph.decomposition.pca.PrincipalComponents">PrincipalComponents</a></li>
 <li><a title="cytograph.decomposition.residuals_pca.ResidualsPCA" href="decomposition/residuals_pca.html#cytograph.decomposition.residuals_pca.ResidualsPCA">ResidualsPCA</a></li>
@@ -347,6 +351,9 @@ def fit(self, ws) -&gt; None:
 <li><a title="cytograph.enrichment.feature_selection_by_deviance.FeatureSelectionByDeviance" href="enrichment/feature_selection_by_deviance.html#cytograph.enrichment.feature_selection_by_deviance.FeatureSelectionByDeviance">FeatureSelectionByDeviance</a></li>
 <li><a title="cytograph.enrichment.feature_selection_by_variance.FeatureSelectionByVariance" href="enrichment/feature_selection_by_variance.html#cytograph.enrichment.feature_selection_by_variance.FeatureSelectionByVariance">FeatureSelectionByVariance</a></li>
 <li><a title="cytograph.manifold.rnn_manifold.RnnManifold" href="manifold/rnn_manifold.html#cytograph.manifold.rnn_manifold.RnnManifold">RnnManifold</a></li>
+<li><a title="cytograph.pipeline.collect_cells.CollectCells" href="pipeline/collect_cells.html#cytograph.pipeline.collect_cells.CollectCells">CollectCells</a></li>
+<li><a title="cytograph.pipeline.initialize_workspace.InitializeWorkspace" href="pipeline/initialize_workspace.html#cytograph.pipeline.initialize_workspace.InitializeWorkspace">InitializeWorkspace</a></li>
+<li><a title="cytograph.pipeline.load_sample_metadata.LoadSampleMetadata" href="pipeline/load_sample_metadata.html#cytograph.pipeline.load_sample_metadata.LoadSampleMetadata">LoadSampleMetadata</a></li>
 <li><a title="cytograph.preprocessing.cell_summary_statistics.CellSummaryStatistics" href="preprocessing/cell_summary_statistics.html#cytograph.preprocessing.cell_summary_statistics.CellSummaryStatistics">CellSummaryStatistics</a></li>
 <li><a title="cytograph.preprocessing.detect_species.DetectSpecies" href="preprocessing/detect_species.html#cytograph.preprocessing.detect_species.DetectSpecies">DetectSpecies</a></li>
 <li><a title="cytograph.preprocessing.deviance_statistics.DevianceStatistics" href="preprocessing/deviance_statistics.html#cytograph.preprocessing.deviance_statistics.DevianceStatistics">DevianceStatistics</a></li>
@@ -354,6 +361,7 @@ def fit(self, ws) -&gt; None:
 <li><a title="cytograph.preprocessing.gene_summary_statistics.GeneSummaryStatistics" href="preprocessing/gene_summary_statistics.html#cytograph.preprocessing.gene_summary_statistics.GeneSummaryStatistics">GeneSummaryStatistics</a></li>
 <li><a title="cytograph.preprocessing.log2_normalizer.Log2Normalizer" href="preprocessing/log2_normalizer.html#cytograph.preprocessing.log2_normalizer.Log2Normalizer">Log2Normalizer</a></li>
 <li><a title="cytograph.preprocessing.quality_control.QualityControl" href="preprocessing/quality_control.html#cytograph.preprocessing.quality_control.QualityControl">QualityControl</a></li>
+<li><a title="cytograph.visualization.heatmap.Heatmap" href="visualization/heatmap.html#cytograph.visualization.heatmap.Heatmap">Heatmap</a></li>
 </ul>
 </dd>
 <dt id="cytograph.module.ResultHolder"><code class="flex name class">

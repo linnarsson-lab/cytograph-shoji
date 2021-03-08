@@ -38,12 +38,20 @@ import logging
 
 class Harmony(Module):
         &#34;&#34;&#34;
-        Remove batch effects using Harmony (https://github.com/lilab-bcb/harmony-pytorch)
         &#34;&#34;&#34;
         def __init__(self, batch_keys: List[str] = [], **kwargs) -&gt; None:
                 &#34;&#34;&#34;
+                Remove batch effects using Harmony
+
                 Args:
-                        batch_keys:             List of names of tensors that indicate batches
+                        batch_keys: List of names of tensors that indicate batches (e.g. `[&#34;Chemistry&#34;]`)
+                
+                Remarks:
+                        Uses harmony-pytorch (https://github.com/lilab-bcb/harmony-pytorch)
+
+                        By default, this module will overwrite the existing Factors tensor. If you
+                        want to keep the original factors, use `creates: {Factors: MyFactors}` in the
+                        recipe to rename the output.
                 &#34;&#34;&#34;
                 super().__init__(**kwargs)
                 self.batch_keys = batch_keys
@@ -53,11 +61,11 @@ class Harmony(Module):
         def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; np.ndarray:
                 if self.batch_keys is not None and len(self.batch_keys) &gt; 0:
                         logging.info(f&#34; Harmony: Harmonizing based on batch keys {self.batch_keys}&#34;)
-                        keys_df = pd.DataFrame.from_dict({k: ws[k][...] for k in self.batch_keys})
-                        transformed = harmonize(self.Factors[...], keys_df, batch_key=self.batch_keys, tol_harmony=1e-5)
+                        keys_df = pd.DataFrame.from_dict({k: ws[k][:] for k in self.batch_keys})
+                        transformed = harmonize(self.Factors[:], keys_df, batch_key=self.batch_keys, tol_harmony=1e-5)
                 else:
                         logging.info(&#34; Harmony: Skipping because no batch keys were provided&#34;)
-                        transformed = self.Factors[...]
+                        transformed = self.Factors[:]
                 return transformed</code></pre>
 </details>
 </section>
@@ -75,27 +83,37 @@ class Harmony(Module):
 <span>(</span><span>batch_keys: List[str] = [], **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Remove batch effects using Harmony (<a href="https://github.com/lilab-bcb/harmony-pytorch">https://github.com/lilab-bcb/harmony-pytorch</a>)</p>
+<div class="desc"><p>Remove batch effects using Harmony</p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>batch_keys</code></strong></dt>
-<dd>
-<pre><code>    List of names of tensors that indicate batches
-</code></pre>
-</dd>
-</dl></div>
+<dd>List of names of tensors that indicate batches (e.g. <code>["Chemistry"]</code>)</dd>
+</dl>
+<h2 id="remarks">Remarks</h2>
+<p>Uses harmony-pytorch (<a href="https://github.com/lilab-bcb/harmony-pytorch">https://github.com/lilab-bcb/harmony-pytorch</a>)</p>
+<p>By default, this module will overwrite the existing Factors tensor. If you
+want to keep the original factors, use <code>creates: {Factors: MyFactors}</code> in the
+recipe to rename the output.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Harmony(Module):
         &#34;&#34;&#34;
-        Remove batch effects using Harmony (https://github.com/lilab-bcb/harmony-pytorch)
         &#34;&#34;&#34;
         def __init__(self, batch_keys: List[str] = [], **kwargs) -&gt; None:
                 &#34;&#34;&#34;
+                Remove batch effects using Harmony
+
                 Args:
-                        batch_keys:             List of names of tensors that indicate batches
+                        batch_keys: List of names of tensors that indicate batches (e.g. `[&#34;Chemistry&#34;]`)
+                
+                Remarks:
+                        Uses harmony-pytorch (https://github.com/lilab-bcb/harmony-pytorch)
+
+                        By default, this module will overwrite the existing Factors tensor. If you
+                        want to keep the original factors, use `creates: {Factors: MyFactors}` in the
+                        recipe to rename the output.
                 &#34;&#34;&#34;
                 super().__init__(**kwargs)
                 self.batch_keys = batch_keys
@@ -105,11 +123,11 @@ class Harmony(Module):
         def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; np.ndarray:
                 if self.batch_keys is not None and len(self.batch_keys) &gt; 0:
                         logging.info(f&#34; Harmony: Harmonizing based on batch keys {self.batch_keys}&#34;)
-                        keys_df = pd.DataFrame.from_dict({k: ws[k][...] for k in self.batch_keys})
-                        transformed = harmonize(self.Factors[...], keys_df, batch_key=self.batch_keys, tol_harmony=1e-5)
+                        keys_df = pd.DataFrame.from_dict({k: ws[k][:] for k in self.batch_keys})
+                        transformed = harmonize(self.Factors[:], keys_df, batch_key=self.batch_keys, tol_harmony=1e-5)
                 else:
                         logging.info(&#34; Harmony: Skipping because no batch keys were provided&#34;)
-                        transformed = self.Factors[...]
+                        transformed = self.Factors[:]
                 return transformed</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -132,11 +150,11 @@ class Harmony(Module):
 def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; np.ndarray:
         if self.batch_keys is not None and len(self.batch_keys) &gt; 0:
                 logging.info(f&#34; Harmony: Harmonizing based on batch keys {self.batch_keys}&#34;)
-                keys_df = pd.DataFrame.from_dict({k: ws[k][...] for k in self.batch_keys})
-                transformed = harmonize(self.Factors[...], keys_df, batch_key=self.batch_keys, tol_harmony=1e-5)
+                keys_df = pd.DataFrame.from_dict({k: ws[k][:] for k in self.batch_keys})
+                transformed = harmonize(self.Factors[:], keys_df, batch_key=self.batch_keys, tol_harmony=1e-5)
         else:
                 logging.info(&#34; Harmony: Skipping because no batch keys were provided&#34;)
-                transformed = self.Factors[...]
+                transformed = self.Factors[:]
         return transformed</code></pre>
 </details>
 </dd>

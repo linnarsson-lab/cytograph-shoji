@@ -26,22 +26,28 @@
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">from typing import List, Dict
+<pre><code class="python">from typing import List
 import shoji
 import numpy as np
 from .config import Config
 import logging
 import cytograph as cg
+from cytograph import Module
 import sys
 
 
-class CollectCells:
-        def __init__(self, tensors: List[str], expand_scalars: bool = True) -&gt; None:
+class CollectCells(Module):
+        def __init__(self, tensors: List[str], expand_scalars: bool = True, **kwargs) -&gt; None:
                 &#34;&#34;&#34;
                 Args:
                         tensors                 List of tensors to be collected (must exist and have same dims and dtype in all samples)
                         expand_scalars  If true, scalars are converted to vectors (repeating the scalar value)
+                
+                Remarks:
+                        Tensors can be renamed on the fly using the A-&gt;B syntax, e.g. &#34;SampleName-&gt;SampleID&#34;
                 &#34;&#34;&#34;
+                super().__init__(**kwargs)
+
                 self.tensors = tensors
                 self.expand_scalars = expand_scalars
 
@@ -63,36 +69,43 @@ class CollectCells:
                         else:
                                 logging.error(f&#34;Source {source} not found!&#34;)
                                 sys.exit(1)
-                        d: Dict[str, np.ndarray] = {}
                         onlyif = punchcard.sources_onlyif[ix]
                         if onlyif is not None:
                                 logging.info(f&#34; CollectCells: Collecting tensors from &#39;{source}&#39; where &#39;{onlyif}&#39;&#34;)
                                 conditions = eval(onlyif, {&#34;ws&#34;: source_ws, &#34;np&#34;: np, &#34;shoji&#34;: shoji, &#34;cg&#34;: cg})
                                 if not isinstance(conditions, shoji.Filter):
                                         raise ValueError(f&#34;Conditions in &#39;onlyif&#39; must evaluate to a shoji.Filter, but &#39;{onlyif}&#39; evaluated to &#39;{type(conditions)}&#39;&#34;)
-                                view = source_ws[conditions, ...]
+                                view = source_ws[conditions]
                         else:
                                 logging.info(f&#34; CollectCells: Collecting tensors from &#39;{source}&#39;&#34;)
-                                view = source_ws[...]
-                        for tensor in self.tensors:
+                                view = source_ws[:]
+                        d = {}
+                        for tensor_spec in self.tensors:
+                                if &#34;-&gt;&#34; in tensor_spec:
+                                        tensor, new_name = tensor_spec.split(&#34;-&gt;&#34;)
+                                else:
+                                        tensor, new_name = tensor_spec, tensor_spec
                                 if tensor not in source_ws:
                                         logging.error(f&#34;Tensor &#39;{tensor}&#39; missing in source workspace &#39;{source}&#34;)
                                         sys.exit(1)
                                 t = source_ws[tensor]
-                                if t.rank &gt; 0 and t.dims[0] == &#34;cells&#34;:
+                                if t.rank &gt; 0:
+                                        if t.dims[0] != &#34;cells&#34;:
+                                                logging.warning(f&#34;Skipping tensor {tensor} because first dimension is not &#39;cells&#39;&#34;)
+                                                continue
                                         if ix == 0:
-                                                ws[tensor] = shoji.Tensor(t.dtype, t.dims)
-                                        d[tensor] = view[tensor]
+                                                ws[new_name] = shoji.Tensor(t.dtype, t.dims)
+                                        d[new_name] = view[tensor]
                                 elif t.rank == 0:
                                         if self.expand_scalars:
                                                 if ix == 0:
-                                                        ws[tensor] = shoji.Tensor(t.dtype, (&#34;cells&#34;,))
-                                                d[tensor] = np.full(view.get_length(&#34;cells&#34;), t[:], dtype=t.numpy_dtype())
+                                                        ws[new_name] = shoji.Tensor(t.dtype, (&#34;cells&#34;,))
+                                                d[new_name] = np.full(view.get_length(&#34;cells&#34;), t[:], dtype=t.numpy_dtype())
                                         else:
-                                                ws[tensor] = shoji.Tensor(t.dtype, t.dims, t[:])
+                                                ws[new_name] = shoji.Tensor(t.dtype, t.dims, inits=t[:])
                         ws.cells.append(d)
-                logging.info(f&#34; CollectCells: Collected {ws.cells.length} cells&#34;)
-                ws.cells = shoji.Dimension(shape=ws.cells.length)  # Fix the length of the cells dimension</code></pre>
+                ws.cells = shoji.Dimension(shape=ws.cells.length)  # Fix the length of the cells dimension
+                logging.info(f&#34; CollectCells: Collected {ws.cells.length} cells&#34;)</code></pre>
 </details>
 </section>
 <section>
@@ -106,25 +119,32 @@ class CollectCells:
 <dl>
 <dt id="cytograph.pipeline.collect_cells.CollectCells"><code class="flex name class">
 <span>class <span class="ident">CollectCells</span></span>
-<span>(</span><span>tensors: List[str], expand_scalars: bool = True)</span>
+<span>(</span><span>tensors: List[str], expand_scalars: bool = True, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"><h2 id="args">Args</h2>
 <p>tensors
 List of tensors to be collected (must exist and have same dims and dtype in all samples)
 expand_scalars
-If true, scalars are converted to vectors (repeating the scalar value)</p></div>
+If true, scalars are converted to vectors (repeating the scalar value)</p>
+<h2 id="remarks">Remarks</h2>
+<p>Tensors can be renamed on the fly using the A-&gt;B syntax, e.g. "SampleName-&gt;SampleID"</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class CollectCells:
-        def __init__(self, tensors: List[str], expand_scalars: bool = True) -&gt; None:
+<pre><code class="python">class CollectCells(Module):
+        def __init__(self, tensors: List[str], expand_scalars: bool = True, **kwargs) -&gt; None:
                 &#34;&#34;&#34;
                 Args:
                         tensors                 List of tensors to be collected (must exist and have same dims and dtype in all samples)
                         expand_scalars  If true, scalars are converted to vectors (repeating the scalar value)
+                
+                Remarks:
+                        Tensors can be renamed on the fly using the A-&gt;B syntax, e.g. &#34;SampleName-&gt;SampleID&#34;
                 &#34;&#34;&#34;
+                super().__init__(**kwargs)
+
                 self.tensors = tensors
                 self.expand_scalars = expand_scalars
 
@@ -146,37 +166,48 @@ If true, scalars are converted to vectors (repeating the scalar value)</p></div>
                         else:
                                 logging.error(f&#34;Source {source} not found!&#34;)
                                 sys.exit(1)
-                        d: Dict[str, np.ndarray] = {}
                         onlyif = punchcard.sources_onlyif[ix]
                         if onlyif is not None:
                                 logging.info(f&#34; CollectCells: Collecting tensors from &#39;{source}&#39; where &#39;{onlyif}&#39;&#34;)
                                 conditions = eval(onlyif, {&#34;ws&#34;: source_ws, &#34;np&#34;: np, &#34;shoji&#34;: shoji, &#34;cg&#34;: cg})
                                 if not isinstance(conditions, shoji.Filter):
                                         raise ValueError(f&#34;Conditions in &#39;onlyif&#39; must evaluate to a shoji.Filter, but &#39;{onlyif}&#39; evaluated to &#39;{type(conditions)}&#39;&#34;)
-                                view = source_ws[conditions, ...]
+                                view = source_ws[conditions]
                         else:
                                 logging.info(f&#34; CollectCells: Collecting tensors from &#39;{source}&#39;&#34;)
-                                view = source_ws[...]
-                        for tensor in self.tensors:
+                                view = source_ws[:]
+                        d = {}
+                        for tensor_spec in self.tensors:
+                                if &#34;-&gt;&#34; in tensor_spec:
+                                        tensor, new_name = tensor_spec.split(&#34;-&gt;&#34;)
+                                else:
+                                        tensor, new_name = tensor_spec, tensor_spec
                                 if tensor not in source_ws:
                                         logging.error(f&#34;Tensor &#39;{tensor}&#39; missing in source workspace &#39;{source}&#34;)
                                         sys.exit(1)
                                 t = source_ws[tensor]
-                                if t.rank &gt; 0 and t.dims[0] == &#34;cells&#34;:
+                                if t.rank &gt; 0:
+                                        if t.dims[0] != &#34;cells&#34;:
+                                                logging.warning(f&#34;Skipping tensor {tensor} because first dimension is not &#39;cells&#39;&#34;)
+                                                continue
                                         if ix == 0:
-                                                ws[tensor] = shoji.Tensor(t.dtype, t.dims)
-                                        d[tensor] = view[tensor]
+                                                ws[new_name] = shoji.Tensor(t.dtype, t.dims)
+                                        d[new_name] = view[tensor]
                                 elif t.rank == 0:
                                         if self.expand_scalars:
                                                 if ix == 0:
-                                                        ws[tensor] = shoji.Tensor(t.dtype, (&#34;cells&#34;,))
-                                                d[tensor] = np.full(view.get_length(&#34;cells&#34;), t[:], dtype=t.numpy_dtype())
+                                                        ws[new_name] = shoji.Tensor(t.dtype, (&#34;cells&#34;,))
+                                                d[new_name] = np.full(view.get_length(&#34;cells&#34;), t[:], dtype=t.numpy_dtype())
                                         else:
-                                                ws[tensor] = shoji.Tensor(t.dtype, t.dims, t[:])
+                                                ws[new_name] = shoji.Tensor(t.dtype, t.dims, inits=t[:])
                         ws.cells.append(d)
-                logging.info(f&#34; CollectCells: Collected {ws.cells.length} cells&#34;)
-                ws.cells = shoji.Dimension(shape=ws.cells.length)  # Fix the length of the cells dimension</code></pre>
+                ws.cells = shoji.Dimension(shape=ws.cells.length)  # Fix the length of the cells dimension
+                logging.info(f&#34; CollectCells: Collected {ws.cells.length} cells&#34;)</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="cytograph.module.Module" href="../module.html#cytograph.module.Module">Module</a></li>
+</ul>
 <h3>Methods</h3>
 <dl>
 <dt id="cytograph.pipeline.collect_cells.CollectCells.fit"><code class="name flex">
@@ -209,36 +240,43 @@ shoji workspace</p></div>
                 else:
                         logging.error(f&#34;Source {source} not found!&#34;)
                         sys.exit(1)
-                d: Dict[str, np.ndarray] = {}
                 onlyif = punchcard.sources_onlyif[ix]
                 if onlyif is not None:
                         logging.info(f&#34; CollectCells: Collecting tensors from &#39;{source}&#39; where &#39;{onlyif}&#39;&#34;)
                         conditions = eval(onlyif, {&#34;ws&#34;: source_ws, &#34;np&#34;: np, &#34;shoji&#34;: shoji, &#34;cg&#34;: cg})
                         if not isinstance(conditions, shoji.Filter):
                                 raise ValueError(f&#34;Conditions in &#39;onlyif&#39; must evaluate to a shoji.Filter, but &#39;{onlyif}&#39; evaluated to &#39;{type(conditions)}&#39;&#34;)
-                        view = source_ws[conditions, ...]
+                        view = source_ws[conditions]
                 else:
                         logging.info(f&#34; CollectCells: Collecting tensors from &#39;{source}&#39;&#34;)
-                        view = source_ws[...]
-                for tensor in self.tensors:
+                        view = source_ws[:]
+                d = {}
+                for tensor_spec in self.tensors:
+                        if &#34;-&gt;&#34; in tensor_spec:
+                                tensor, new_name = tensor_spec.split(&#34;-&gt;&#34;)
+                        else:
+                                tensor, new_name = tensor_spec, tensor_spec
                         if tensor not in source_ws:
                                 logging.error(f&#34;Tensor &#39;{tensor}&#39; missing in source workspace &#39;{source}&#34;)
                                 sys.exit(1)
                         t = source_ws[tensor]
-                        if t.rank &gt; 0 and t.dims[0] == &#34;cells&#34;:
+                        if t.rank &gt; 0:
+                                if t.dims[0] != &#34;cells&#34;:
+                                        logging.warning(f&#34;Skipping tensor {tensor} because first dimension is not &#39;cells&#39;&#34;)
+                                        continue
                                 if ix == 0:
-                                        ws[tensor] = shoji.Tensor(t.dtype, t.dims)
-                                d[tensor] = view[tensor]
+                                        ws[new_name] = shoji.Tensor(t.dtype, t.dims)
+                                d[new_name] = view[tensor]
                         elif t.rank == 0:
                                 if self.expand_scalars:
                                         if ix == 0:
-                                                ws[tensor] = shoji.Tensor(t.dtype, (&#34;cells&#34;,))
-                                        d[tensor] = np.full(view.get_length(&#34;cells&#34;), t[:], dtype=t.numpy_dtype())
+                                                ws[new_name] = shoji.Tensor(t.dtype, (&#34;cells&#34;,))
+                                        d[new_name] = np.full(view.get_length(&#34;cells&#34;), t[:], dtype=t.numpy_dtype())
                                 else:
-                                        ws[tensor] = shoji.Tensor(t.dtype, t.dims, t[:])
+                                        ws[new_name] = shoji.Tensor(t.dtype, t.dims, inits=t[:])
                 ws.cells.append(d)
-        logging.info(f&#34; CollectCells: Collected {ws.cells.length} cells&#34;)
-        ws.cells = shoji.Dimension(shape=ws.cells.length)  # Fix the length of the cells dimension</code></pre>
+        ws.cells = shoji.Dimension(shape=ws.cells.length)  # Fix the length of the cells dimension
+        logging.info(f&#34; CollectCells: Collected {ws.cells.length} cells&#34;)</code></pre>
 </details>
 </dd>
 </dl>

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.8.4" />
-<title>cytograph API documentation</title>
+<title>cytograph.visualization API documentation</title>
 <meta name="description" content="" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
@@ -19,88 +19,30 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Package <code>cytograph</code></h1>
+<h1 class="title">Module <code>cytograph.visualization</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">from ._version import __version__
-from .module import requires, creates, Module
-from .annotation import *
-from .clustering import *
-from .decomposition import *
-from .embedding import *
-from .enrichment import *
-from .manifold import *
-from .metrics import *
-from .pipeline import InitializeWorkspace, CollectCells, LoadSampleMetadata
-from .preprocessing import *
-from .species import *
-from .utils import *</code></pre>
+<pre><code class="python">from .colors import colors75, colorize
+from .dendrogram import dendrogram
+from .heatmap import Heatmap</code></pre>
 </details>
 </section>
 <section>
 <h2 class="section-title" id="header-submodules">Sub-modules</h2>
 <dl>
-<dt><code class="name"><a title="cytograph.annotation" href="annotation/index.html">cytograph.annotation</a></code></dt>
+<dt><code class="name"><a title="cytograph.visualization.colors" href="colors.html">cytograph.visualization.colors</a></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt><code class="name"><a title="cytograph.clustering" href="clustering/index.html">cytograph.clustering</a></code></dt>
-<dd>
-<div class="desc"><p>Algorithms for clustering, aggregation and metaclustering (agglomeration).</p></div>
-</dd>
-<dt><code class="name"><a title="cytograph.decomposition" href="decomposition/index.html">cytograph.decomposition</a></code></dt>
+<dt><code class="name"><a title="cytograph.visualization.dendrogram" href="dendrogram.html">cytograph.visualization.dendrogram</a></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt><code class="name"><a title="cytograph.embedding" href="embedding/index.html">cytograph.embedding</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="cytograph.enrichment" href="enrichment/index.html">cytograph.enrichment</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="cytograph.manifold" href="manifold/index.html">cytograph.manifold</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="cytograph.metrics" href="metrics/index.html">cytograph.metrics</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="cytograph.module" href="module.html">cytograph.module</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="cytograph.pipeline" href="pipeline/index.html">cytograph.pipeline</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="cytograph.plotting" href="plotting/index.html">cytograph.plotting</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="cytograph.postprocessing" href="postprocessing/index.html">cytograph.postprocessing</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="cytograph.preprocessing" href="preprocessing/index.html">cytograph.preprocessing</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="cytograph.species" href="species/index.html">cytograph.species</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="cytograph.utils" href="utils.html">cytograph.utils</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="cytograph.visualization" href="visualization/index.html">cytograph.visualization</a></code></dt>
+<dt><code class="name"><a title="cytograph.visualization.heatmap" href="heatmap.html">cytograph.visualization.heatmap</a></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -119,23 +61,16 @@ from .utils import *</code></pre>
 <ul></ul>
 </div>
 <ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="cytograph" href="../index.html">cytograph</a></code></li>
+</ul>
+</li>
 <li><h3><a href="#header-submodules">Sub-modules</a></h3>
 <ul>
-<li><code><a title="cytograph.annotation" href="annotation/index.html">cytograph.annotation</a></code></li>
-<li><code><a title="cytograph.clustering" href="clustering/index.html">cytograph.clustering</a></code></li>
-<li><code><a title="cytograph.decomposition" href="decomposition/index.html">cytograph.decomposition</a></code></li>
-<li><code><a title="cytograph.embedding" href="embedding/index.html">cytograph.embedding</a></code></li>
-<li><code><a title="cytograph.enrichment" href="enrichment/index.html">cytograph.enrichment</a></code></li>
-<li><code><a title="cytograph.manifold" href="manifold/index.html">cytograph.manifold</a></code></li>
-<li><code><a title="cytograph.metrics" href="metrics/index.html">cytograph.metrics</a></code></li>
-<li><code><a title="cytograph.module" href="module.html">cytograph.module</a></code></li>
-<li><code><a title="cytograph.pipeline" href="pipeline/index.html">cytograph.pipeline</a></code></li>
-<li><code><a title="cytograph.plotting" href="plotting/index.html">cytograph.plotting</a></code></li>
-<li><code><a title="cytograph.postprocessing" href="postprocessing/index.html">cytograph.postprocessing</a></code></li>
-<li><code><a title="cytograph.preprocessing" href="preprocessing/index.html">cytograph.preprocessing</a></code></li>
-<li><code><a title="cytograph.species" href="species/index.html">cytograph.species</a></code></li>
-<li><code><a title="cytograph.utils" href="utils.html">cytograph.utils</a></code></li>
-<li><code><a title="cytograph.visualization" href="visualization/index.html">cytograph.visualization</a></code></li>
+<li><code><a title="cytograph.visualization.colors" href="colors.html">cytograph.visualization.colors</a></code></li>
+<li><code><a title="cytograph.visualization.dendrogram" href="dendrogram.html">cytograph.visualization.dendrogram</a></code></li>
+<li><code><a title="cytograph.visualization.heatmap" href="heatmap.html">cytograph.visualization.heatmap</a></code></li>
 </ul>
 </li>
 </ul>

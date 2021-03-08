@@ -123,10 +123,11 @@ class PolishedLeiden(Module):
 		labels = clusterer.fit_predict(xy)
 
 		# Assign each outlier to the same cluster as the nearest non-outlier
-		nn = NearestNeighbors(n_neighbors=50, algorithm="ball_tree")
-		nn.fit(xy[labels >= 0])
-		nearest = nn.kneighbors(xy[labels == -1], n_neighbors=1, return_distance=False)
-		labels[labels == -1] = labels[labels >= 0][nearest.flat[:]]
+		if (labels == -1).sum() > 0:
+			nn = NearestNeighbors(n_neighbors=50, algorithm="ball_tree")
+			nn.fit(xy[labels >= 0])
+			nearest = nn.kneighbors(xy[labels == -1], n_neighbors=1, return_distance=False)
+			labels[labels == -1] = labels[labels >= 0][nearest.flat[:]]
 		return labels
 
 	@requires("Embedding", "float32", ("cells", 2))

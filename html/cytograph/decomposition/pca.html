@@ -59,9 +59,9 @@ class PrincipalComponents(Module):
                 TotalUMIs = self.requires[&#34;TotalUMIs&#34;]
 
                 logging.info(&#34; PrincipalComponents: Loading and normalizing data&#34;)
-                totals = ws[TotalUMIs][...].astype(&#34;float32&#34;)
+                totals = ws[TotalUMIs][:].astype(&#34;float32&#34;)
                 level = np.median(totals)
-                data = ws[ws[SelectedFeatures] == True, ...][Expression]
+                data = ws[ws[SelectedFeatures] == True][Expression]
                 vals = np.log2(div0(data.T, totals) * level + 1).T  # Transposed back to (cells, genes)
 
                 logging.info(f&#34; PrincipalComponents: Computing principal components&#34;)
@@ -69,7 +69,7 @@ class PrincipalComponents(Module):
                 factors = pca.fit_transform(vals)
                 loadings = pca.components_.T
                 loadings_all = np.zeros_like(loadings, shape=(ws.genes.length, self.n_factors))
-                loadings_all[ws.SelectedFeatures[...]] = loadings
+                loadings_all[ws.SelectedFeatures[:]] = loadings
                 return factors, loadings_all</code></pre>
 </details>
 </section>
@@ -122,9 +122,9 @@ class PrincipalComponents(Module):
                 TotalUMIs = self.requires[&#34;TotalUMIs&#34;]
 
                 logging.info(&#34; PrincipalComponents: Loading and normalizing data&#34;)
-                totals = ws[TotalUMIs][...].astype(&#34;float32&#34;)
+                totals = ws[TotalUMIs][:].astype(&#34;float32&#34;)
                 level = np.median(totals)
-                data = ws[ws[SelectedFeatures] == True, ...][Expression]
+                data = ws[ws[SelectedFeatures] == True][Expression]
                 vals = np.log2(div0(data.T, totals) * level + 1).T  # Transposed back to (cells, genes)
 
                 logging.info(f&#34; PrincipalComponents: Computing principal components&#34;)
@@ -132,7 +132,7 @@ class PrincipalComponents(Module):
                 factors = pca.fit_transform(vals)
                 loadings = pca.components_.T
                 loadings_all = np.zeros_like(loadings, shape=(ws.genes.length, self.n_factors))
-                loadings_all[ws.SelectedFeatures[...]] = loadings
+                loadings_all[ws.SelectedFeatures[:]] = loadings
                 return factors, loadings_all</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -161,9 +161,9 @@ def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; Tuple[np.nda
         TotalUMIs = self.requires[&#34;TotalUMIs&#34;]
 
         logging.info(&#34; PrincipalComponents: Loading and normalizing data&#34;)
-        totals = ws[TotalUMIs][...].astype(&#34;float32&#34;)
+        totals = ws[TotalUMIs][:].astype(&#34;float32&#34;)
         level = np.median(totals)
-        data = ws[ws[SelectedFeatures] == True, ...][Expression]
+        data = ws[ws[SelectedFeatures] == True][Expression]
         vals = np.log2(div0(data.T, totals) * level + 1).T  # Transposed back to (cells, genes)
 
         logging.info(f&#34; PrincipalComponents: Computing principal components&#34;)
@@ -171,7 +171,7 @@ def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; Tuple[np.nda
         factors = pca.fit_transform(vals)
         loadings = pca.components_.T
         loadings_all = np.zeros_like(loadings, shape=(ws.genes.length, self.n_factors))
-        loadings_all[ws.SelectedFeatures[...]] = loadings
+        loadings_all[ws.SelectedFeatures[:]] = loadings
         return factors, loadings_all</code></pre>
 </details>
 </dd>

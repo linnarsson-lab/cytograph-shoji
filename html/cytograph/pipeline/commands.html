@@ -64,10 +64,6 @@ def cli(show_message: bool = True, verbosity: str = &#34;info&#34;) -&gt; None:
 
         if show_message:
                 print(f&#34;Cytograph v{version} by Linnarsson Lab 🌸 (http://linnarssonlab.org)&#34;)
-                if os.path.exists(config[&#39;paths&#39;][&#39;builds&#39;]):
-                        print(f&#34;            Builds: {config[&#39;paths&#39;][&#39;builds&#39;]}&#34;)
-                else:
-                        print(f&#34;            Builds: {config[&#39;paths&#39;][&#39;builds&#39;]} \033[1;31;40m-- DIRECTORY DOES NOT EXIST --\033[0m&#34;)
                 print()
 
 
@@ -98,8 +94,8 @@ def build(engine: str, dryrun: bool) -&gt; None:
 
 @cli.command()
 @click.argument(&#34;punchcard&#34;)
-@click.option(&#39;--resume&#39;, is_flag=True, default=False)
-def process(punchcard: str, resume: bool) -&gt; None:
+@click.option(&#39;--resume&#39;, default=0)
+def process(punchcard: str, resume: int) -&gt; None:
         workspace = Path(os.getcwd()).name
         logging.info(f&#34;Using &#39;{workspace}&#39; as the workspace&#34;)
         try:
@@ -112,12 +108,14 @@ def process(punchcard: str, resume: bool) -&gt; None:
                 config[&#34;paths&#34;][&#34;build&#34;].mkdir(exist_ok=True)
 
                 db = shoji.connect()
+                if config[&#39;workspaces&#39;][&#39;builds&#39;] not in db:
+                        db[config[&#39;workspaces&#39;][&#39;builds&#39;]] = shoji.Workspace()
                 ws_builds = db[config[&#39;workspaces&#39;][&#39;builds&#39;]]
                 if workspace not in ws_builds:
                         logging.info(f&#34;Creating Workspace &#39;{config[&#39;workspaces&#39;][&#39;builds&#39;]}.{workspace}&#39;&#34;)
                         ws_builds[workspace] = shoji.Workspace()
                 
-                if resume:
+                if resume &gt; 0:
                         if punchcard not in ws_builds[workspace]:
                                 logging.error(f&#34;Cannot resume, because workspace &#39;{config[&#39;workspaces&#39;][&#39;builds&#39;]}.{workspace}.{punchcard}&#39; does not exist&#34;)
                                 sys.exit(1)
@@ -140,37 +138,47 @@ def process(punchcard: str, resume: bool) -&gt; None:
                         logging.debug(line)
 
                 logging.info(f&#34;Processing &#39;{punchcard}&#39;&#34;)
-                Workflow(deck, punchcard_obj).process()
+                Workflow(deck, punchcard_obj).process(resume)
         except Exception as e:
                 logging.exception(f&#34;&#39;process&#39; command failed: {e}&#34;)
-
+                sys.exit(1)
 
 @cli.command()
 @click.argument(&#39;sampleids&#39;, nargs=-1)
-@click.option(&#39;--file&#39;, help=&#34;Path to file containing sample IDs (one ID per line)&#34;)
-def qc(sampleids: List[str], file: str = None) -&gt; None:
-        config = Config.load()
-        for line in pp(config).split(&#34;\n&#34;):
-                logging.debug(line)
+def qc(sampleids: List[str]) -&gt; None:
+        try:
+                workspace = Path(os.getcwd()).name
+                logging.info(f&#34;Using &#39;{workspace}&#39; as the workspace&#34;)
 
-        samples_to_process: List[str] = []
-        if len(sampleids) &gt; 0:
-                samples_to_process = sampleids
+                config = Config.load()
+                for line in pp(config).split(&#34;\n&#34;):
+                        logging.debug(line)
+                config[&#34;paths&#34;][&#34;build&#34;] = Path(config[&#39;paths&#39;][&#39;builds&#39;]) / workspace
+                logging.info(f&#34;Build folder is &#39;{config[&#39;paths&#39;][&#39;build&#39;]}&#39;&#34;)
+                config[&#34;paths&#34;][&#34;build&#34;].mkdir(exist_ok=True)
 
-        if file is not None:
-                with open(file) as f:
-                        for sample in f:
-                                if &#34;,&#34; in sample:
-                                        logging.error(&#34;Sample IDs in file cannot contain comma (,); put one sample ID per line&#34;)
-                                samples_to_process.append(sample)
+                deck = PunchcardDeck(config[&#39;paths&#39;][&#39;build&#39;] / &#34;punchcards&#34;)
 
-        sampleids = np.unique(samples_to_process)
-        db = shoji.connect()
-        for sampleid in sampleids:
-                logging.info(f&#34;Processing &#39;{sampleid}&#39;&#34;)
-                ws = db[config[&#34;workspaces&#34;][&#34;samples&#34;]][sampleid]
-                recipe = config[&#34;recipes&#34;][&#34;qc&#34;]
-                run_recipe(ws, recipe)</code></pre>
+                sampleids = np.unique(sampleids)
+                db = shoji.connect()
+                for sampleid in sampleids:
+                        ws = db[config[&#34;workspaces&#34;][&#34;samples&#34;]]
+                        if sampleid in ws:
+                                logging.info(f&#34;Processing &#39;{sampleid}&#39;&#34;)
+                                recipe = config[&#34;recipes&#34;][&#34;qc&#34;]
+                                run_recipe(ws[sampleid], recipe)
+                        elif sampleid in deck.punchcards:
+                                punchcard = deck.punchcards[sampleid]
+                                for sample in punchcard.sources:
+                                        if sample in ws:
+                                                logging.info(f&#34;Processing &#39;{sample}&#39;&#34;)
+                                                recipe = config[&#34;recipes&#34;][&#34;qc&#34;]
+                                                run_recipe(ws[sample], recipe)
+                                        else:
+                                                logging.warning(f&#34;Skipping &#39;{sample}&#39; (specificed in punchcard &#39;{sampleid}&#39;) because sample not found&#34;)
+        except Exception as e:
+                logging.error(f&#34;&#39;qc&#39; command failed: {e}&#34;)
+                sys.exit(1)</code></pre>
 </details>
 </section>
 <section>

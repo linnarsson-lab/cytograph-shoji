@@ -39,17 +39,21 @@ class Dendrogram(Module):
         def __init__(self, **kwargs) -&gt; None:
                 &#34;&#34;&#34;
                 Compute a dendrogram of clusters
+
+                Remarks:
+                        Agglomeration using Ward&#39;s linkage on the normalized mean expression per cluster.
+                        Mean expression values are normalized to the median total UMIs, and `log2(x + 1)` transformed.
                 &#34;&#34;&#34;
                 super().__init__(**kwargs)
 
         @requires(&#34;SelectedFeatures&#34;, &#34;bool&#34;, (&#34;genes&#34;,))
-        @requires(&#34;MeanExpression&#34;, None, (&#34;clusters&#34;, &#34;genes&#34;))
+        @requires(&#34;MeanExpression&#34;, &#34;float64&#34;, (&#34;clusters&#34;, &#34;genes&#34;))
         @creates(&#34;Linkage&#34;, &#34;float32&#34;, (None, 4))
         @creates(&#34;LinkageOrdering&#34;, &#34;uint32&#34;, (&#34;clusters&#34;,))
         def fit(self, ws: shoji.WorkspaceManager, save: bool) -&gt; np.ndarray:
-                logging.info(&#34; Dendrogram: Loading enrichment scores for selected genes&#34;)
-                selected = self.SelectedFeatures[...]
-                x = self.MeanExpression[...]
+                logging.info(&#34; Dendrogram: Computing normalized expression of selected genes&#34;)
+                selected = self.SelectedFeatures[:]
+                x = self.MeanExpression[:]
                 totals = x.sum(axis=1)
                 x = np.log2((x.T / totals * np.median(totals)).T + 1)[:, selected]
 
@@ -76,7 +80,10 @@ class Dendrogram(Module):
 <span>(</span><span>**kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Compute a dendrogram of clusters</p></div>
+<div class="desc"><p>Compute a dendrogram of clusters</p>
+<h2 id="remarks">Remarks</h2>
+<p>Agglomeration using Ward's linkage on the normalized mean expression per cluster.
+Mean expression values are normalized to the median total UMIs, and <code>log2(x + 1)</code> transformed.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -85,17 +92,21 @@ class Dendrogram(Module):
         def __init__(self, **kwargs) -&gt; None:
                 &#34;&#34;&#34;
                 Compute a dendrogram of clusters
+
+                Remarks:
+                        Agglomeration using Ward&#39;s linkage on the normalized mean expression per cluster.
+                        Mean expression values are normalized to the median total UMIs, and `log2(x + 1)` transformed.
                 &#34;&#34;&#34;
                 super().__init__(**kwargs)
 
         @requires(&#34;SelectedFeatures&#34;, &#34;bool&#34;, (&#34;genes&#34;,))
-        @requires(&#34;MeanExpression&#34;, None, (&#34;clusters&#34;, &#34;genes&#34;))
+        @requires(&#34;MeanExpression&#34;, &#34;float64&#34;, (&#34;clusters&#34;, &#34;genes&#34;))
         @creates(&#34;Linkage&#34;, &#34;float32&#34;, (None, 4))
         @creates(&#34;LinkageOrdering&#34;, &#34;uint32&#34;, (&#34;clusters&#34;,))
         def fit(self, ws: shoji.WorkspaceManager, save: bool) -&gt; np.ndarray:
-                logging.info(&#34; Dendrogram: Loading enrichment scores for selected genes&#34;)
-                selected = self.SelectedFeatures[...]
-                x = self.MeanExpression[...]
+                logging.info(&#34; Dendrogram: Computing normalized expression of selected genes&#34;)
+                selected = self.SelectedFeatures[:]
+                x = self.MeanExpression[:]
                 totals = x.sum(axis=1)
                 x = np.log2((x.T / totals * np.median(totals)).T + 1)[:, selected]
 
@@ -123,13 +134,13 @@ class Dendrogram(Module):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@requires(&#34;SelectedFeatures&#34;, &#34;bool&#34;, (&#34;genes&#34;,))
-@requires(&#34;MeanExpression&#34;, None, (&#34;clusters&#34;, &#34;genes&#34;))
+@requires(&#34;MeanExpression&#34;, &#34;float64&#34;, (&#34;clusters&#34;, &#34;genes&#34;))
 @creates(&#34;Linkage&#34;, &#34;float32&#34;, (None, 4))
 @creates(&#34;LinkageOrdering&#34;, &#34;uint32&#34;, (&#34;clusters&#34;,))
 def fit(self, ws: shoji.WorkspaceManager, save: bool) -&gt; np.ndarray:
-        logging.info(&#34; Dendrogram: Loading enrichment scores for selected genes&#34;)
-        selected = self.SelectedFeatures[...]
-        x = self.MeanExpression[...]
+        logging.info(&#34; Dendrogram: Computing normalized expression of selected genes&#34;)
+        selected = self.SelectedFeatures[:]
+        x = self.MeanExpression[:]
         totals = x.sum(axis=1)
         x = np.log2((x.T / totals * np.median(totals)).T + 1)[:, selected]
 

@@ -6,3 +6,4 @@ from .aggregate import Aggregate
 from .dendrogram import Dendrogram
 from .polished_leiden import PolishedLeiden
 from .residuals_dendrogram import ResidualsDendrogram
+from .cut_dendrogram import CutDendrogram

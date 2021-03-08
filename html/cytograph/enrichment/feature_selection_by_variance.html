@@ -64,18 +64,13 @@ class FeatureSelectionByVariance(Module):
                 Remarks:
                         If the tensor &#34;ValidGenes&#34; exists, only ValidGenes == True genes will be selected
                 &#34;&#34;&#34;
-                # Create symbolic names for the required tensors, which might be renamed by the user
-                Species = self.requires[&#34;Species&#34;]
-                MeanExpression = self.requires[&#34;MeanExpression&#34;]
-                StdevExpression = self.requires[&#34;StdevExpression&#34;]
-
                 n_genes = ws.genes.length
-                species = cg.Species(ws[Species][:])
+                species = cg.Species(self.Species[:])
                 mask_genes = species.mask(ws, self.mask)
 
                 logging.info(&#34; FeatureSelectionByVariance: Fitting CV vs mean&#34;)
-                mu = ws[MeanExpression][...]
-                sd = ws[StdevExpression][...]
+                mu = self.MeanExpression[:]
+                sd = self.StdevExpression[:]
 
                 if &#34;ValidGenes&#34; in ws:
                         valid = ws.ValidGenes[:]
@@ -153,18 +148,13 @@ Optional mask (numpy bool array) indicating genes that should not be selected</p
                 Remarks:
                         If the tensor &#34;ValidGenes&#34; exists, only ValidGenes == True genes will be selected
                 &#34;&#34;&#34;
-                # Create symbolic names for the required tensors, which might be renamed by the user
-                Species = self.requires[&#34;Species&#34;]
-                MeanExpression = self.requires[&#34;MeanExpression&#34;]
-                StdevExpression = self.requires[&#34;StdevExpression&#34;]
-
                 n_genes = ws.genes.length
-                species = cg.Species(ws[Species][:])
+                species = cg.Species(self.Species[:])
                 mask_genes = species.mask(ws, self.mask)
 
                 logging.info(&#34; FeatureSelectionByVariance: Fitting CV vs mean&#34;)
-                mu = ws[MeanExpression][...]
-                sd = ws[StdevExpression][...]
+                mu = self.MeanExpression[:]
+                sd = self.StdevExpression[:]
 
                 if &#34;ValidGenes&#34; in ws:
                         valid = ws.ValidGenes[:]
@@ -233,18 +223,13 @@ def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; np.ndarray:
         Remarks:
                 If the tensor &#34;ValidGenes&#34; exists, only ValidGenes == True genes will be selected
         &#34;&#34;&#34;
-        # Create symbolic names for the required tensors, which might be renamed by the user
-        Species = self.requires[&#34;Species&#34;]
-        MeanExpression = self.requires[&#34;MeanExpression&#34;]
-        StdevExpression = self.requires[&#34;StdevExpression&#34;]
-
         n_genes = ws.genes.length
-        species = cg.Species(ws[Species][:])
+        species = cg.Species(self.Species[:])
         mask_genes = species.mask(ws, self.mask)
 
         logging.info(&#34; FeatureSelectionByVariance: Fitting CV vs mean&#34;)
-        mu = ws[MeanExpression][...]
-        sd = ws[StdevExpression][...]
+        mu = self.MeanExpression[:]
+        sd = self.StdevExpression[:]
 
         if &#34;ValidGenes&#34; in ws:
                 valid = ws.ValidGenes[:]

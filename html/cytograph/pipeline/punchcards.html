@@ -46,7 +46,6 @@ class Punchcard:
                 with open(path) as f:
                         spec: Dict[str, Any] = yaml.load(f, Loader=yaml.FullLoader)
                 self.onlyif = spec.get(&#34;onlyif&#34;, None)
-                self.samples = spec.get(&#34;samples&#34;, [])
                 sources_spec = spec.get(&#34;sources&#34;, [])
                 self.sources: List[str] = []
                 self.sources_onlyif: List[Optional[str]] = []
@@ -109,7 +108,6 @@ class PunchcardDeck:
                 with open(path) as f:
                         spec: Dict[str, Any] = yaml.load(f, Loader=yaml.FullLoader)
                 self.onlyif = spec.get(&#34;onlyif&#34;, None)
-                self.samples = spec.get(&#34;samples&#34;, [])
                 sources_spec = spec.get(&#34;sources&#34;, [])
                 self.sources: List[str] = []
                 self.sources_onlyif: List[Optional[str]] = []

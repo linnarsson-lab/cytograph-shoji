@@ -53,5 +53,9 @@ class RnnManifold(Module):
 		else:
 			knn = knn.tocoo()
 			inside = knn.data > 1 - radius
+			logging.info(f" RnnManifold: Creating sparse matrix")
 			rnn = sparse.coo_matrix((knn.data[inside], (knn.row[inside], knn.col[inside])), shape=knn.shape)
-		return (radius, np.vstack([rnn.row, rnn.col]).T, rnn.data)
+		logging.info(f" RnnManifold: Total of {rnn.getnnz():,} edges")
+		indices = np.vstack([rnn.row, rnn.col]).T
+		logging.info(f" RnnManifold: Saving")
+		return (radius, indices, rnn.data)

@@ -82,10 +82,10 @@ class Workflow:
                 self.punchcard = punchcard
                 self.export_dir = os.path.join(self.config[&#34;paths&#34;][&#34;build&#34;], &#34;exported&#34;, punchcard.name)
 
-        def process(self) -&gt; None:
+        def process(self, resume_at: int = 0) -&gt; None:
                 ws = self.config[&#34;workspaces&#34;][&#34;build&#34;][self.punchcard.name]
                 logging.info(f&#34;Running recipe &#39;{self.punchcard.recipe}&#39; for &#39;{self.punchcard.name}&#39;&#34;)
-                run_recipe(ws, self.config[&#34;recipes&#34;][self.punchcard.recipe])</code></pre>
+                run_recipe(ws, self.config[&#34;recipes&#34;][self.punchcard.recipe][resume_at:])</code></pre>
 </details>
 </section>
 <section>
@@ -174,15 +174,15 @@ class Workflow:
                 self.punchcard = punchcard
                 self.export_dir = os.path.join(self.config[&#34;paths&#34;][&#34;build&#34;], &#34;exported&#34;, punchcard.name)
 
-        def process(self) -&gt; None:
+        def process(self, resume_at: int = 0) -&gt; None:
                 ws = self.config[&#34;workspaces&#34;][&#34;build&#34;][self.punchcard.name]
                 logging.info(f&#34;Running recipe &#39;{self.punchcard.recipe}&#39; for &#39;{self.punchcard.name}&#39;&#34;)
-                run_recipe(ws, self.config[&#34;recipes&#34;][self.punchcard.recipe])</code></pre>
+                run_recipe(ws, self.config[&#34;recipes&#34;][self.punchcard.recipe][resume_at:])</code></pre>
 </details>
 <h3>Methods</h3>
 <dl>
 <dt id="cytograph.pipeline.workflow.Workflow.process"><code class="name flex">
-<span>def <span class="ident">process</span></span>(<span>self) ‑> NoneType</span>
+<span>def <span class="ident">process</span></span>(<span>self, resume_at: int = 0) ‑> NoneType</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -190,10 +190,10 @@ class Workflow:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def process(self) -&gt; None:
+<pre><code class="python">def process(self, resume_at: int = 0) -&gt; None:
         ws = self.config[&#34;workspaces&#34;][&#34;build&#34;][self.punchcard.name]
         logging.info(f&#34;Running recipe &#39;{self.punchcard.recipe}&#39; for &#39;{self.punchcard.name}&#39;&#34;)
-        run_recipe(ws, self.config[&#34;recipes&#34;][self.punchcard.recipe])</code></pre>
+        run_recipe(ws, self.config[&#34;recipes&#34;][self.punchcard.recipe][resume_at:])</code></pre>
 </details>
 </dd>
 </dl>

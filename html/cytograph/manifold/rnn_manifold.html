@@ -35,49 +35,53 @@ import shoji
 
 
 class RnnManifold(Module):
-        def __init__(self, k: int, metric: str, **kwargs) -&gt; None:
+        def __init__(self, k: int, metric: str, mutual: bool = False, **kwargs) -&gt; None:
                 &#34;&#34;&#34;
                 Args:
                         k                               The maximum number of neighbors to use
                         metric                  The metric to use (e.g. &#34;euclidean&#34;)
+                        mutual                  If true, use only mutual neighbors
                 &#34;&#34;&#34;
                 super().__init__(**kwargs)
                 self.k = k
                 self.metric = metric
+                self.mutual = mutual
 
         @requires(&#34;Factors&#34;, &#34;float32&#34;, (&#34;cells&#34;, None))
         @creates(&#34;ManifoldRadius&#34;, &#34;float32&#34;, ())
         @creates(&#34;ManifoldIndices&#34;, &#34;uint32&#34;, (None, 2))
         @creates(&#34;ManifoldWeights&#34;, &#34;float32&#34;, (None, ))
         def fit(self, ws: shoji.WorkspaceManager, save=False):
-                Factors = self.requires[&#34;Factors&#34;]
-
                 logging.info(&#34; RnnManifold: Loading data&#34;)
-                data = ws[Factors][...]
+                data = self.Factors[:]
                 logging.info(f&#34; RnnManifold: Computing balanced KNN (k = {self.k}, metric = &#39;{self.metric}&#39;)&#34;)
                 bnn = cg.BalancedKNN(k=self.k, metric=self.metric, maxl=2 * self.k, sight_k=2 * self.k, n_jobs=-1)
                 bnn.fit(data)
                 logging.info(f&#34; RnnManifold: Converting to graph&#34;)
                 knn = bnn.kneighbors_graph(mode=&#39;distance&#39;)
-                logging.info(f&#34; RnnManifold: Removing zeros&#34;)
+                logging.info(f&#34; RnnManifold: Removing self-edges and zeros&#34;)
+                knn.setdiag(0)
                 knn.eliminate_zeros()
-                logging.info(f&#34; RnnManifold: Converting to mutual nearest neighbors&#34;)
-                mknn = knn.minimum(knn.transpose())
-                # Convert distances to similarities
                 logging.info(f&#34; RnnManifold: Converting to similarities&#34;)
                 max_d = knn.data.max()
                 knn.data = (max_d - knn.data) / max_d
-                mknn.data = (max_d - mknn.data) / max_d
-                mknn = mknn.tocoo()
-                mknn.setdiag(0)
-                # Compute the effective resolution
                 logging.info(f&#34; RnnManifold: Computing resolution&#34;)
-                d = 1 - knn.data
-                radius = np.percentile(d, 90)
+                radius = np.percentile(1 - knn.data, 90)
                 logging.info(f&#34; RnnManifold: 90th percentile radius: {radius:.02}&#34;)
-                inside = mknn.data &gt; 1 - radius
-                rnn = sparse.coo_matrix((mknn.data[inside], (mknn.row[inside], mknn.col[inside])), shape=mknn.shape)
 
+                if self.mutual:
+                        logging.info(f&#34; RnnManifold: Converting to mutual nearest neighbors&#34;)
+                        mknn = knn.minimum(knn.transpose())
+                        # Convert distances to similarities
+                        mknn.data = (max_d - mknn.data) / max_d
+                        mknn = mknn.tocoo()
+                        mknn.setdiag(0)
+                        inside = mknn.data &gt; 1 - radius
+                        rnn = sparse.coo_matrix((mknn.data[inside], (mknn.row[inside], mknn.col[inside])), shape=mknn.shape)
+                else:
+                        knn = knn.tocoo()
+                        inside = knn.data &gt; 1 - radius
+                        rnn = sparse.coo_matrix((knn.data[inside], (knn.row[inside], knn.col[inside])), shape=knn.shape)
                 return (radius, np.vstack([rnn.row, rnn.col]).T, rnn.data)</code></pre>
 </details>
 </section>
@@ -92,62 +96,68 @@ class RnnManifold(Module):
 <dl>
 <dt id="cytograph.manifold.rnn_manifold.RnnManifold"><code class="flex name class">
 <span>class <span class="ident">RnnManifold</span></span>
-<span>(</span><span>k: int, metric: str, **kwargs)</span>
+<span>(</span><span>k: int, metric: str, mutual: bool = False, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"><h2 id="args">Args</h2>
 <p>k
 The maximum number of neighbors to use
 metric
-The metric to use (e.g. "euclidean")</p></div>
+The metric to use (e.g. "euclidean")
+mutual
+If true, use only mutual neighbors</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class RnnManifold(Module):
-        def __init__(self, k: int, metric: str, **kwargs) -&gt; None:
+        def __init__(self, k: int, metric: str, mutual: bool = False, **kwargs) -&gt; None:
                 &#34;&#34;&#34;
                 Args:
                         k                               The maximum number of neighbors to use
                         metric                  The metric to use (e.g. &#34;euclidean&#34;)
+                        mutual                  If true, use only mutual neighbors
                 &#34;&#34;&#34;
                 super().__init__(**kwargs)
                 self.k = k
                 self.metric = metric
+                self.mutual = mutual
 
         @requires(&#34;Factors&#34;, &#34;float32&#34;, (&#34;cells&#34;, None))
         @creates(&#34;ManifoldRadius&#34;, &#34;float32&#34;, ())
         @creates(&#34;ManifoldIndices&#34;, &#34;uint32&#34;, (None, 2))
         @creates(&#34;ManifoldWeights&#34;, &#34;float32&#34;, (None, ))
         def fit(self, ws: shoji.WorkspaceManager, save=False):
-                Factors = self.requires[&#34;Factors&#34;]
-
                 logging.info(&#34; RnnManifold: Loading data&#34;)
-                data = ws[Factors][...]
+                data = self.Factors[:]
                 logging.info(f&#34; RnnManifold: Computing balanced KNN (k = {self.k}, metric = &#39;{self.metric}&#39;)&#34;)
                 bnn = cg.BalancedKNN(k=self.k, metric=self.metric, maxl=2 * self.k, sight_k=2 * self.k, n_jobs=-1)
                 bnn.fit(data)
                 logging.info(f&#34; RnnManifold: Converting to graph&#34;)
                 knn = bnn.kneighbors_graph(mode=&#39;distance&#39;)
-                logging.info(f&#34; RnnManifold: Removing zeros&#34;)
+                logging.info(f&#34; RnnManifold: Removing self-edges and zeros&#34;)
+                knn.setdiag(0)
                 knn.eliminate_zeros()
-                logging.info(f&#34; RnnManifold: Converting to mutual nearest neighbors&#34;)
-                mknn = knn.minimum(knn.transpose())
-                # Convert distances to similarities
                 logging.info(f&#34; RnnManifold: Converting to similarities&#34;)
                 max_d = knn.data.max()
                 knn.data = (max_d - knn.data) / max_d
-                mknn.data = (max_d - mknn.data) / max_d
-                mknn = mknn.tocoo()
-                mknn.setdiag(0)
-                # Compute the effective resolution
                 logging.info(f&#34; RnnManifold: Computing resolution&#34;)
-                d = 1 - knn.data
-                radius = np.percentile(d, 90)
+                radius = np.percentile(1 - knn.data, 90)
                 logging.info(f&#34; RnnManifold: 90th percentile radius: {radius:.02}&#34;)
-                inside = mknn.data &gt; 1 - radius
-                rnn = sparse.coo_matrix((mknn.data[inside], (mknn.row[inside], mknn.col[inside])), shape=mknn.shape)
 
+                if self.mutual:
+                        logging.info(f&#34; RnnManifold: Converting to mutual nearest neighbors&#34;)
+                        mknn = knn.minimum(knn.transpose())
+                        # Convert distances to similarities
+                        mknn.data = (max_d - mknn.data) / max_d
+                        mknn = mknn.tocoo()
+                        mknn.setdiag(0)
+                        inside = mknn.data &gt; 1 - radius
+                        rnn = sparse.coo_matrix((mknn.data[inside], (mknn.row[inside], mknn.col[inside])), shape=mknn.shape)
+                else:
+                        knn = knn.tocoo()
+                        inside = knn.data &gt; 1 - radius
+                        rnn = sparse.coo_matrix((knn.data[inside], (knn.row[inside], knn.col[inside])), shape=knn.shape)
                 return (radius, np.vstack([rnn.row, rnn.col]).T, rnn.data)</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -170,34 +180,36 @@ The metric to use (e.g. "euclidean")</p></div>
 @creates(&#34;ManifoldIndices&#34;, &#34;uint32&#34;, (None, 2))
 @creates(&#34;ManifoldWeights&#34;, &#34;float32&#34;, (None, ))
 def fit(self, ws: shoji.WorkspaceManager, save=False):
-        Factors = self.requires[&#34;Factors&#34;]
-
         logging.info(&#34; RnnManifold: Loading data&#34;)
-        data = ws[Factors][...]
+        data = self.Factors[:]
         logging.info(f&#34; RnnManifold: Computing balanced KNN (k = {self.k}, metric = &#39;{self.metric}&#39;)&#34;)
         bnn = cg.BalancedKNN(k=self.k, metric=self.metric, maxl=2 * self.k, sight_k=2 * self.k, n_jobs=-1)
         bnn.fit(data)
         logging.info(f&#34; RnnManifold: Converting to graph&#34;)
         knn = bnn.kneighbors_graph(mode=&#39;distance&#39;)
-        logging.info(f&#34; RnnManifold: Removing zeros&#34;)
+        logging.info(f&#34; RnnManifold: Removing self-edges and zeros&#34;)
+        knn.setdiag(0)
         knn.eliminate_zeros()
-        logging.info(f&#34; RnnManifold: Converting to mutual nearest neighbors&#34;)
-        mknn = knn.minimum(knn.transpose())
-        # Convert distances to similarities
         logging.info(f&#34; RnnManifold: Converting to similarities&#34;)
         max_d = knn.data.max()
         knn.data = (max_d - knn.data) / max_d
-        mknn.data = (max_d - mknn.data) / max_d
-        mknn = mknn.tocoo()
-        mknn.setdiag(0)
-        # Compute the effective resolution
         logging.info(f&#34; RnnManifold: Computing resolution&#34;)
-        d = 1 - knn.data
-        radius = np.percentile(d, 90)
+        radius = np.percentile(1 - knn.data, 90)
         logging.info(f&#34; RnnManifold: 90th percentile radius: {radius:.02}&#34;)
-        inside = mknn.data &gt; 1 - radius
-        rnn = sparse.coo_matrix((mknn.data[inside], (mknn.row[inside], mknn.col[inside])), shape=mknn.shape)
 
+        if self.mutual:
+                logging.info(f&#34; RnnManifold: Converting to mutual nearest neighbors&#34;)
+                mknn = knn.minimum(knn.transpose())
+                # Convert distances to similarities
+                mknn.data = (max_d - mknn.data) / max_d
+                mknn = mknn.tocoo()
+                mknn.setdiag(0)
+                inside = mknn.data &gt; 1 - radius
+                rnn = sparse.coo_matrix((mknn.data[inside], (mknn.row[inside], mknn.col[inside])), shape=mknn.shape)
+        else:
+                knn = knn.tocoo()
+                inside = knn.data &gt; 1 - radius
+                rnn = sparse.coo_matrix((knn.data[inside], (knn.row[inside], knn.col[inside])), shape=knn.shape)
         return (radius, np.vstack([rnn.row, rnn.col]).T, rnn.data)</code></pre>
 </details>
 </dd>

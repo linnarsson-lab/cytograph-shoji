@@ -59,20 +59,16 @@ class Log2Normalizer(Module):
         @creates(&#34;Log2Level&#34;, &#34;uint16&#34;, ())
         @creates(&#34;Log2Mean&#34;, &#34;float32&#34;, (&#34;cells&#34;,))
         def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; Tuple[int, np.ndarray]:
-                # Create symbolic names for the required tensors, which might be renamed by the user
-                Expression = self.requires[&#34;Expression&#34;]
-                TotalUMIs = self.requires[&#34;TotalUMIs&#34;]
-
                 logging.info(&#34; Log2Normalizer: Computing normalized log2 mean&#34;)
                 n_genes = ws.genes.length
                 n_cells = ws.cells.length
                 self.log2_mu = np.zeros(n_genes)
-                self.totals = ws[TotalUMIs][...]
+                self.totals = self.TotalUMIs[:]
                 if self.level == 0:
                         self.level = np.median(self.totals)
 
                 for ix in range(0, n_cells, 1000):
-                        vals = ws[Expression][ix: ix + 1000][:, :].astype(&#34;float&#34;)
+                        vals = self.Expression[ix: ix + 1000].astype(&#34;float&#34;)
                         # Rescale to the median total UMI count, plus 1 (to avoid log of zero), then log transform
                         vals = np.log2(div0(vals.T, self.totals) * self.level + 1).T
                         self.log2_mu[ix: ix + 1000] = np.mean(vals, axis=1)
@@ -164,20 +160,16 @@ The level to which each cell should be normalized (or 0 to use the median)</p>
         @creates(&#34;Log2Level&#34;, &#34;uint16&#34;, ())
         @creates(&#34;Log2Mean&#34;, &#34;float32&#34;, (&#34;cells&#34;,))
         def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; Tuple[int, np.ndarray]:
-                # Create symbolic names for the required tensors, which might be renamed by the user
-                Expression = self.requires[&#34;Expression&#34;]
-                TotalUMIs = self.requires[&#34;TotalUMIs&#34;]
-
                 logging.info(&#34; Log2Normalizer: Computing normalized log2 mean&#34;)
                 n_genes = ws.genes.length
                 n_cells = ws.cells.length
                 self.log2_mu = np.zeros(n_genes)
-                self.totals = ws[TotalUMIs][...]
+                self.totals = self.TotalUMIs[:]
                 if self.level == 0:
                         self.level = np.median(self.totals)
 
                 for ix in range(0, n_cells, 1000):
-                        vals = ws[Expression][ix: ix + 1000][:, :].astype(&#34;float&#34;)
+                        vals = self.Expression[ix: ix + 1000].astype(&#34;float&#34;)
                         # Rescale to the median total UMI count, plus 1 (to avoid log of zero), then log transform
                         vals = np.log2(div0(vals.T, self.totals) * self.level + 1).T
                         self.log2_mu[ix: ix + 1000] = np.mean(vals, axis=1)
@@ -237,20 +229,16 @@ The level to which each cell should be normalized (or 0 to use the median)</p>
 @creates(&#34;Log2Level&#34;, &#34;uint16&#34;, ())
 @creates(&#34;Log2Mean&#34;, &#34;float32&#34;, (&#34;cells&#34;,))
 def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; Tuple[int, np.ndarray]:
-        # Create symbolic names for the required tensors, which might be renamed by the user
-        Expression = self.requires[&#34;Expression&#34;]
-        TotalUMIs = self.requires[&#34;TotalUMIs&#34;]
-
         logging.info(&#34; Log2Normalizer: Computing normalized log2 mean&#34;)
         n_genes = ws.genes.length
         n_cells = ws.cells.length
         self.log2_mu = np.zeros(n_genes)
-        self.totals = ws[TotalUMIs][...]
+        self.totals = self.TotalUMIs[:]
         if self.level == 0:
                 self.level = np.median(self.totals)
 
         for ix in range(0, n_cells, 1000):
-                vals = ws[Expression][ix: ix + 1000][:, :].astype(&#34;float&#34;)
+                vals = self.Expression[ix: ix + 1000].astype(&#34;float&#34;)
                 # Rescale to the median total UMI count, plus 1 (to avoid log of zero), then log transform
                 vals = np.log2(div0(vals.T, self.totals) * self.level + 1).T
                 self.log2_mu[ix: ix + 1000] = np.mean(vals, axis=1)

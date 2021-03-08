@@ -35,7 +35,7 @@ class CollectCells(Module):
 		punchcard = config["punchcard"]
 		for ix, source in enumerate(punchcard.sources):
 			if source in config["workspaces"]["build"]:
-				source_ws = db[config["workspace"]][source]
+				source_ws = config["workspaces"]["build"][source]
 			elif source in db[config["workspaces"]["samples"]]:
 				source_ws = db[config["workspaces"]["samples"]][source]
 			else:
@@ -51,30 +51,35 @@ class CollectCells(Module):
 			else:
 				logging.info(f" CollectCells: Collecting tensors from '{source}'")
 				view = source_ws[:]
-			d = {}
-			for tensor_spec in self.tensors:
-				if "->" in tensor_spec:
-					tensor, new_name = tensor_spec.split("->")
-				else:
-					tensor, new_name = tensor_spec, tensor_spec
-				if tensor not in source_ws:
-					logging.error(f"Tensor '{tensor}' missing in source workspace '{source}")
-					sys.exit(1)
-				t = source_ws[tensor]
-				if t.rank > 0:
-					if t.dims[0] != "cells":
-						logging.warning(f"Skipping tensor {tensor} because first dimension is not 'cells'")
-						continue
-					if ix == 0:
-						ws[new_name] = shoji.Tensor(t.dtype, t.dims)
-					d[new_name] = view[tensor]
-				elif t.rank == 0:
-					if self.expand_scalars:
-						if ix == 0:
-							ws[new_name] = shoji.Tensor(t.dtype, ("cells",))
-						d[new_name] = np.full(view.get_length("cells"), t[:], dtype=t.numpy_dtype())
+
+			indices = view.filters["cells"].get_rows(source_ws)
+			batch_size = 5_000
+			for start in range(0, indices.shape[0], batch_size):
+				d = {}
+				for tensor_spec in self.tensors:
+					if "->" in tensor_spec:
+						tensor, new_name = tensor_spec.split("->")
 					else:
-						ws[new_name] = shoji.Tensor(t.dtype, t.dims, inits=t[:])
-			ws.cells.append(d)
+						tensor, new_name = tensor_spec, tensor_spec
+					if tensor not in source_ws:
+						logging.error(f"Tensor '{tensor}' missing in source workspace '{source}")
+						sys.exit(1)
+					t = source_ws[tensor]
+					if t.rank > 0:
+						if t.dims[0] != "cells":
+							logging.error(f"Cannot collect tensor '{tensor}' because first dimension is not 'cells'")
+							sys.exit(1)
+						if ix == 0 and start == 0:
+							ws[new_name] = shoji.Tensor(t.dtype, t.dims)
+						d[new_name] = source_ws[tensor][indices[start: start + batch_size]]
+					elif t.rank == 0:
+						if self.expand_scalars:
+							if ix == 0 and start == 0:
+								ws[new_name] = shoji.Tensor(t.dtype, ("cells",))
+							d[new_name] = np.full(min(indices.shape[0] - start, batch_size), t[:], dtype=t.numpy_dtype())
+						elif ix == 0 and start == 0:
+							ws[new_name] = shoji.Tensor(t.dtype, t.dims, inits=t[:])
+				ws.cells.append(d)
+				start += batch_size
 		ws.cells = shoji.Dimension(shape=ws.cells.length)  # Fix the length of the cells dimension
 		logging.info(f" CollectCells: Collected {ws.cells.length} cells")

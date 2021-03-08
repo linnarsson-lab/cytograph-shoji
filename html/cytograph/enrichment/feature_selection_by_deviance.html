@@ -65,18 +65,14 @@ class FeatureSelectionByDeviance(Module):
                         See equation D_j on p. 14 of https://doi.org/10.1186/s13059-019-1861-6
                 &#34;&#34;&#34;
                 # Create symbolic names for the required tensors, which might be renamed by the user
-                Species = self.requires[&#34;Species&#34;]
-                Deviance = self.requires[&#34;Deviance&#34;]
-                ValidGenes = self.requires[&#34;ValidGenes&#34;]
-
-                species = cg.Species(ws[Species][:])
+                species = cg.Species(self.Species[:])
                 mask_genes = species.mask(ws, self.mask)
 
                 logging.info(&#34; FeatureSelectionByDeviance: Loading deviance&#34;)
-                d = ws[Deviance][...]
+                d = self.Deviance[:]
 
                 logging.info(&#34; FeatureSelectionByDeviance: Removing invalid and masked genes&#34;)
-                valid = ws[ValidGenes][...]
+                valid = self.ValidGenes[:]
                 if self.mask is not None:
                         valid = np.logical_and(valid, np.logical_not(mask_genes))
 
@@ -144,18 +140,14 @@ Optional list indicating categories of genes that should not be selected</p></di
                         See equation D_j on p. 14 of https://doi.org/10.1186/s13059-019-1861-6
                 &#34;&#34;&#34;
                 # Create symbolic names for the required tensors, which might be renamed by the user
-                Species = self.requires[&#34;Species&#34;]
-                Deviance = self.requires[&#34;Deviance&#34;]
-                ValidGenes = self.requires[&#34;ValidGenes&#34;]
-
-                species = cg.Species(ws[Species][:])
+                species = cg.Species(self.Species[:])
                 mask_genes = species.mask(ws, self.mask)
 
                 logging.info(&#34; FeatureSelectionByDeviance: Loading deviance&#34;)
-                d = ws[Deviance][...]
+                d = self.Deviance[:]
 
                 logging.info(&#34; FeatureSelectionByDeviance: Removing invalid and masked genes&#34;)
-                valid = ws[ValidGenes][...]
+                valid = self.ValidGenes[:]
                 if self.mask is not None:
                         valid = np.logical_and(valid, np.logical_not(mask_genes))
 
@@ -215,18 +207,14 @@ def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; np.ndarray:
                 See equation D_j on p. 14 of https://doi.org/10.1186/s13059-019-1861-6
         &#34;&#34;&#34;
         # Create symbolic names for the required tensors, which might be renamed by the user
-        Species = self.requires[&#34;Species&#34;]
-        Deviance = self.requires[&#34;Deviance&#34;]
-        ValidGenes = self.requires[&#34;ValidGenes&#34;]
-
-        species = cg.Species(ws[Species][:])
+        species = cg.Species(self.Species[:])
         mask_genes = species.mask(ws, self.mask)
 
         logging.info(&#34; FeatureSelectionByDeviance: Loading deviance&#34;)
-        d = ws[Deviance][...]
+        d = self.Deviance[:]
 
         logging.info(&#34; FeatureSelectionByDeviance: Removing invalid and masked genes&#34;)
-        valid = ws[ValidGenes][...]
+        valid = self.ValidGenes[:]
         if self.mask is not None:
                 valid = np.logical_and(valid, np.logical_not(mask_genes))
 

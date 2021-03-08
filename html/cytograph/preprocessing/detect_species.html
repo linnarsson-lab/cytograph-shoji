@@ -40,7 +40,7 @@ class DetectSpecies(Module):
         @requires(&#34;Gene&#34;, &#34;string&#34;, (&#34;genes&#34;,))
         @creates(&#34;Species&#34;, &#34;string&#34;, ())
         def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; str:
-                genes = self.Gene[...]
+                genes = self.Gene[:]
                 for gene, species in {
                         &#34;ACTB&#34;: &#34;Homo sapiens&#34;,
                         &#34;Tspy1&#34;: &#34;Rattus norvegicus&#34;,
@@ -85,7 +85,7 @@ class DetectSpecies(Module):
         @requires(&#34;Gene&#34;, &#34;string&#34;, (&#34;genes&#34;,))
         @creates(&#34;Species&#34;, &#34;string&#34;, ())
         def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; str:
-                genes = self.Gene[...]
+                genes = self.Gene[:]
                 for gene, species in {
                         &#34;ACTB&#34;: &#34;Homo sapiens&#34;,
                         &#34;Tspy1&#34;: &#34;Rattus norvegicus&#34;,
@@ -121,7 +121,7 @@ class DetectSpecies(Module):
 <pre><code class="python">@requires(&#34;Gene&#34;, &#34;string&#34;, (&#34;genes&#34;,))
 @creates(&#34;Species&#34;, &#34;string&#34;, ())
 def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; str:
-        genes = self.Gene[...]
+        genes = self.Gene[:]
         for gene, species in {
                 &#34;ACTB&#34;: &#34;Homo sapiens&#34;,
                 &#34;Tspy1&#34;: &#34;Rattus norvegicus&#34;,

@@ -14,8 +14,6 @@ def dendrogram(z: np.ndarray, *, leaf_positions: np.ndarray = None, orientation:
 	xpos = np.zeros(z.shape[0])
 	if leaf_positions is None:
 		leaf_positions = np.arange(n)
-	else:
-		leaf_positions = np.sort(leaf_positions)
 
 	# From scipy docs about the z matrix (they call it Z):
 	# A (n - 1) by 4 matrix Z is returned. At the i-th iteration, clusters with indices Z[i, 0] and Z[i, 1]

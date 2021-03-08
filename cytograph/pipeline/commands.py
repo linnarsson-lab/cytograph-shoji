@@ -40,24 +40,6 @@ def cli(show_message: bool = True, verbosity: str = "info") -> None:
 
 
 @cli.command()
-@click.argument('workspace', nargs=1)
-def export(workspace: str) -> None:
-	# Start the process of exporting the workspace
-
-
-@cli.command()
-@click.argument('workspace', nargs=1)
-def import(workspace: str) -> None:
-	# Start the process of importing the workspace
-
-
-@cli.command()
-@click.argument('workspace', nargs=1)
-def iostatus(workspace: str) -> None:
-	# Check the status of importing or exporting
-
-
-@cli.command()
 @click.option('--engine', default="local", type=click.Choice(['local', 'condor']))
 @click.option('--dryrun/--no-dryrun', is_flag=True, default=False)
 def build(engine: str, dryrun: bool) -> None:
@@ -135,7 +117,8 @@ def process(punchcard: str, resume: int) -> None:
 
 @cli.command()
 @click.argument('sampleids', nargs=-1)
-def qc(sampleids: List[str]) -> None:
+@click.option("--force", default=False, is_flag=True)
+def qc(sampleids: List[str], force: bool) -> None:
 	try:
 		workspace = Path(os.getcwd()).name
 		logging.info(f"Using '{workspace}' as the workspace")
@@ -154,16 +137,22 @@ def qc(sampleids: List[str]) -> None:
 		for sampleid in sampleids:
 			ws = db[config["workspaces"]["samples"]]
 			if sampleid in ws:
-				logging.info(f"Processing '{sampleid}'")
-				recipe = config["recipes"]["qc"]
-				run_recipe(ws[sampleid], recipe)
+				if force or "PassedQC" not in ws[sampleid]:
+					logging.info(f"Processing '{sampleid}'")
+					recipe = config["recipes"]["qc"]
+					run_recipe(ws[sampleid], recipe)
+				else:
+					logging.info(f"Skipping '{sampleid}' because QC already done (use --force to override)")
 			elif sampleid in deck.punchcards:
 				punchcard = deck.punchcards[sampleid]
 				for sample in punchcard.sources:
 					if sample in ws:
-						logging.info(f"Processing '{sample}'")
-						recipe = config["recipes"]["qc"]
-						run_recipe(ws[sample], recipe)
+						if force or "PassedQC" not in ws[sample]:
+							logging.info(f"Processing '{sample}'")
+							recipe = config["recipes"]["qc"]
+							run_recipe(ws[sample], recipe)
+						else:
+							logging.info(f"Skipping '{sample}' because QC already done (use --force to override)")
 					else:
 						logging.warning(f"Skipping '{sample}' (specificed in punchcard '{sampleid}') because sample not found")
 	except Exception as e:

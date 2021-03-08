@@ -34,6 +34,7 @@ import sys
 import sqlite3 as sqlite
 import os
 import numpy as np
+from cytograph import Module
 
 
 # Here&#39;s what was in the db on 2020-12-07 for 10X101_1:
@@ -68,14 +69,16 @@ import numpy as np
 # Editby emelie &lt;class &#39;str&#39;&gt;
 # Editat 2019-05-30 16:52:20 &lt;class &#39;str&#39;&gt;
 
-class LoadSampleMetadata:
-        def __init__(self, db: str, tensors: List[str], convert_10x_sample_name: bool = True) -&gt; None:
+class LoadSampleMetadata(Module):
+        def __init__(self, db: str, tensors: List[str], convert_10x_sample_name: bool = True, **kwargs) -&gt; None:
                 &#34;&#34;&#34;
                 Args:
                         db                              Full path to the metadata database file (a sqlite .db file)
                         tensors                 List of tensors to be created (or overwritten) from metadata
                         convert_10x_sample_name         If true, convert &#34;10X101_2&#34; to &#34;TenX101_2&#34;
                 &#34;&#34;&#34;
+                super().__init__(**kwargs)
+
                 self.db = db
                 if not os.path.exists(db):
                         logging.error(f&#34;Samples metadata file &#39;{db}&#39; not found&#34;)
@@ -131,7 +134,7 @@ class LoadSampleMetadata:
 <dl>
 <dt id="cytograph.pipeline.load_sample_metadata.LoadSampleMetadata"><code class="flex name class">
 <span>class <span class="ident">LoadSampleMetadata</span></span>
-<span>(</span><span>db: str, tensors: List[str], convert_10x_sample_name: bool = True)</span>
+<span>(</span><span>db: str, tensors: List[str], convert_10x_sample_name: bool = True, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"><h2 id="args">Args</h2>
@@ -145,14 +148,16 @@ If true, convert "10X101_2" to "TenX101_2"</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class LoadSampleMetadata:
-        def __init__(self, db: str, tensors: List[str], convert_10x_sample_name: bool = True) -&gt; None:
+<pre><code class="python">class LoadSampleMetadata(Module):
+        def __init__(self, db: str, tensors: List[str], convert_10x_sample_name: bool = True, **kwargs) -&gt; None:
                 &#34;&#34;&#34;
                 Args:
                         db                              Full path to the metadata database file (a sqlite .db file)
                         tensors                 List of tensors to be created (or overwritten) from metadata
                         convert_10x_sample_name         If true, convert &#34;10X101_2&#34; to &#34;TenX101_2&#34;
                 &#34;&#34;&#34;
+                super().__init__(**kwargs)
+
                 self.db = db
                 if not os.path.exists(db):
                         logging.error(f&#34;Samples metadata file &#39;{db}&#39; not found&#34;)
@@ -196,6 +201,10 @@ If true, convert "10X101_2" to "TenX101_2"</p></div>
                                                 elif isinstance(val, str):
                                                         source_ws[tensor] = shoji.Tensor(&#34;string&#34;, (), np.array(val, dtype=object))</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="cytograph.module.Module" href="../module.html#cytograph.module.Module">Module</a></li>
+</ul>
 <h3>Methods</h3>
 <dl>
 <dt id="cytograph.pipeline.load_sample_metadata.LoadSampleMetadata.fit"><code class="name flex">

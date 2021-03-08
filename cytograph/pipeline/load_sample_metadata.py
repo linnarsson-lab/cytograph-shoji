@@ -62,6 +62,13 @@ class LoadSampleMetadata(Module):
 		db = shoji.connect()
 		config = Config.load()
 		punchcard = config["punchcard"]
+		missing = False
+		for source in punchcard.sources:
+			if source not in db[config["workspaces"]["samples"]]:
+				logging.error(f"Sample {source} not found!")
+				missing = True
+		if missing:
+			sys.exit(1)
 		for source in punchcard.sources:
 			if source in db[config["workspaces"]["samples"]]:
 				source_ws = db[config["workspaces"]["samples"]][source]
@@ -88,8 +95,8 @@ class LoadSampleMetadata(Module):
 							sys.exit(1)
 						val = d[tensor.lower()]
 						if isinstance(val, int):
-							source_ws[tensor] = shoji.Tensor("int32", (), np.array(val, dtype="int32"))
+							source_ws[tensor] = shoji.Tensor("int32", (), inits=np.array(val, dtype="int32"))
 						elif isinstance(val, float):
-							source_ws[tensor] = shoji.Tensor("float32", (), np.array(val, dtype="float32"))
+							source_ws[tensor] = shoji.Tensor("float32", (), inits=np.array(val, dtype="float32"))
 						elif isinstance(val, str):
-							source_ws[tensor] = shoji.Tensor("string", (), np.array(val, dtype=object))
+							source_ws[tensor] = shoji.Tensor("string", (), inits=np.array(val, dtype=object))

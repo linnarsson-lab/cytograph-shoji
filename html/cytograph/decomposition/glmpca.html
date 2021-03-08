@@ -33,27 +33,27 @@ from sklearn.preprocessing import OneHotEncoder
 
 import shoji
 import numpy as np
-from cytograph import requires, creates
+from cytograph import requires, creates, Module
 from .glmpca_impl import glmpca
 import sys
 import logging
 
 
-class GLMPCA:
+class GLMPCA(Module):
         &#34;&#34;&#34;
         Project a dataset into a reduced feature space using GLM PCA.
         &#34;&#34;&#34;
-        def __init__(self, n_factors: int, *, family: str = &#34;poi&#34;, epsilon: float = 1e-4, penalty: float = 1.0, batch_keys: List[str] = None, covariate_keys: List[str] = None) -&gt; None:
+        def __init__(self, n_factors: int, *, family: str = &#34;poi&#34;, epsilon: float = 1e-4, penalty: float = 1.0, batch_keys: List[str] = None, covariate_keys: List[str] = None, **kwargs) -&gt; None:
                 &#34;&#34;&#34;
                 This class implements the GLM-PCA dimensionality reduction method for high-dimensional count data.
 
                 Args:
-                        n_factors:                      The number of factors
-                        family:                         The shape of the likelihood (&#34;poi&#34; for Poisson, &#34;nb&#34; for Negative Binomial, &#34;mult&#34; for binomial approximation to multinomial, &#34;bern&#34; for Bernoulli)
-                        epsilon:                        Maximum relative change in deviance allowed at convergence
-                        penalty:                        The L2 penalty for the latent factors (covariates are not penalized)
-                        batch_keys:                     Keys (tensor names) to use as batch keys for batch correction, or None to omit batch correction
-                        covariate_keys:         Keys (tensor names) to use as numerical covariates (for example, cell cycle scores)
+                        n_factors:              The number of factors
+                        family:                 The shape of the likelihood (&#34;poi&#34; for Poisson, &#34;nb&#34; for Negative Binomial, &#34;mult&#34; for binomial approximation to multinomial, &#34;bern&#34; for Bernoulli)
+                        epsilon:                Maximum relative change in deviance allowed at convergence
+                        penalty:                The L2 penalty for the latent factors (covariates are not penalized)
+                        batch_keys:     Keys (tensor names) to use as batch keys for batch correction, or None to omit batch correction
+                        covariate_keys: Keys (tensor names) to use as numerical covariates (for example, cell cycle scores)
 
                 Remarks:
                         The basic model is R = AX&#39;+ZG&#39;+VU&#39;, where E[Y]=M=linkinv(R). Regression coefficients are A and G,
@@ -64,6 +64,7 @@ class GLMPCA:
                         batch_keys are converted to vectors of 1s and 0s indicating the presence of each unique value
                         covariate_keys are left as-is and interpreted as numerical covariates
                 &#34;&#34;&#34;
+                super().__init__(**kwargs)
                 self.n_factors = n_factors
                 if not isinstance(batch_keys, (tuple, list)):
                         logging.error(&#34; GLMPCA: &#39;batch_keys&#39; must be a list of tensor names&#34;)
@@ -80,13 +81,13 @@ class GLMPCA:
         @requires(&#34;Expression&#34;, &#34;uint16&#34;, (&#34;cells&#34;, &#34;genes&#34;))
         @requires(&#34;SelectedFeatures&#34;, &#34;bool&#34;, (&#34;genes&#34;,))
         @requires(&#34;TotalUMIs&#34;, &#34;uint32&#34;, (&#34;cells&#34;,))
-        @creates(&#34;GLMPCAFactors&#34;, &#34;float32&#34;, (&#34;cells&#34;, None))
-        @creates(&#34;GLMPCALoadings&#34;, &#34;float32&#34;, (&#34;genes&#34;, None))
+        @creates(&#34;Factors&#34;, &#34;float32&#34;, (&#34;cells&#34;, None))
+        @creates(&#34;Loadings&#34;, &#34;float32&#34;, (&#34;genes&#34;, None))
         def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; Tuple[np.ndarray, np.ndarray]:
                 covariates = None
                 if self.batch_keys is not None:
                         for key in self.batch_keys:
-                                x = ws[key][...][:, None]
+                                x = ws[key][:, None]
                                 onehot = OneHotEncoder(sparse=False).fit_transform(x)[:, :-1]  # Drop the last column since it&#39;s redundant and will make the GLM non-identifiable
                                 if covariates is None:
                                         covariates = onehot
@@ -95,16 +96,16 @@ class GLMPCA:
 
                 if self.covariate_keys is not None:
                         for key in self.covariate_keys:
-                                x = ws[:][key][:, None]
+                                x = ws[key][:, None]
                                 if covariates is None:
                                         covariates = onehot
                                 else:
                                         covariates = np.hstack([covariates, x])
                 if covariates is not None and covariates.shape[1] == 0:
                         covariates = None
-                size_factors = ws.TotalUMIs[...].astype(&#34;float32&#34;)
+                size_factors = self.TotalUMIs[:].astype(&#34;float32&#34;)
                 size_factors = size_factors / np.median(size_factors)
-                data = ws[ws.SelectedFeatures == True, ...].Expression
+                data = ws[ws.SelectedFeatures == True][self.requires[&#34;Expression&#34;]]
                 if covariates is None:
                         logging.info(f&#34; GLMPCA: Optimizing {data.shape[0]} cells × {data.shape[1]} genes with zero covariates&#34;)
                 elif covariates.shape[1] == 1:
@@ -113,7 +114,7 @@ class GLMPCA:
                         logging.info(f&#34; GLMPCA: Optimizing {data.shape[0]} cells × {data.shape[1]} genes with {covariates.shape[1]} covariates&#34;)
                 factors, loadings, _ = glmpca(data.T, self.n_factors, ctl = {&#34;maxIter&#34;: 200, &#34;eps&#34;: self.epsilon, &#34;optimizeTheta&#34;: True}, penalty=self.penalty, fam=self.family, X=covariates, sz=size_factors)
                 loadings_all = np.zeros_like(loadings, shape=(ws.genes.length, self.n_factors))
-                loadings_all[ws.SelectedFeatures[...]] = loadings
+                loadings_all[ws.SelectedFeatures[:]] = loadings
                 return factors, loadings_all</code></pre>
 </details>
 </section>
@@ -128,7 +129,7 @@ class GLMPCA:
 <dl>
 <dt id="cytograph.decomposition.glmpca.GLMPCA"><code class="flex name class">
 <span>class <span class="ident">GLMPCA</span></span>
-<span>(</span><span>n_factors: int, *, family: str = 'poi', epsilon: float = 0.0001, penalty: float = 1.0, batch_keys: List[str] = None, covariate_keys: List[str] = None)</span>
+<span>(</span><span>n_factors: int, *, family: str = 'poi', epsilon: float = 0.0001, penalty: float = 1.0, batch_keys: List[str] = None, covariate_keys: List[str] = None, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Project a dataset into a reduced feature space using GLM PCA.</p>
@@ -137,34 +138,30 @@ class GLMPCA:
 <dl>
 <dt><strong><code>n_factors</code></strong></dt>
 <dd>
-<pre><code>             The number of factors
+<pre><code>     The number of factors
 </code></pre>
 </dd>
 <dt><strong><code>family</code></strong></dt>
 <dd>
-<pre><code>                The shape of the likelihood ("poi" for Poisson, "nb" for Negative Binomial, "mult" for binomial approximation to multinomial, "bern" for Bernoulli)
+<pre><code>        The shape of the likelihood ("poi" for Poisson, "nb" for Negative Binomial, "mult" for binomial approximation to multinomial, "bern" for Bernoulli)
 </code></pre>
 </dd>
 <dt><strong><code>epsilon</code></strong></dt>
 <dd>
-<pre><code>               Maximum relative change in deviance allowed at convergence
+<pre><code>       Maximum relative change in deviance allowed at convergence
 </code></pre>
 </dd>
 <dt><strong><code>penalty</code></strong></dt>
 <dd>
-<pre><code>               The L2 penalty for the latent factors (covariates are not penalized)
+<pre><code>       The L2 penalty for the latent factors (covariates are not penalized)
 </code></pre>
 </dd>
 <dt><strong><code>batch_keys</code></strong></dt>
 <dd>
-<pre><code>            Keys (tensor names) to use as batch keys for batch correction, or None to omit batch correction
-</code></pre>
+<p>Keys (tensor names) to use as batch keys for batch correction, or None to omit batch correction</p>
 </dd>
 <dt><strong><code>covariate_keys</code></strong></dt>
-<dd>
-<pre><code>Keys (tensor names) to use as numerical covariates (for example, cell cycle scores)
-</code></pre>
-</dd>
+<dd>Keys (tensor names) to use as numerical covariates (for example, cell cycle scores)</dd>
 </dl>
 <h2 id="remarks">Remarks</h2>
 <p>The basic model is R = AX'+ZG'+VU', where E[Y]=M=linkinv(R). Regression coefficients are A and G,
@@ -177,21 +174,21 @@ covariate_keys are left as-is and interpreted as numerical covariates</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class GLMPCA:
+<pre><code class="python">class GLMPCA(Module):
         &#34;&#34;&#34;
         Project a dataset into a reduced feature space using GLM PCA.
         &#34;&#34;&#34;
-        def __init__(self, n_factors: int, *, family: str = &#34;poi&#34;, epsilon: float = 1e-4, penalty: float = 1.0, batch_keys: List[str] = None, covariate_keys: List[str] = None) -&gt; None:
+        def __init__(self, n_factors: int, *, family: str = &#34;poi&#34;, epsilon: float = 1e-4, penalty: float = 1.0, batch_keys: List[str] = None, covariate_keys: List[str] = None, **kwargs) -&gt; None:
                 &#34;&#34;&#34;
                 This class implements the GLM-PCA dimensionality reduction method for high-dimensional count data.
 
                 Args:
-                        n_factors:                      The number of factors
-                        family:                         The shape of the likelihood (&#34;poi&#34; for Poisson, &#34;nb&#34; for Negative Binomial, &#34;mult&#34; for binomial approximation to multinomial, &#34;bern&#34; for Bernoulli)
-                        epsilon:                        Maximum relative change in deviance allowed at convergence
-                        penalty:                        The L2 penalty for the latent factors (covariates are not penalized)
-                        batch_keys:                     Keys (tensor names) to use as batch keys for batch correction, or None to omit batch correction
-                        covariate_keys:         Keys (tensor names) to use as numerical covariates (for example, cell cycle scores)
+                        n_factors:              The number of factors
+                        family:                 The shape of the likelihood (&#34;poi&#34; for Poisson, &#34;nb&#34; for Negative Binomial, &#34;mult&#34; for binomial approximation to multinomial, &#34;bern&#34; for Bernoulli)
+                        epsilon:                Maximum relative change in deviance allowed at convergence
+                        penalty:                The L2 penalty for the latent factors (covariates are not penalized)
+                        batch_keys:     Keys (tensor names) to use as batch keys for batch correction, or None to omit batch correction
+                        covariate_keys: Keys (tensor names) to use as numerical covariates (for example, cell cycle scores)
 
                 Remarks:
                         The basic model is R = AX&#39;+ZG&#39;+VU&#39;, where E[Y]=M=linkinv(R). Regression coefficients are A and G,
@@ -202,6 +199,7 @@ covariate_keys are left as-is and interpreted as numerical covariates</p></div>
                         batch_keys are converted to vectors of 1s and 0s indicating the presence of each unique value
                         covariate_keys are left as-is and interpreted as numerical covariates
                 &#34;&#34;&#34;
+                super().__init__(**kwargs)
                 self.n_factors = n_factors
                 if not isinstance(batch_keys, (tuple, list)):
                         logging.error(&#34; GLMPCA: &#39;batch_keys&#39; must be a list of tensor names&#34;)
@@ -218,13 +216,13 @@ covariate_keys are left as-is and interpreted as numerical covariates</p></div>
         @requires(&#34;Expression&#34;, &#34;uint16&#34;, (&#34;cells&#34;, &#34;genes&#34;))
         @requires(&#34;SelectedFeatures&#34;, &#34;bool&#34;, (&#34;genes&#34;,))
         @requires(&#34;TotalUMIs&#34;, &#34;uint32&#34;, (&#34;cells&#34;,))
-        @creates(&#34;GLMPCAFactors&#34;, &#34;float32&#34;, (&#34;cells&#34;, None))
-        @creates(&#34;GLMPCALoadings&#34;, &#34;float32&#34;, (&#34;genes&#34;, None))
+        @creates(&#34;Factors&#34;, &#34;float32&#34;, (&#34;cells&#34;, None))
+        @creates(&#34;Loadings&#34;, &#34;float32&#34;, (&#34;genes&#34;, None))
         def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; Tuple[np.ndarray, np.ndarray]:
                 covariates = None
                 if self.batch_keys is not None:
                         for key in self.batch_keys:
-                                x = ws[key][...][:, None]
+                                x = ws[key][:, None]
                                 onehot = OneHotEncoder(sparse=False).fit_transform(x)[:, :-1]  # Drop the last column since it&#39;s redundant and will make the GLM non-identifiable
                                 if covariates is None:
                                         covariates = onehot
@@ -233,16 +231,16 @@ covariate_keys are left as-is and interpreted as numerical covariates</p></div>
 
                 if self.covariate_keys is not None:
                         for key in self.covariate_keys:
-                                x = ws[:][key][:, None]
+                                x = ws[key][:, None]
                                 if covariates is None:
                                         covariates = onehot
                                 else:
                                         covariates = np.hstack([covariates, x])
                 if covariates is not None and covariates.shape[1] == 0:
                         covariates = None
-                size_factors = ws.TotalUMIs[...].astype(&#34;float32&#34;)
+                size_factors = self.TotalUMIs[:].astype(&#34;float32&#34;)
                 size_factors = size_factors / np.median(size_factors)
-                data = ws[ws.SelectedFeatures == True, ...].Expression
+                data = ws[ws.SelectedFeatures == True][self.requires[&#34;Expression&#34;]]
                 if covariates is None:
                         logging.info(f&#34; GLMPCA: Optimizing {data.shape[0]} cells × {data.shape[1]} genes with zero covariates&#34;)
                 elif covariates.shape[1] == 1:
@@ -251,9 +249,13 @@ covariate_keys are left as-is and interpreted as numerical covariates</p></div>
                         logging.info(f&#34; GLMPCA: Optimizing {data.shape[0]} cells × {data.shape[1]} genes with {covariates.shape[1]} covariates&#34;)
                 factors, loadings, _ = glmpca(data.T, self.n_factors, ctl = {&#34;maxIter&#34;: 200, &#34;eps&#34;: self.epsilon, &#34;optimizeTheta&#34;: True}, penalty=self.penalty, fam=self.family, X=covariates, sz=size_factors)
                 loadings_all = np.zeros_like(loadings, shape=(ws.genes.length, self.n_factors))
-                loadings_all[ws.SelectedFeatures[...]] = loadings
+                loadings_all[ws.SelectedFeatures[:]] = loadings
                 return factors, loadings_all</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="cytograph.module.Module" href="../module.html#cytograph.module.Module">Module</a></li>
+</ul>
 <h3>Methods</h3>
 <dl>
 <dt id="cytograph.decomposition.glmpca.GLMPCA.fit"><code class="name flex">
@@ -268,13 +270,13 @@ covariate_keys are left as-is and interpreted as numerical covariates</p></div>
 <pre><code class="python">@requires(&#34;Expression&#34;, &#34;uint16&#34;, (&#34;cells&#34;, &#34;genes&#34;))
 @requires(&#34;SelectedFeatures&#34;, &#34;bool&#34;, (&#34;genes&#34;,))
 @requires(&#34;TotalUMIs&#34;, &#34;uint32&#34;, (&#34;cells&#34;,))
-@creates(&#34;GLMPCAFactors&#34;, &#34;float32&#34;, (&#34;cells&#34;, None))
-@creates(&#34;GLMPCALoadings&#34;, &#34;float32&#34;, (&#34;genes&#34;, None))
+@creates(&#34;Factors&#34;, &#34;float32&#34;, (&#34;cells&#34;, None))
+@creates(&#34;Loadings&#34;, &#34;float32&#34;, (&#34;genes&#34;, None))
 def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; Tuple[np.ndarray, np.ndarray]:
         covariates = None
         if self.batch_keys is not None:
                 for key in self.batch_keys:
-                        x = ws[key][...][:, None]
+                        x = ws[key][:, None]
                         onehot = OneHotEncoder(sparse=False).fit_transform(x)[:, :-1]  # Drop the last column since it&#39;s redundant and will make the GLM non-identifiable
                         if covariates is None:
                                 covariates = onehot
@@ -283,16 +285,16 @@ def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; Tuple[np.nda
 
         if self.covariate_keys is not None:
                 for key in self.covariate_keys:
-                        x = ws[:][key][:, None]
+                        x = ws[key][:, None]
                         if covariates is None:
                                 covariates = onehot
                         else:
                                 covariates = np.hstack([covariates, x])
         if covariates is not None and covariates.shape[1] == 0:
                 covariates = None
-        size_factors = ws.TotalUMIs[...].astype(&#34;float32&#34;)
+        size_factors = self.TotalUMIs[:].astype(&#34;float32&#34;)
         size_factors = size_factors / np.median(size_factors)
-        data = ws[ws.SelectedFeatures == True, ...].Expression
+        data = ws[ws.SelectedFeatures == True][self.requires[&#34;Expression&#34;]]
         if covariates is None:
                 logging.info(f&#34; GLMPCA: Optimizing {data.shape[0]} cells × {data.shape[1]} genes with zero covariates&#34;)
         elif covariates.shape[1] == 1:
@@ -301,7 +303,7 @@ def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; Tuple[np.nda
                 logging.info(f&#34; GLMPCA: Optimizing {data.shape[0]} cells × {data.shape[1]} genes with {covariates.shape[1]} covariates&#34;)
         factors, loadings, _ = glmpca(data.T, self.n_factors, ctl = {&#34;maxIter&#34;: 200, &#34;eps&#34;: self.epsilon, &#34;optimizeTheta&#34;: True}, penalty=self.penalty, fam=self.family, X=covariates, sz=size_factors)
         loadings_all = np.zeros_like(loadings, shape=(ws.genes.length, self.n_factors))
-        loadings_all[ws.SelectedFeatures[...]] = loadings
+        loadings_all[ws.SelectedFeatures[:]] = loadings
         return factors, loadings_all</code></pre>
 </details>
 </dd>

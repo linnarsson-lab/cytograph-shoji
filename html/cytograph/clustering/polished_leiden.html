@@ -39,42 +39,30 @@ from sklearn.decomposition import PCA
 from sklearn.preprocessing import LabelEncoder
 
 
-def is_outlier(points: np.ndarray, thresh: float = 3.5) -&gt; np.ndarray:
-        &#34;&#34;&#34;
-        Returns a boolean array with True if points are outliers and False
-        otherwise.
-
-        Parameters:
-        -----------
-                points : An numobservations by numdimensions array of observations
-                thresh : The modified z-score to use as a threshold. Observations with
-                        a modified z-score (based on the median absolute deviation) greater
-                        than this value will be classified as outliers.
-
-        Returns:
-        --------
-                mask : A numobservations-length boolean array.
-
-        References:
-        ----------
-                Boris Iglewicz and David Hoaglin (1993), &#34;Volume 16: How to Detect and
-                Handle Outliers&#34;, The ASQC Basic References in Quality Control:
-                Statistical Techniques, Edward F. Mykytka, Ph.D., Editor.
-        &#34;&#34;&#34;
-        if len(points.shape) == 1:
-                points = points[:, None]
-        median = np.median(points, axis=0)
-        diff = np.sum((points - median)**2, axis=-1)
-        diff = np.sqrt(diff)
-        med_abs_deviation = np.median(diff)
-
-        modified_z_score = 0.6745 * diff / med_abs_deviation
-
-        return modified_z_score &gt; thresh
-
-
 class PolishedLeiden(Module):
         def __init__(self, resolution: float = 1.0, method: str = &#34;modularity&#34;, max_size: int = 0, min_size: int = 25, **kwargs) -&gt; None:
+                &#34;&#34;&#34;
+                Find clusters on the manifold using the Leiden algorithm, then polish clusters on the embedding.
+
+                Args:
+                        resolution: The resolution parameter (typically 0.01 - 1; default: 1)
+                        method:     The partitioning method (&#34;modularity&#34;, &#34;cpm&#34;, &#34;surprise&#34;, &#34;rb&#34;, &#34;rber&#34;, or &#34;significance&#34;; default: &#34;modularity&#34;)
+                        max_size:   The maximum size of clusters (default: 0, i.e. no limit)
+                        min_size:   The minimum size of clusters (default: 25)
+
+                Remarks:
+                        The default method, &#34;modularity&#34;, is equivalent to Louvain clustering but the Leiden algorithm is faster
+                        and can yield better clusters. The method &#34;surprise&#34; can yield clusters similar to Amos Tanay&#39;s Metacell
+                        algorithm (i.e. a tiling of the manifold with clusters of similar size), especially if `max_size` is used
+                        to cap the cluster size.
+
+                        The polishing step consists of two phases. First, the shape of each cluster on the embedding (e.g. TSNE) is
+                        considered using Iglewicz-Hoaglin outlier detection, and clusters with too many outliers are re-clustered
+                        using DBSCAN on the embedding. Second, all cells in clusters smaller than `min_size` are reassigned
+                        to the nearest not-too-small cluster on the embedding. Not that this can result in clusters larger than `max_size`.
+
+                        The resolution parameter has no effect on the default method, &#34;modularity&#34;.
+                &#34;&#34;&#34;
                 super().__init__(**kwargs)
                 self.resolution = resolution
                 ptypes = {
@@ -91,6 +79,39 @@ class PolishedLeiden(Module):
                         raise ValueError(f&#34;Invalid partition method &#39;{method}&#39;&#34;)
                 self.max_size = max_size
                 self.min_size = min_size
+
+        def _is_outlier(self, points: np.ndarray, thresh: float = 3.5) -&gt; np.ndarray:
+                &#34;&#34;&#34;
+                Returns a boolean array with True if points are outliers and False
+                otherwise.
+
+                Parameters:
+                -----------
+                        points : An numobservations by numdimensions array of observations
+                        thresh : The modified z-score to use as a threshold. Observations with
+                                a modified z-score (based on the median absolute deviation) greater
+                                than this value will be classified as outliers.
+
+                Returns:
+                --------
+                        mask : A numobservations-length boolean array.
+
+                References:
+                ----------
+                        Boris Iglewicz and David Hoaglin (1993), &#34;Volume 16: How to Detect and
+                        Handle Outliers&#34;, The ASQC Basic References in Quality Control:
+                        Statistical Techniques, Edward F. Mykytka, Ph.D., Editor.
+                &#34;&#34;&#34;
+                if len(points.shape) == 1:
+                        points = points[:, None]
+                median = np.median(points, axis=0)
+                diff = np.sum((points - median)**2, axis=-1)
+                diff = np.sqrt(diff)
+                med_abs_deviation = np.median(diff)
+
+                modified_z_score = 0.6745 * diff / med_abs_deviation
+
+                return modified_z_score &gt; thresh
 
         def _break_cluster(self, embedding: np.ndarray) -&gt; np.ndarray:
                 &#34;&#34;&#34;
@@ -111,8 +132,8 @@ class PolishedLeiden(Module):
 
                 outliers = np.zeros(embedding.shape[0], dtype=&#39;bool&#39;)
                 for _ in range(5):
-                        outliers[~outliers] = is_outlier(x[~outliers])
-                        outliers[~outliers] = is_outlier(y[~outliers])
+                        outliers[~outliers] = self._is_outlier(x[~outliers])
+                        outliers[~outliers] = self._is_outlier(y[~outliers])
 
                 # See if the cluster is very dispersed
                 min_pts = min(50, min(x.shape[0] - 1, max(5, round(0.1 * x.shape[0]))))
@@ -136,7 +157,6 @@ class PolishedLeiden(Module):
                 labels[labels == -1] = labels[labels &gt;= 0][nearest.flat[:]]
                 return labels
 
-
         @requires(&#34;Embedding&#34;, &#34;float32&#34;, (&#34;cells&#34;, 2))
         @requires(&#34;ManifoldIndices&#34;, &#34;uint32&#34;, (None, 2))
         @requires(&#34;ManifoldWeights&#34;, &#34;float32&#34;, (None))
@@ -151,26 +171,27 @@ class PolishedLeiden(Module):
                 Returns:
                         labels: The cluster labels
                 &#34;&#34;&#34;
-                logging.info(&#34; PolishedLeiden: Loading the graph&#34;)
-                rc = self.ManifoldIndices[...]
-                g = igraph.Graph(ws.cells.length, list(zip(rc[:, 0].T.tolist(), rc[:, 1].T.tolist())), directed=False, edge_attrs={&#39;weight&#39;: self.ManifoldWeights[...]})
+                logging.info(&#34; PolishedLeiden: Loading graph data&#34;)
+                rc = self.ManifoldIndices[:]
+                logging.info(&#34; PolishedLeiden: Constructing the graph&#34;)
+                g = igraph.Graph(ws.cells.length, list(zip(rc[:, 0].T.tolist(), rc[:, 1].T.tolist())), directed=False, edge_attrs={&#39;weight&#39;: self.ManifoldWeights[:]})
                 logging.info(&#34; PolishedLeiden: Optimizing the graph partitioning&#34;)
                 if self.resolution != 1:
-                        labels = np.array(la.find_partition(g, self.method, weights=self.ManifoldWeights[...], max_comm_size=self.max_size, resolution_parameter=self.resolution, n_iterations=-1).membership)
+                        labels = np.array(la.find_partition(g, self.method, weights=self.ManifoldWeights[:], max_comm_size=self.max_size, resolution_parameter=self.resolution, n_iterations=-1).membership)
                 else:
-                        labels = np.array(la.find_partition(g, self.method, weights=self.ManifoldWeights[...], max_comm_size=self.max_size, n_iterations=-1).membership)
+                        labels = np.array(la.find_partition(g, self.method, weights=self.ManifoldWeights[:], max_comm_size=self.max_size, n_iterations=-1).membership)
                 logging.info(f&#34; PolishedLeiden: Found {labels.max() + 1} initial clusters&#34;)
 
                 # Break clusters based on the embedding
                 logging.info(&#34; PolishedLeiden: Breaking clusters based on the embedding&#34;)
-                xy = self.Embedding[...]
+                xy = self.Embedding[:]
                 # Only break clusters that are at least twice as large as the minimum size (note: labels are sorted by cluster size)
                 max_label = np.where(np.bincount(labels) &lt; self.min_size * 2)[0][0]
                 next_label = 0
                 labels2 = np.copy(labels)
                 for lbl in range(max_label):
                         cluster = labels == lbl
-                        if cluster.sum() &lt; 10:
+                        if cluster.sum() &lt; self.min_size:
                                 continue
                         adjusted = self._break_cluster(xy[cluster, :])
                         new_labels = np.copy(adjusted)
@@ -189,6 +210,7 @@ class PolishedLeiden(Module):
                 nn.fit(xy[~too_small])
                 nearest = nn.kneighbors(xy[too_small], n_neighbors=1, return_distance=False)
                 labels[too_small] = labels[~too_small][nearest.flat[:]]
+                labels = LabelEncoder().fit_transform(labels)  # make sure there are no holes in cluster numbering
 
                 logging.info(f&#34; PolishedLeiden: Found {labels.max() + 1} clusters&#34;)
                 return labels</code></pre>
@@ -199,67 +221,6 @@ class PolishedLeiden(Module):
 <section>
 </section>
 <section>
-<h2 class="section-title" id="header-functions">Functions</h2>
-<dl>
-<dt id="cytograph.clustering.polished_leiden.is_outlier"><code class="name flex">
-<span>def <span class="ident">is_outlier</span></span>(<span>points: numpy.ndarray, thresh: float = 3.5) ‑> numpy.ndarray</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Returns a boolean array with True if points are outliers and False
-otherwise.</p>
-<h2 id="parameters">Parameters:</h2>
-<pre><code>    points : An numobservations by numdimensions array of observations
-    thresh : The modified z-score to use as a threshold. Observations with
-            a modified z-score (based on the median absolute deviation) greater
-            than this value will be classified as outliers.
-</code></pre>
-<h2 id="returns">Returns:</h2>
-<pre><code>    mask : A numobservations-length boolean array.
-</code></pre>
-<h2 id="references">References:</h2>
-<pre><code>    Boris Iglewicz and David Hoaglin (1993), "Volume 16: How to Detect and
-    Handle Outliers", The ASQC Basic References in Quality Control:
-    Statistical Techniques, Edward F. Mykytka, Ph.D., Editor.
-</code></pre></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def is_outlier(points: np.ndarray, thresh: float = 3.5) -&gt; np.ndarray:
-        &#34;&#34;&#34;
-        Returns a boolean array with True if points are outliers and False
-        otherwise.
-
-        Parameters:
-        -----------
-                points : An numobservations by numdimensions array of observations
-                thresh : The modified z-score to use as a threshold. Observations with
-                        a modified z-score (based on the median absolute deviation) greater
-                        than this value will be classified as outliers.
-
-        Returns:
-        --------
-                mask : A numobservations-length boolean array.
-
-        References:
-        ----------
-                Boris Iglewicz and David Hoaglin (1993), &#34;Volume 16: How to Detect and
-                Handle Outliers&#34;, The ASQC Basic References in Quality Control:
-                Statistical Techniques, Edward F. Mykytka, Ph.D., Editor.
-        &#34;&#34;&#34;
-        if len(points.shape) == 1:
-                points = points[:, None]
-        median = np.median(points, axis=0)
-        diff = np.sum((points - median)**2, axis=-1)
-        diff = np.sqrt(diff)
-        med_abs_deviation = np.median(diff)
-
-        modified_z_score = 0.6745 * diff / med_abs_deviation
-
-        return modified_z_score &gt; thresh</code></pre>
-</details>
-</dd>
-</dl>
 </section>
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
@@ -269,13 +230,58 @@ otherwise.</p>
 <span>(</span><span>resolution: float = 1.0, method: str = 'modularity', max_size: int = 0, min_size: int = 25, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Find clusters on the manifold using the Leiden algorithm, then polish clusters on the embedding.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>resolution</code></strong></dt>
+<dd>The resolution parameter (typically 0.01 - 1; default: 1)</dd>
+<dt><strong><code>method</code></strong></dt>
+<dd>
+<p>The partitioning method ("modularity", "cpm", "surprise", "rb", "rber", or "significance"; default: "modularity")</p>
+</dd>
+<dt><strong><code>max_size</code></strong></dt>
+<dd>The maximum size of clusters (default: 0, i.e. no limit)</dd>
+<dt><strong><code>min_size</code></strong></dt>
+<dd>The minimum size of clusters (default: 25)</dd>
+</dl>
+<h2 id="remarks">Remarks</h2>
+<p>The default method, "modularity", is equivalent to Louvain clustering but the Leiden algorithm is faster
+and can yield better clusters. The method "surprise" can yield clusters similar to Amos Tanay's Metacell
+algorithm (i.e. a tiling of the manifold with clusters of similar size), especially if <code>max_size</code> is used
+to cap the cluster size.</p>
+<p>The polishing step consists of two phases. First, the shape of each cluster on the embedding (e.g. TSNE) is
+considered using Iglewicz-Hoaglin outlier detection, and clusters with too many outliers are re-clustered
+using DBSCAN on the embedding. Second, all cells in clusters smaller than <code>min_size</code> are reassigned
+to the nearest not-too-small cluster on the embedding. Not that this can result in clusters larger than <code>max_size</code>.</p>
+<p>The resolution parameter has no effect on the default method, "modularity".</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class PolishedLeiden(Module):
         def __init__(self, resolution: float = 1.0, method: str = &#34;modularity&#34;, max_size: int = 0, min_size: int = 25, **kwargs) -&gt; None:
+                &#34;&#34;&#34;
+                Find clusters on the manifold using the Leiden algorithm, then polish clusters on the embedding.
+
+                Args:
+                        resolution: The resolution parameter (typically 0.01 - 1; default: 1)
+                        method:     The partitioning method (&#34;modularity&#34;, &#34;cpm&#34;, &#34;surprise&#34;, &#34;rb&#34;, &#34;rber&#34;, or &#34;significance&#34;; default: &#34;modularity&#34;)
+                        max_size:   The maximum size of clusters (default: 0, i.e. no limit)
+                        min_size:   The minimum size of clusters (default: 25)
+
+                Remarks:
+                        The default method, &#34;modularity&#34;, is equivalent to Louvain clustering but the Leiden algorithm is faster
+                        and can yield better clusters. The method &#34;surprise&#34; can yield clusters similar to Amos Tanay&#39;s Metacell
+                        algorithm (i.e. a tiling of the manifold with clusters of similar size), especially if `max_size` is used
+                        to cap the cluster size.
+
+                        The polishing step consists of two phases. First, the shape of each cluster on the embedding (e.g. TSNE) is
+                        considered using Iglewicz-Hoaglin outlier detection, and clusters with too many outliers are re-clustered
+                        using DBSCAN on the embedding. Second, all cells in clusters smaller than `min_size` are reassigned
+                        to the nearest not-too-small cluster on the embedding. Not that this can result in clusters larger than `max_size`.
+
+                        The resolution parameter has no effect on the default method, &#34;modularity&#34;.
+                &#34;&#34;&#34;
                 super().__init__(**kwargs)
                 self.resolution = resolution
                 ptypes = {
@@ -292,6 +298,39 @@ otherwise.</p>
                         raise ValueError(f&#34;Invalid partition method &#39;{method}&#39;&#34;)
                 self.max_size = max_size
                 self.min_size = min_size
+
+        def _is_outlier(self, points: np.ndarray, thresh: float = 3.5) -&gt; np.ndarray:
+                &#34;&#34;&#34;
+                Returns a boolean array with True if points are outliers and False
+                otherwise.
+
+                Parameters:
+                -----------
+                        points : An numobservations by numdimensions array of observations
+                        thresh : The modified z-score to use as a threshold. Observations with
+                                a modified z-score (based on the median absolute deviation) greater
+                                than this value will be classified as outliers.
+
+                Returns:
+                --------
+                        mask : A numobservations-length boolean array.
+
+                References:
+                ----------
+                        Boris Iglewicz and David Hoaglin (1993), &#34;Volume 16: How to Detect and
+                        Handle Outliers&#34;, The ASQC Basic References in Quality Control:
+                        Statistical Techniques, Edward F. Mykytka, Ph.D., Editor.
+                &#34;&#34;&#34;
+                if len(points.shape) == 1:
+                        points = points[:, None]
+                median = np.median(points, axis=0)
+                diff = np.sum((points - median)**2, axis=-1)
+                diff = np.sqrt(diff)
+                med_abs_deviation = np.median(diff)
+
+                modified_z_score = 0.6745 * diff / med_abs_deviation
+
+                return modified_z_score &gt; thresh
 
         def _break_cluster(self, embedding: np.ndarray) -&gt; np.ndarray:
                 &#34;&#34;&#34;
@@ -312,8 +351,8 @@ otherwise.</p>
 
                 outliers = np.zeros(embedding.shape[0], dtype=&#39;bool&#39;)
                 for _ in range(5):
-                        outliers[~outliers] = is_outlier(x[~outliers])
-                        outliers[~outliers] = is_outlier(y[~outliers])
+                        outliers[~outliers] = self._is_outlier(x[~outliers])
+                        outliers[~outliers] = self._is_outlier(y[~outliers])
 
                 # See if the cluster is very dispersed
                 min_pts = min(50, min(x.shape[0] - 1, max(5, round(0.1 * x.shape[0]))))
@@ -337,7 +376,6 @@ otherwise.</p>
                 labels[labels == -1] = labels[labels &gt;= 0][nearest.flat[:]]
                 return labels
 
-
         @requires(&#34;Embedding&#34;, &#34;float32&#34;, (&#34;cells&#34;, 2))
         @requires(&#34;ManifoldIndices&#34;, &#34;uint32&#34;, (None, 2))
         @requires(&#34;ManifoldWeights&#34;, &#34;float32&#34;, (None))
@@ -352,26 +390,27 @@ otherwise.</p>
                 Returns:
                         labels: The cluster labels
                 &#34;&#34;&#34;
-                logging.info(&#34; PolishedLeiden: Loading the graph&#34;)
-                rc = self.ManifoldIndices[...]
-                g = igraph.Graph(ws.cells.length, list(zip(rc[:, 0].T.tolist(), rc[:, 1].T.tolist())), directed=False, edge_attrs={&#39;weight&#39;: self.ManifoldWeights[...]})
+                logging.info(&#34; PolishedLeiden: Loading graph data&#34;)
+                rc = self.ManifoldIndices[:]
+                logging.info(&#34; PolishedLeiden: Constructing the graph&#34;)
+                g = igraph.Graph(ws.cells.length, list(zip(rc[:, 0].T.tolist(), rc[:, 1].T.tolist())), directed=False, edge_attrs={&#39;weight&#39;: self.ManifoldWeights[:]})
                 logging.info(&#34; PolishedLeiden: Optimizing the graph partitioning&#34;)
                 if self.resolution != 1:
-                        labels = np.array(la.find_partition(g, self.method, weights=self.ManifoldWeights[...], max_comm_size=self.max_size, resolution_parameter=self.resolution, n_iterations=-1).membership)
+                        labels = np.array(la.find_partition(g, self.method, weights=self.ManifoldWeights[:], max_comm_size=self.max_size, resolution_parameter=self.resolution, n_iterations=-1).membership)
                 else:
-                        labels = np.array(la.find_partition(g, self.method, weights=self.ManifoldWeights[...], max_comm_size=self.max_size, n_iterations=-1).membership)
+                        labels = np.array(la.find_partition(g, self.method, weights=self.ManifoldWeights[:], max_comm_size=self.max_size, n_iterations=-1).membership)
                 logging.info(f&#34; PolishedLeiden: Found {labels.max() + 1} initial clusters&#34;)
 
                 # Break clusters based on the embedding
                 logging.info(&#34; PolishedLeiden: Breaking clusters based on the embedding&#34;)
-                xy = self.Embedding[...]
+                xy = self.Embedding[:]
                 # Only break clusters that are at least twice as large as the minimum size (note: labels are sorted by cluster size)
                 max_label = np.where(np.bincount(labels) &lt; self.min_size * 2)[0][0]
                 next_label = 0
                 labels2 = np.copy(labels)
                 for lbl in range(max_label):
                         cluster = labels == lbl
-                        if cluster.sum() &lt; 10:
+                        if cluster.sum() &lt; self.min_size:
                                 continue
                         adjusted = self._break_cluster(xy[cluster, :])
                         new_labels = np.copy(adjusted)
@@ -390,6 +429,7 @@ otherwise.</p>
                 nn.fit(xy[~too_small])
                 nearest = nn.kneighbors(xy[too_small], n_neighbors=1, return_distance=False)
                 labels[too_small] = labels[~too_small][nearest.flat[:]]
+                labels = LabelEncoder().fit_transform(labels)  # make sure there are no holes in cluster numbering
 
                 logging.info(f&#34; PolishedLeiden: Found {labels.max() + 1} clusters&#34;)
                 return labels</code></pre>
@@ -431,26 +471,27 @@ def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; np.ndarray:
         Returns:
                 labels: The cluster labels
         &#34;&#34;&#34;
-        logging.info(&#34; PolishedLeiden: Loading the graph&#34;)
-        rc = self.ManifoldIndices[...]
-        g = igraph.Graph(ws.cells.length, list(zip(rc[:, 0].T.tolist(), rc[:, 1].T.tolist())), directed=False, edge_attrs={&#39;weight&#39;: self.ManifoldWeights[...]})
+        logging.info(&#34; PolishedLeiden: Loading graph data&#34;)
+        rc = self.ManifoldIndices[:]
+        logging.info(&#34; PolishedLeiden: Constructing the graph&#34;)
+        g = igraph.Graph(ws.cells.length, list(zip(rc[:, 0].T.tolist(), rc[:, 1].T.tolist())), directed=False, edge_attrs={&#39;weight&#39;: self.ManifoldWeights[:]})
         logging.info(&#34; PolishedLeiden: Optimizing the graph partitioning&#34;)
         if self.resolution != 1:
-                labels = np.array(la.find_partition(g, self.method, weights=self.ManifoldWeights[...], max_comm_size=self.max_size, resolution_parameter=self.resolution, n_iterations=-1).membership)
+                labels = np.array(la.find_partition(g, self.method, weights=self.ManifoldWeights[:], max_comm_size=self.max_size, resolution_parameter=self.resolution, n_iterations=-1).membership)
         else:
-                labels = np.array(la.find_partition(g, self.method, weights=self.ManifoldWeights[...], max_comm_size=self.max_size, n_iterations=-1).membership)
+                labels = np.array(la.find_partition(g, self.method, weights=self.ManifoldWeights[:], max_comm_size=self.max_size, n_iterations=-1).membership)
         logging.info(f&#34; PolishedLeiden: Found {labels.max() + 1} initial clusters&#34;)
 
         # Break clusters based on the embedding
         logging.info(&#34; PolishedLeiden: Breaking clusters based on the embedding&#34;)
-        xy = self.Embedding[...]
+        xy = self.Embedding[:]
         # Only break clusters that are at least twice as large as the minimum size (note: labels are sorted by cluster size)
         max_label = np.where(np.bincount(labels) &lt; self.min_size * 2)[0][0]
         next_label = 0
         labels2 = np.copy(labels)
         for lbl in range(max_label):
                 cluster = labels == lbl
-                if cluster.sum() &lt; 10:
+                if cluster.sum() &lt; self.min_size:
                         continue
                 adjusted = self._break_cluster(xy[cluster, :])
                 new_labels = np.copy(adjusted)
@@ -469,6 +510,7 @@ def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; np.ndarray:
         nn.fit(xy[~too_small])
         nearest = nn.kneighbors(xy[too_small], n_neighbors=1, return_distance=False)
         labels[too_small] = labels[~too_small][nearest.flat[:]]
+        labels = LabelEncoder().fit_transform(labels)  # make sure there are no holes in cluster numbering
 
         logging.info(f&#34; PolishedLeiden: Found {labels.max() + 1} clusters&#34;)
         return labels</code></pre>
@@ -488,11 +530,6 @@ def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; np.ndarray:
 <li><h3>Super-module</h3>
 <ul>
 <li><code><a title="cytograph.clustering" href="index.html">cytograph.clustering</a></code></li>
-</ul>
-</li>
-<li><h3><a href="#header-functions">Functions</a></h3>
-<ul class="">
-<li><code><a title="cytograph.clustering.polished_leiden.is_outlier" href="#cytograph.clustering.polished_leiden.is_outlier">is_outlier</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>

@@ -55,7 +55,7 @@ class ArtOfTsne(Module):
         @requires(&#34;Factors&#34;, &#34;float32&#34;, (&#34;cells&#34;, None))
         @creates(&#34;Embedding&#34;, &#34;float32&#34;, (&#34;cells&#34;, 2))
         def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; np.ndarray:
-                return self._fit(self.Factors[...])
+                return self._fit(self.Factors[:])
 
         def _fit(self, X: np.ndarray) -&gt; np.ndarray:
                 &#34;&#34;&#34;
@@ -212,7 +212,7 @@ Either 'pca', 'random', or a custom method with the same signature as initializa
         @requires(&#34;Factors&#34;, &#34;float32&#34;, (&#34;cells&#34;, None))
         @creates(&#34;Embedding&#34;, &#34;float32&#34;, (&#34;cells&#34;, 2))
         def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; np.ndarray:
-                return self._fit(self.Factors[...])
+                return self._fit(self.Factors[:])
 
         def _fit(self, X: np.ndarray) -&gt; np.ndarray:
                 &#34;&#34;&#34;
@@ -336,7 +336,7 @@ Either 'pca', 'random', or a custom method with the same signature as initializa
 <pre><code class="python">@requires(&#34;Factors&#34;, &#34;float32&#34;, (&#34;cells&#34;, None))
 @creates(&#34;Embedding&#34;, &#34;float32&#34;, (&#34;cells&#34;, 2))
 def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; np.ndarray:
-        return self._fit(self.Factors[...])</code></pre>
+        return self._fit(self.Factors[:])</code></pre>
 </details>
 </dd>
 </dl>

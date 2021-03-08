@@ -73,29 +73,22 @@ class QualityControl(Module):
                         The complete Expression and Unspliced tensors are loaded into memory
                         If species is None, cell cycle scores are set to 0
                 &#34;&#34;&#34;
-                # Create symbolic names for the required tensors, which might be renamed by the user
-                MitoFraction = self.requires[&#34;MitoFraction&#34;]
-                UnsplicedFraction = self.requires[&#34;UnsplicedFraction&#34;]
-                TotalUMIs = self.requires[&#34;TotalUMIs&#34;]
-                DoubletScore = self.requires[&#34;DoubletScore&#34;]
-                DoubletFlag = self.requires[&#34;DoubletFlag&#34;]
-
                 n_cells = ws.cells.length
                 if self.doublet_threshold == &#34;auto&#34;:
-                        good_cells = ~ws[DoubletFlag][...]
+                        good_cells = ~self.DoubletFlag[:]
                 else:
-                        good_cells = ws[DoubletScore][...] &lt; self.doublet_threshold
+                        good_cells = self.DoubletScore[:] &lt; self.doublet_threshold
                 logging.info(f&#34; QualityControl: Marked {n_cells - good_cells.sum()} doublets&#34;)
 
-                enough_umis = ws[TotalUMIs][...] &gt;= self.min_umis
+                enough_umis = self.TotalUMIs[:] &gt;= self.min_umis
                 good_cells &amp;= enough_umis
                 logging.info(f&#34; QualityControl: Marked {n_cells - enough_umis.sum()} cells with too few UMIs&#34;)
 
-                good_mito_fraction = ws[MitoFraction][...] &lt; self.max_mt_fraction
+                good_mito_fraction = self.MitoFraction[:] &lt; self.max_mt_fraction
                 good_cells &amp;= good_mito_fraction
                 logging.info(f&#34; QualityControl: Marked {n_cells - good_mito_fraction.sum()} cells with too high mitochondrial UMI fraction&#34;)
 
-                good_unspliced_fraction = ws[UnsplicedFraction][...] &gt;= self.min_unspliced_fraction
+                good_unspliced_fraction = self.UnsplicedFraction[:] &gt;= self.min_unspliced_fraction
                 good_cells &amp;= good_unspliced_fraction
                 logging.info(f&#34; QualityControl: Marked {n_cells - good_unspliced_fraction.sum()} cells with too low unspliced UMI fraction&#34;)
 
@@ -177,29 +170,22 @@ min_fraction_good_cells Minimum fraction of cells that must pass QC for the samp
                         The complete Expression and Unspliced tensors are loaded into memory
                         If species is None, cell cycle scores are set to 0
                 &#34;&#34;&#34;
-                # Create symbolic names for the required tensors, which might be renamed by the user
-                MitoFraction = self.requires[&#34;MitoFraction&#34;]
-                UnsplicedFraction = self.requires[&#34;UnsplicedFraction&#34;]
-                TotalUMIs = self.requires[&#34;TotalUMIs&#34;]
-                DoubletScore = self.requires[&#34;DoubletScore&#34;]
-                DoubletFlag = self.requires[&#34;DoubletFlag&#34;]
-
                 n_cells = ws.cells.length
                 if self.doublet_threshold == &#34;auto&#34;:
-                        good_cells = ~ws[DoubletFlag][...]
+                        good_cells = ~self.DoubletFlag[:]
                 else:
-                        good_cells = ws[DoubletScore][...] &lt; self.doublet_threshold
+                        good_cells = self.DoubletScore[:] &lt; self.doublet_threshold
                 logging.info(f&#34; QualityControl: Marked {n_cells - good_cells.sum()} doublets&#34;)
 
-                enough_umis = ws[TotalUMIs][...] &gt;= self.min_umis
+                enough_umis = self.TotalUMIs[:] &gt;= self.min_umis
                 good_cells &amp;= enough_umis
                 logging.info(f&#34; QualityControl: Marked {n_cells - enough_umis.sum()} cells with too few UMIs&#34;)
 
-                good_mito_fraction = ws[MitoFraction][...] &lt; self.max_mt_fraction
+                good_mito_fraction = self.MitoFraction[:] &lt; self.max_mt_fraction
                 good_cells &amp;= good_mito_fraction
                 logging.info(f&#34; QualityControl: Marked {n_cells - good_mito_fraction.sum()} cells with too high mitochondrial UMI fraction&#34;)
 
-                good_unspliced_fraction = ws[UnsplicedFraction][...] &gt;= self.min_unspliced_fraction
+                good_unspliced_fraction = self.UnsplicedFraction[:] &gt;= self.min_unspliced_fraction
                 good_cells &amp;= good_unspliced_fraction
                 logging.info(f&#34; QualityControl: Marked {n_cells - good_unspliced_fraction.sum()} cells with too low unspliced UMI fraction&#34;)
 
@@ -263,29 +249,22 @@ def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; Tuple[np.nda
                 The complete Expression and Unspliced tensors are loaded into memory
                 If species is None, cell cycle scores are set to 0
         &#34;&#34;&#34;
-        # Create symbolic names for the required tensors, which might be renamed by the user
-        MitoFraction = self.requires[&#34;MitoFraction&#34;]
-        UnsplicedFraction = self.requires[&#34;UnsplicedFraction&#34;]
-        TotalUMIs = self.requires[&#34;TotalUMIs&#34;]
-        DoubletScore = self.requires[&#34;DoubletScore&#34;]
-        DoubletFlag = self.requires[&#34;DoubletFlag&#34;]
-
         n_cells = ws.cells.length
         if self.doublet_threshold == &#34;auto&#34;:
-                good_cells = ~ws[DoubletFlag][...]
+                good_cells = ~self.DoubletFlag[:]
         else:
-                good_cells = ws[DoubletScore][...] &lt; self.doublet_threshold
+                good_cells = self.DoubletScore[:] &lt; self.doublet_threshold
         logging.info(f&#34; QualityControl: Marked {n_cells - good_cells.sum()} doublets&#34;)
 
-        enough_umis = ws[TotalUMIs][...] &gt;= self.min_umis
+        enough_umis = self.TotalUMIs[:] &gt;= self.min_umis
         good_cells &amp;= enough_umis
         logging.info(f&#34; QualityControl: Marked {n_cells - enough_umis.sum()} cells with too few UMIs&#34;)
 
-        good_mito_fraction = ws[MitoFraction][...] &lt; self.max_mt_fraction
+        good_mito_fraction = self.MitoFraction[:] &lt; self.max_mt_fraction
         good_cells &amp;= good_mito_fraction
         logging.info(f&#34; QualityControl: Marked {n_cells - good_mito_fraction.sum()} cells with too high mitochondrial UMI fraction&#34;)
 
-        good_unspliced_fraction = ws[UnsplicedFraction][...] &gt;= self.min_unspliced_fraction
+        good_unspliced_fraction = self.UnsplicedFraction[:] &gt;= self.min_unspliced_fraction
         good_cells &amp;= good_unspliced_fraction
         logging.info(f&#34; QualityControl: Marked {n_cells - good_unspliced_fraction.sum()} cells with too low unspliced UMI fraction&#34;)
 
