@@ -46,7 +46,7 @@ class ArtOfTsne(Module):
 			# Subsample, optimize, then add the remaining cells and optimize again
 			# Also, use exaggeration == 4
 			logging.info(f" ArtOfTsne: Using large-scale heuristics (n > 100,000)")
-			logging.info(f" ArtOfTsne: Creating subset of {n // 40} elements")
+			logging.info(f" ArtOfTsne: Creating subset of {n // 40:,} elements")
 			# Subsample and run a regular art_of_tsne on the subset
 			indices = np.random.permutation(n)
 			reverse = np.argsort(indices)
@@ -54,7 +54,7 @@ class ArtOfTsne(Module):
 			logging.info(f" ArtOfTsne: Embedding subset")
 			Z_sample = self._fit(X_sample)
 
-			logging.info(f" ArtOfTsne: Preparing partial initial embedding of the {n - n // 40} remaining elements")
+			logging.info(f" ArtOfTsne: Preparing partial initial embedding of the {n - n // 40:,} remaining elements")
 			if isinstance(Z_sample.affinities, affinity.Multiscale):
 				rest_init = Z_sample.prepare_partial(X_rest, k=1, perplexities=[1 / 3, 1 / 3])
 			else:

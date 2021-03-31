@@ -11,3 +11,4 @@ from .pipeline import InitializeWorkspace, CollectCells, LoadSampleMetadata
 from .preprocessing import *
 from .species import *
 from .utils import *
+from .visualization import *

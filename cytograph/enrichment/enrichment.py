@@ -35,7 +35,7 @@ class Enrichment(Module):
 	@creates("Enrichment", "float32", ("clusters", "genes"))
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> Tuple[np.ndarray, np.ndarray]:
 		"""
-		Select genes at multiple levels in a hierarchy of clusters
+		Select genes enirched in clusters
 
 		Args:
 			ws				The shoji workspace containing aggregate data

@@ -48,12 +48,11 @@ class Dendrogram(Module):
 
 		# Renumber the clusters according to the new ordering
 		clusters = self.Clusters[:]
+		cluster_ids = np.zeros(ws.clusters.length, dtype="uint32")
 		new_clusters = np.zeros(ws.cells.length, dtype="uint32")
 		for i in range(ws.clusters.length):
 			selection = clusters == ordering[i]
 			new_clusters[selection] = i
-
-		# Renumber the cluster IDs (which define the clusters dimension)
-		cluster_ids = np.arange(ordering.shape[0])[ordering]
+			cluster_ids[ordering[i]] = i
 
 		return Z, cluster_ids, new_clusters

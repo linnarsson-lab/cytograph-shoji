@@ -112,11 +112,14 @@ def creates(name: str, dtype: str, dims: Tuple[Optional[Union[str, int]], ...], 
 				if hasattr(self, "creates") and self.creates is not None:
 					if name in self.creates:
 						tname = self.creates[name]
+				logging.info(f" [Creating tensor {tname} of shape {inits.shape}]")
 				ws[tname] = shoji.Tensor(dtype, dims, inits=np.array(inits))
 			except fdb.impl.FDBError as e:
 				if e.code == 2101:
-					logging.error(f"Result tensor '{name}' was too large to fit in transaction; make it smaller, or use atomic=False")
+					logging.error(f"Result tensor '{name}' was too large to fit in transaction")
 					sys.exit(1)
+				else:
+					raise e
 			if len(result.args) == 1:
 				if len(result.stored) == 1:
 					return result.stored[0]

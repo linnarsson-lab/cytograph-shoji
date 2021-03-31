@@ -4,7 +4,6 @@ import numpy as np
 from sklearn.preprocessing import OneHotEncoder
 
 import shoji
-import numpy as np
 from cytograph import requires, creates, Module
 from .glmpca_impl import glmpca
 import sys

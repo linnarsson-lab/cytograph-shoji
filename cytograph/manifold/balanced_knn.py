@@ -153,6 +153,7 @@ class BalancedKNN:
 		sight_k: int
 			the farthest point that a node is allowed to connect to when its closest neighbours are not allowed
 		"""
+		assert np.all(np.isfinite(data)), "BalancedKNN.fit() data contained non-finite numbers"
 		self.data = data
 		self.fitdata = data
 		if sight_k is not None:
@@ -203,8 +204,10 @@ class BalancedKNN:
 			self.dsi, _ = self.nn.query(self.data, k=self.sight_k + 1)
 			self.dist = np.ones_like(self.dsi, dtype='float64')
 			self.dist[:, 0] = 0
+		assert np.all(np.isfinite(self.dist)), "BalancedKNN.kneighbors() some distances were not finite"
 		logging.debug(f"Using the initialization network to find a {self.k}-NN graph with maximum connectivity of {self.maxl}")
 		self.dist_new, self.dsi_new, self.l = knn_balance(self.dsi, self.dist, maxl=self.maxl, k=self.k)
+		assert np.all(np.isfinite(self.dist)), "BalancedKNN.kneighbors() some distances were not finite after balancing the graph"
 		return self.dist_new, self.dsi_new, self.l
 
 	def kneighbors_graph(self, X: np.ndarray = None, maxl: int = None, mode: str = "distance") -> sparse.csr_matrix:

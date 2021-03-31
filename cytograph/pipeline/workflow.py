@@ -6,6 +6,7 @@ from .config import Config
 from .punchcards import PunchcardDeck, Punchcard
 import cytograph as cg
 from datetime import datetime
+from pathlib import Path
 
 
 def nice_deltastring(delta):
@@ -52,9 +53,24 @@ class Workflow:
 		self.config = Config.load(punchcard)
 		self.deck = deck
 		self.punchcard = punchcard
-		self.export_dir = os.path.join(self.config["paths"]["build"], "exported", punchcard.name)
+		self.export_dir = Path(os.path.join(self.config["paths"]["build"], "exported", punchcard.name))
+		os.makedirs(self.export_dir, exist_ok=True)
 
 	def process(self, resume_at: int = 0) -> None:
 		ws = self.config["workspaces"]["build"][self.punchcard.name]
 		logging.info(f"Running recipe '{self.punchcard.recipe}' for '{self.punchcard.name}'")
-		run_recipe(ws, self.config["recipes"][self.punchcard.recipe][resume_at:])
+		recipe = self.config["recipes"][self.punchcard.recipe][resume_at:]
+		start_all = datetime.now()
+		for step in recipe:
+			for fname, args in step.items():  # This is almost always only a single function and args, but could in principle be several as long as they have distinct names
+				logging.info(f"{fname}: {args}")
+				start = datetime.now()
+				instance = getattr(cg, fname)(**args)
+				instance.export_dir = self.export_dir
+				instance.fit(ws, save=True)
+				end = datetime.now()
+				logging.info(f"{fname}: Done in {nice_deltastring(end - start)}.")
+				logging.info("")
+		end_all = datetime.now()
+		logging.info(f"Recipe completed in {nice_deltastring(end_all - start_all)}.")
+		logging.info("")
