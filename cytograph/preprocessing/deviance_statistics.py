@@ -12,6 +12,7 @@ class DevianceStatistics(Module):
 	@requires("Expression", "uint16", ("cells", "genes"))
 	@requires("TotalUMIs", "uint32", ("cells",))
 	@requires("GeneTotalUMIs", "uint32", ("genes",))
+	@requires("OverallTotalUMIs", "uint64", ())
 	@creates("Deviance", "float32", ("genes",))
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> np.ndarray:
 		"""
@@ -22,21 +23,23 @@ class DevianceStatistics(Module):
 			save			if true, save the result to the workspace
 
 		Returns:
-			Deviance		Deviance per gene
+			Deviance		Deviance variance per gene across cells
 
 		Remarks:
-			See equation D_j on p. 14 of https://doi.org/10.1186/s13059-019-1861-6
+			See equation 9 on p. 4 of https://doi.org/10.1101/2020.12.01.405886
 		"""
-		logging.info(" DevianceStatistics: Computing binomial deviance statistics for genes")
-		n = self.TotalUMIs[:]
-		n_sum = n.sum()
-		gn = self.GeneTotalUMIs[:]
-		d_j = np.zeros((1, ws.genes.length))
-		for ix in range(0, ws.cells.length, 1000):
-			pi_hat_j = (gn / n_sum)[None, :]
-			y_ji = self.Expression[ix: ix + 1000]
-			n_i = n[ix: ix + 1000][:, None]
-			with np.errstate(divide='ignore', invalid='ignore'):
-				# This would be faster as a numba nested for loop
-				d_j += 2 * np.sum(np.nan_to_num(y_ji * np.log(div0(y_ji, (n_i * pi_hat_j)))) + (n_i - y_ji) * np.log((n_i - y_ji) / (n_i * (1 - pi_hat_j))), axis=0)
-		return d_j[0]
+		logging.info(" DevianceStatistics: Computing the variance of Pearson residuals (deviance)")
+		totals = self.TotalUMIs[:].astype("float32")
+		gene_totals = self.GeneTotalUMIs[:].astype("float32")
+		batch_size = 1000
+		ix = 0
+		n_cells = ws.cells.length
+		acc = shoji.Accumulator()
+		while ix < n_cells:
+			data = self.Expression[ix: ix + batch_size, :]
+			expected = totals[ix: ix + batch_size, None] @ div0(gene_totals[None, :], self.OverallTotalUMIs[:])
+			residuals = div0((data - expected), np.sqrt(expected + np.power(expected, 2) / 100))
+			for j in range(residuals.shape[0]):
+				acc.add(residuals[j, :])
+			ix += batch_size
+		return acc.variance
