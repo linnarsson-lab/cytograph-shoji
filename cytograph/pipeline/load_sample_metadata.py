@@ -76,7 +76,7 @@ class LoadSampleMetadata(Module):
 				logging.error(f"Sample {source} not found!")
 				sys.exit(1)
 			logging.info(f" LoadSampleMetadata: Updating metadata for '{source}'")
-			if self.convert_10x_sample_name:
+			if self.convert_10x_sample_name and source.startswith("TenX"):
 				sample_id = "10X" + source[4:]
 			else:
 				sample_id = source
