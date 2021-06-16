@@ -9,12 +9,13 @@ import sys
 
 
 class CollectCells(Module):
-	def __init__(self, tensors: List[str], expand_scalars: bool = True, **kwargs) -> None:
+	def __init__(self, tensors: List[str], expand_scalars: bool = True, renumber_tensors: List[str] = None, **kwargs) -> None:
 		"""
 		Args:
-			tensors			List of tensors to be collected (must exist and have same dims and dtype in all samples)
-			expand_scalars	If true, scalars are converted to vectors (repeating the scalar value)
-		
+			tensors				List of tensors to be collected (must exist and have same dims and dtype in all samples)
+			expand_scalars		If true, scalars are converted to vectors (repeating the scalar value)
+			renumber_tensors	List of tensors that should be renumbered to stay unique while combining sources (e.g. "Clusters")
+
 		Remarks:
 			Tensors can be renamed on the fly using the A->B syntax, e.g. "SampleName->SampleID"
 		"""
@@ -22,6 +23,7 @@ class CollectCells(Module):
 
 		self.tensors = tensors
 		self.expand_scalars = expand_scalars
+		self.renumber_tensors = renumber_tensors if renumber_tensors is not None else []
 
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> None:
 		"""
@@ -33,8 +35,9 @@ class CollectCells(Module):
 		db = shoji.connect()
 		config = Config.load()
 		punchcard = config["punchcard"]
+
 		for ix, source in enumerate(punchcard.sources):
-			if source in config["workspaces"]["build"]:
+			if source != punchcard.name and source in config["workspaces"]["build"]:
 				source_ws = config["workspaces"]["build"][source]
 			elif source in db[config["workspaces"]["samples"]]:
 				source_ws = db[config["workspaces"]["samples"]][source]
@@ -65,6 +68,9 @@ class CollectCells(Module):
 						logging.error(f"Tensor '{tensor}' missing in source workspace '{source}")
 						sys.exit(1)
 					t = source_ws[tensor]
+					if tensor in self.renumber_tensors and t.rank != 1:
+						logging.error(f"Cannot renumber tensor '{tensor}' because rank is not 1")
+						sys.exit(1)
 					if t.rank > 0:
 						if t.dims[0] != "cells":
 							logging.error(f"Cannot collect tensor '{tensor}' because first dimension is not 'cells'")
@@ -81,5 +87,15 @@ class CollectCells(Module):
 							ws[new_name] = shoji.Tensor(t.dtype, t.dims, inits=t[:])
 				ws.cells.append(d)
 				start += batch_size
+
+		for tensor in self.renumber_tensors:
+			logging.info(f" CollectCells: Renumbering '{source}'")
+			offset = 0
+			for source in punchcard.sources:
+				t = db[config["workspaces"]["samples"]][source][tensor]
+				vals = t[:]
+				t[:] = vals + offset
+				offset = offset + max(vals) + 1
+
 		ws.cells = shoji.Dimension(shape=ws.cells.length)  # Fix the length of the cells dimension
 		logging.info(f" CollectCells: Collected {ws.cells.length} cells")

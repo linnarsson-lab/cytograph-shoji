@@ -62,7 +62,7 @@ class Workflow:
 		recipe = self.config["recipes"][self.punchcard.recipe][resume_at:]
 		start_all = datetime.now()
 		for step in recipe:
-			for fname, args in step.items():  # This is almost always only a single function and args, but could in principle be several as long as they have distinct names
+			for fname, args in step.items():
 				logging.info(f"{fname}: {args}")
 				start = datetime.now()
 				instance = getattr(cg, fname)(**args)

@@ -1,8 +1,8 @@
+from typing import Optional
 from matplotlib.lines import Line2D
 from matplotlib.collections import LineCollection
 import matplotlib.pyplot as plt
 import numpy as np
-from sklearn.neighbors import NearestNeighbors
 from .colors import colorize
 
 
@@ -11,9 +11,9 @@ def _draw_edges(ax: plt.Axes, pos: np.ndarray, g: np.ndarray, gcolor: str, galph
 	ax.add_collection(lc)
 
 
-def scatterc(xy: np.ndarray, *, c: np.ndarray, legend: str = "outside", g: np.ndarray = None, gcolor: str = "thistle", galpha: float = 0.1, glinewidths: float = 0.25, **kwargs) -> None:
+def scatterc(xy: np.ndarray, *, c: np.ndarray, legend: Optional[str] = "outside", g: np.ndarray = None, gcolor: str = "thistle", galpha: float = 0.1, glinewidths: float = 0.25, **kwargs) -> None:
 	n_cells = xy.shape[0]
-	marker_size = 1000 / np.sqrt(n_cells)
+	marker_size = 500_000 / n_cells
 
 	ordering = np.random.permutation(xy.shape[0])
 	c = c[ordering]
@@ -30,7 +30,7 @@ def scatterc(xy: np.ndarray, *, c: np.ndarray, legend: str = "outside", g: np.nd
 			ax.legend(hidden_lines, np.unique(c), loc=legend)
 	if g is not None:
 		_draw_edges(ax, xy, g, gcolor, galpha, glinewidths)
-
+	plt.title(f"{n_cells:,} cells")
 
 def scattern(xy: np.ndarray, *, c: np.ndarray, zinf: bool = True, g: np.ndarray = None, gcolor: str = "thistle", galpha: float = 0.1, glinewidths: float = 0.25, **kwargs) -> None:
 	n_cells = xy.shape[0]

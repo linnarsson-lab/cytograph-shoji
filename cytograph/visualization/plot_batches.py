@@ -31,33 +31,37 @@ class PlotBatches(Module):
 				return x
 
 		# Age
-		age = expand_scalars(ws.Age[:])
-		plt.subplot(2, 2, 1)
-		plt.scatter(xy[:, 0], xy[:, 1], c=age, s=marker_size, lw=0, cmap="rainbow", vmin=min(age[age > 0]))
-		plt.colorbar(fraction=0.02, pad=0.04)
-		plt.axis("off")
-		plt.title(f"Age")
+		if "Age" in ws:
+			age = expand_scalars(ws.Age[:])
+			plt.subplot(2, 2, 1)
+			plt.scatter(xy[:, 0], xy[:, 1], c=age, s=marker_size, lw=0, cmap="rainbow", vmin=min(age[age > 0]))
+			plt.colorbar(fraction=0.02, pad=0.04)
+			plt.axis("off")
+			plt.title(f"Age")
 
 		# Tissue
-		tissue = expand_scalars(ws.Tissue[:])
-		plt.subplot(2, 2, 2)
-		scatterc(xy, c=tissue, s=marker_size, lw=0)
-		plt.axis("off")
-		plt.title(f"Tissue")
+		if "Tissue" in ws:
+			tissue = expand_scalars(ws.Tissue[:])
+			plt.subplot(2, 2, 2)
+			scatterc(xy, c=tissue, s=marker_size, lw=0)
+			plt.axis("off")
+			plt.title(f"Tissue")
 
 		# Chemistry
-		chemistry = expand_scalars(ws.Chemistry[:])
-		plt.subplot(2, 2, 3)
-		scatterc(xy, c=chemistry, s=marker_size, lw=0)
-		plt.axis("off")
-		plt.title(f"Chemistry")
+		if "Chemistry" in ws:
+			chemistry = expand_scalars(ws.Chemistry[:])
+			plt.subplot(2, 2, 3)
+			scatterc(xy, c=chemistry, s=marker_size, lw=0)
+			plt.axis("off")
+			plt.title(f"Chemistry")
 
-		# Chemistry
-		sid = expand_scalars(ws.SampleID[:])
-		plt.subplot(2, 2, 4)
-		scatterc(xy, c=sid, s=marker_size, lw=0)
-		plt.axis("off")
-		plt.title(f"SampleID")
+		# Samples
+		if "SampleID" in ws:
+			sid = expand_scalars(ws.SampleID[:])
+			plt.subplot(2, 2, 4)
+			scatterc(xy, c=sid, s=marker_size, lw=0, legend=None if len(sid) > 20 else "outside")
+			plt.axis("off")
+			plt.title(f"SampleID")
 
-		plt.savefig(self.export_dir / self.filename, dpi=300)
+		plt.savefig(self.export_dir / (ws._name + "_" + self.filename), dpi=300)
 		plt.close()

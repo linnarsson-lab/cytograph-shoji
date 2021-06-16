@@ -1,185 +1,138 @@
-from typing import Dict, List
-import logging
-
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.collections import LineCollection
-
 import shoji
-
-from .colors import colorize
+from cytograph import Module, Species, requires
 from .dendrogram import dendrogram
-from cytograph import Module, requires
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
 
 class Heatmap(Module):
-	def __init__(self, attributes: Dict[str, str], markers: Dict[str, List[str]] = None, **kwargs) -> None:
+	def __init__(self, filename: str = "heatmap.png", **kwargs) -> None:
 		super().__init__(**kwargs)
-		self.markers = markers if markers is not None else {}
-		self.attrs = attributes
+		self.filename = filename
 	
-	@requires("Expression", "uint16", ("cells", "genes"))
+	@requires("MeanExpression", "float64", ("clusters", "genes"))
 	@requires("Gene", "string", ("genes",))
-	@requires("Clusters", "uint32", ("cells",))
 	@requires("Enrichment", "float32", ("clusters", "genes"))
-	@requires("SelectedFeatures", "bool", ("genes",))
-	@requires("TotalUMIs", "uint32", ("cells",))
-	@requires("GeneTotalUMIs", "uint32", ("genes",))
-	@requires("OverallTotalUMIs", "uint64", ())
-	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> None:
-		logging.info(" Heatmap: Computing Pearson residuals")
-		all_markers = []
-		for kind, markers in self.markers.items():
-			all_markers += markers
+	@requires("Species", "string", ())
+	@requires("MeanAge", "float64", ("clusters",))
+	@requires("NCells", "uint64", ("clusters",))
+	def fit(self, ws: shoji.WorkspaceManager, save: bool = False):
+		# Load data
 		genes = self.Gene[:]
-		selected = (self.SelectedFeatures[:] == True) | (np.isin(genes, self.markers))
-		selected_genes = genes[selected]
-		totals = self.TotalUMIs[:].astype("float32")
-		gene_totals = self.GeneTotalUMIs[selected].astype("float32")
-		data = self.Expression[:, selected]
-		expected = totals[:, None] @ (gene_totals[None, :] / self.OverallTotalUMIs[:])
-		residuals = (data - expected) / np.sqrt(expected + np.power(expected, 2) / 100)
+		ordering = np.argsort(ws.ClusterID[:])
+		mean_x = self.MeanExpression[:][ordering]
+		enrichment = self.Enrichment[:][ordering]
+		markers = Species(self.Species[:]).markers
 
-		clusters = self.Clusters[:]
-		n_clusters = clusters.max() + 1
-		data = np.log(self.Expression[:, self.SelectedFeatures == True] + 1)
-		if np.all(ds.ra.Gene[self.genes] == ds.ra.Gene[:len(self.genes)]):
-			data = np.log(ds[layer][:len(self.genes), :] + 1)
-			enrichment = dsagg.layer["enrichment"][:len(self.genes), :]
-		else:
-			data = np.log(ds[layer][self.genes, :] + 1)
-			enrichment = dsagg.layer["enrichment"][:len(self.genes), :]
-	
-		# Order the dataset by cluster enrichment
+		# Compute the main heatmap
+		enriched_genes = []
+		x = []
+		for i in range(enrichment.shape[0]):
+			count = 0
+			for gene in genes[np.argsort(-enrichment[i, :])]:
+				gene_ix = np.where(genes == gene)[0][0]
+				if gene not in enriched_genes:
+					enriched_genes.append(gene)
+					x.append(mean_x[:, gene_ix])
+					count += 1
+				if count == 3:
+					break
+		x = np.array(x)  # x is (n_genes, n_clusters)
+		enriched_genes = np.array(enriched_genes)
+		# Rearrange the genes by the max-expressing cluster
 		top_cluster = []
-		for g in ds.ra.Gene[self.genes]:
-			top_cluster.append(np.argsort(-dsagg["enrichment"][ds.ra.Gene == g, :][0])[0])
-		ordering = np.argsort(top_cluster)
-		data = data[ordering, :]
-		enrichment = enrichment[ordering, :]
-		gene_names = ds.ra.Gene[self.genes][ordering]
+		for g in enriched_genes:
+			top_cluster.append(np.argsort(-enrichment[:, genes == g].T[0])[0])
+		gene_ordering = np.argsort(top_cluster)
+		x = x[gene_ordering, :]
+		enriched_genes = enriched_genes[gene_ordering]
+		# Add the markers
+		m = []
+		m_names = []
+		for category, mgenes in markers.items():
+			for gene in mgenes:
+				gene_ix = np.where(genes == gene)[0][0]
+				m.append(mean_x[:, gene_ix])
+				m_names.append(gene)
+		x = np.vstack([m, x])
+		enriched_genes = np.concatenate([m_names, enriched_genes])
+		# Normalize
+		totals = mean_x.sum(axis=1)
+		x_norm = (x / totals * np.median(totals)).T
+		#x_norm = x_norm / np.max(x_norm, axis=0)
+		#x_norm = x.T
+		
+		# Set up the figure
+		n_genes = x.shape[0]
+		n_clusters = ws.clusters.length
+		dendrogram_height = n_genes / 40
+		fig_width = n_clusters / 40
+		fig_height = dendrogram_height + (1 + 2 + n_genes) / 40
+		fig = plt.figure(figsize=(fig_width, fig_height), dpi=200)
+		
+		heights = [dendrogram_height] + [1, 2, n_genes]
+		fig_spec = fig.add_gridspec(nrows=4, height_ratios=heights)
+		fig_spec.hspace = 0
+		fig_spec.wspace = 0
+		subplot = 0
+		
+		# Plot the dendrogram
+		ax = fig.add_subplot(fig_spec[subplot])
+		z = ws.Linkage[:].astype("float64")
+		lines = dendrogram(z)
+		lines.set_linewidth(0.5)
+		ax.add_collection(lines)
+		ax.set_xlim(-0.5, ws.clusters.length - 0.5)
+		ax.set_ylim(0, z[:, 2].max() * 1.1)
+		plt.axis("off")
+		# Plot the legend for the main heatmap
+		inset = inset_axes(ax, width="10%", height="20%", borderpad=0.1, loc=2)
+		inset.imshow(np.tile(np.arange(-1, 2, 0.1), (10, 1)), vmin=-1, vmax=2, cmap="RdGy_r", interpolation="none", aspect="equal")
+		for axis in ['top', 'bottom', 'left', 'right']:
+			inset.spines[axis].set_linewidth(0.5)
+		inset.tick_params(length=1, width=0.5)
+		inset.set_xticks([0, 10, 20, 30])
+		inset.set_xticklabels(["0.1", "1", "10", "100"], fontsize=2, rotation=90)
+		inset.set_yticks([])
+		subplot += 1
 
-		clusterborders = np.cumsum(dsagg.ca.NCells)
-		clustermiddles = clusterborders[:-1] + (clusterborders[1:] - clusterborders[:-1]) / 2
-		clustermiddles = np.hstack([[clusterborders[0]/2], clustermiddles])  # Add the first cluster
-		gene_pos = clusterborders[np.array(top_cluster)[ordering]]
-
-		# Calculate the plot height
-		num_strips = 0
-		for attr, kind in self.attrs.items():
-			if attr not in ds.ca:
-				continue
-			if kind == "ticker":
-				num_strips += np.unique(ds.ca[attr]).shape[0]
-			else:
-				num_strips += 1
-		num_markers = sum([len(g) for g in self.markers.values()])
-		# Height in terms of heatmap rows
-		dendr_height = 10 if "linkage" in dsagg.attrs else 0
-		strip_height = 2
-		total_height = data.shape[0] + strip_height * (num_strips + num_markers) + dendr_height
-		color_range = np.percentile(data, 99, axis=1) + 0.1
-		data_scaled = data / color_range[None].T
-
-		plt.figure(figsize=(12, total_height / 10))
-		grid = (total_height, 1)
-		offset = 0  # Start at top with the dendrogram
-
-		if "linkage" in dsagg.attrs:
-			ax = plt.subplot2grid(grid, (offset, 0), rowspan=dendr_height)
-			offset += dendr_height
-			lc = dendrogram(dsagg.attrs.linkage, leaf_positions=clustermiddles)
-			ax.add_collection(lc)
-			plt.xlim(0, clusterborders[-1])
-			plt.ylim(0, dsagg.attrs.linkage[:, 2].max() * 1.1)
+		# Plot the stripe of ages
+		ax = fig.add_subplot(fig_spec[subplot])
+		if "MeanAge" in ws:
+			ages = ws.MeanAge[:][ordering]
+			ax.imshow(ages[None, :], cmap="rainbow", vmin=min(ages[ages > 0]), vmax=max(ages))
+			ax.set_xlim(-0.5, n_clusters - 0.5)
 			plt.axis("off")
+		subplot += 1
 
-		for attr, spec in self.attrs.items():
-			if attr not in ds.ca:
-				continue
-			if ":" in spec:
-				kind, transform = spec.split(":")
+		# Plot the barchart of cluster sizes
+		n_cells = ws.NCells[:][ordering]
+		ax = fig.add_subplot(fig_spec[subplot])
+		ax.bar(np.arange(n_clusters), n_cells, color="grey")
+		ax.set_xlim(-0.5, n_clusters - 0.5)
+		plt.axis("off")
+		subplot += 1
+
+		# Plot the heatmap
+		ax = fig.add_subplot(fig_spec[subplot])
+		ax.set_anchor("N")
+		ax.imshow(np.log10(x_norm.T + 0.001), vmin=-1, vmax=2, cmap="RdGy_r", interpolation="none", aspect="equal")
+		ax.set_yticks(np.arange(x_norm.shape[1]))
+		ax.set_yticklabels(enriched_genes, fontsize=2)
+		ax.set_xticks(np.arange(0, x_norm.shape[0], 10) - 0.5)
+		ax.set_xticklabels(np.arange(0, x_norm.shape[0], 10), fontsize=2)
+		for ix, label in enumerate(enriched_genes):
+			if ix < len(enriched_genes) - 21:
+				ax.text(np.argmax(x_norm[:, ix]) + 0.7, ix + 0.3, label, fontsize=2, color="white")
 			else:
-				kind = spec
-				transform = ""
-			if kind == "ticker":
-				for val in np.unique(ds.ca[attr]):
-					d = (ds.ca[attr] == val).astype("int")
-					ax = plt.subplot2grid(grid, (offset, 0), rowspan=strip_height)
-					offset += strip_height
-					plt.imshow(np.expand_dims(d, axis=0), aspect='auto', cmap="Greys")
-					plt.text(0, 0.9, val, horizontalalignment='right', verticalalignment='top', transform=ax.transAxes, fontsize=7, color="black")
-					plt.axis("off")
-				plt.text(1, 0.9, attr, horizontalalignment='left', verticalalignment='top', transform=ax.transAxes, fontsize=7, color="black")
-			elif kind == "categorical":
-				d = colorize(np.nan_to_num(ds.ca[attr]))
-				ax = plt.subplot2grid(grid, (offset, 0), rowspan=strip_height)
-				offset += strip_height
-				plt.imshow(np.expand_dims(d, axis=0), aspect='auto')
-				plt.text(0, 0.9, attr, horizontalalignment='right', verticalalignment='top', transform=ax.transAxes, fontsize=7, color="black")
-			else:
-				d = ds.ca[attr]
-				if transform == "log":
-					d = np.log(d + 1)
-				ax = plt.subplot2grid(grid, (offset, 0), rowspan=strip_height)
-				offset += strip_height
-				plt.imshow(np.expand_dims(d, axis=0), aspect='auto', cmap=kind)
-				plt.text(0, 0.9, attr, horizontalalignment='right', verticalalignment='top', transform=ax.transAxes, fontsize=7, color="black")
-			plt.axis("off")
+				ax.text(np.argmax(x_norm[:, ix]) - 0.5, ix + 0.3, label, fontsize=2, color="white", ha="right")
+		for axis in ['top','bottom','left','right']:
+			ax.spines[axis].set_linewidth(0.5)
+		ax.tick_params(width=0.5)
 
-		for cat, markers in self.markers.items():
-			write_cat = True
-			for m in markers:
-				if m not in ds.ra.Gene:
-					vals = np.zeros(ds.shape[1])
-				else:
-					vals = ds[layer][ds.ra.Gene == m, :][0]
-				vals = vals / (np.percentile(vals, 99) + 0.1)
-				ax = plt.subplot2grid(grid, (offset, 0), rowspan=strip_height)
-				offset += strip_height
-				ax.imshow(np.expand_dims(vals, axis=0), aspect='auto', cmap="viridis", vmin=0, vmax=1)
-				if write_cat:
-					plt.text(1.001, 0.9, cat, horizontalalignment='left', verticalalignment='top', transform=ax.transAxes, fontsize=7, color="black")
-					write_cat = False
-				plt.text(0, 0.9, m, horizontalalignment='right', verticalalignment='top', transform=ax.transAxes, fontsize=7, color="black")
-				plt.text(0.5, 0.9, m, horizontalalignment='center', verticalalignment='top', transform=ax.transAxes, fontsize=7, color="white")
-				plt.text(0.999, 0.9, m, horizontalalignment='right', verticalalignment='top', transform=ax.transAxes, fontsize=7, color="white")
-				plt.axis("off")
-
-		ax = plt.subplot2grid(grid, (offset, 0), rowspan=data.shape[0])
-
-		# Draw border between clusters
-		if n_clusters > 2:
-			tops = np.vstack((clusterborders - 0.5, np.zeros(clusterborders.shape[0]) - 0.5)).T
-			bottoms = np.vstack((clusterborders - 0.5, np.zeros(clusterborders.shape[0]) + data.shape[0] - 0.5)).T
-			lc = LineCollection(zip(tops, bottoms), linewidths=1, color='white', alpha=0.5)
-			ax.add_collection(lc)
-
-		ax.imshow(data_scaled, aspect='auto', cmap="viridis", vmin=0, vmax=1)
-		n_genes = ds.ra.Gene[self.genes].shape[0]
-		for ix, gene in enumerate(gene_names):
-			xpos = gene_pos[ix]
-			if xpos == clusterborders[-1]:
-				if n_clusters > 2:
-					xpos = clusterborders[-3]
-			plt.text(0.001 + xpos, ix - 0.5, gene, horizontalalignment='left', verticalalignment='top', fontsize=4, color="white")
-			plt.text(0, 1 - ix / n_genes, gene, horizontalalignment='right', verticalalignment='top', transform=ax.transAxes, fontsize=4, color="black")
-			plt.text(1, 1 - ix / n_genes, gene, horizontalalignment='left', verticalalignment='top', transform=ax.transAxes, fontsize=4, color="black")
-
-		# Cluster IDs
-		labels = [str(x) for x in np.arange(n_clusters)]
-		if "ClusterName" in dsagg.ca:
-			labels = dsagg.ca.ClusterName
-		for ix, x in enumerate(clustermiddles):
-			plt.text(x, np.mod(ix, 4), labels[ix], horizontalalignment='center', verticalalignment='top', fontsize=6, color="white", weight="bold")
-			plt.text(x, np.mod(ix, 4) + n_genes / 2, labels[ix], horizontalalignment='center', verticalalignment='top', fontsize=6, color="white", weight="bold")
-			plt.text(x, np.mod(ix, 4) + n_genes - 5, labels[ix], horizontalalignment='center', verticalalignment='top', fontsize=6, color="white", weight="bold")
-
-		ax.set_frame_on(False)
-		ax.set_xticks([])
-		ax.set_yticks([])
-
-		plt.subplots_adjust(hspace=0)
-		if out_file is not None:
-			plt.savefig(out_file, format="pdf", dpi=144, bbox_inches='tight')
-			plt.close()
+		plt.tight_layout()
+		plt.subplots_adjust(hspace=0, left=0, right=1, top=1, bottom=0)
+		
+		plt.savefig(self.export_dir / (ws._name + "_" + self.filename), dpi=400, bbox_inches='tight')
+		plt.close()

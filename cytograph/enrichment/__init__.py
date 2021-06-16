@@ -3,3 +3,4 @@ from .feature_selection_by_variance import FeatureSelectionByVariance
 from .feature_selection_by_deviance import FeatureSelectionByDeviance
 from .gsea import GSEA
 from .enrichment import Enrichment
+from .enrichment_by_deviance import EnrichmentByDeviance

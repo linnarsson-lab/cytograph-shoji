@@ -78,5 +78,5 @@ class PlotQC(Module):
 		plt.title("Mitochondrial fraction (%)")
 		plt.colorbar(fraction=0.02, pad=0.04)
 
-		plt.savefig(self.export_dir / self.filename, dpi=300)
+		plt.savefig(self.export_dir / (ws._name + "_" + self.filename), dpi=300)
 		plt.close()

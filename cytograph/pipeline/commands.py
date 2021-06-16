@@ -45,10 +45,16 @@ def cli(show_message: bool = True, verbosity: str = "info") -> None:
 def build(engine: str, dryrun: bool) -> None:
 	try:
 		config = Config.load()
-		Path(config['paths']['build']).mkdir(exist_ok=True)
+		workspace = Path(os.getcwd()).name
+		if not Path(config['paths']['builds']) in Path(os.getcwd()).parents:
+			logging.error(f"Current folder '{os.getcwd()}' is not a subfolder of the configured build folder '{config['paths']['builds']}' ")
+			sys.exit(1)
+		config["paths"]["build"] = Path(config['paths']['builds']) / workspace
+		logging.info(f"Build folder is '{config['paths']['build']}'")
+		config["paths"]["build"].mkdir(exist_ok=True)
 
 		# Load the punchcard deck
-		deck = PunchcardDeck(config['paths']['build'])
+		deck = PunchcardDeck(config['paths']['build'] / "punchcards")
 
 		# Create the execution engine
 		execution_engine: Optional[Engine] = None
