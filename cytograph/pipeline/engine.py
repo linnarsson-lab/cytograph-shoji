@@ -70,6 +70,10 @@ class LocalEngine(Engine):
 		super().__init__(deck, dryrun)
 
 	def execute(self) -> None:
+		config = Config().load()
+		logdir: Path = config["paths"]["build"] / "logs"
+		logdir.mkdir(exist_ok=True)
+
 		# Run all the punchcards
 		tasks = self.build_execution_dag()
 		for task, deps in tasks.items():
@@ -86,6 +90,12 @@ class LocalEngine(Engine):
 		if self.dryrun:
 			logging.info("Dry run only, with the following execution plan")
 		for ix, task in enumerate(ordered_tasks):
+			# Atomically check if the task has already been launched
+			try:
+				(logdir / (task + ".created")).touch(exist_ok=False)
+			except FileExistsError:
+				logging.info(f"Skipping '{task}' because it was already run (remove '{task}.created' from logs to force rebuild).")
+				continue
 			if not self.dryrun:
 				logging.info(f"\033[1;32;40mBuild step {ix + 1} of {len(ordered_tasks)}: cytograph process {task}\033[0m")
 				subprocess.run(["cytograph", "--hide-message", "process", task])
