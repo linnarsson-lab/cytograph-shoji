@@ -40,7 +40,7 @@ def cli(show_message: bool = True, verbosity: str = "info") -> None:
 
 
 @cli.command()
-@click.option('--engine', default="local", type=click.Choice(['local', 'condor']))
+@click.option('--engine', type=click.Choice(['local', 'condor']))
 @click.option('--dryrun/--no-dryrun', is_flag=True, default=False)
 def build(engine: str, dryrun: bool) -> None:
 	try:
@@ -62,6 +62,9 @@ def build(engine: str, dryrun: bool) -> None:
 			execution_engine = LocalEngine(deck, dryrun)
 		elif engine == "condor":
 			execution_engine = CondorEngine(deck, dryrun)
+		else:
+			logging.error("No engine was specified")
+			sys.exit(1)
 
 		# Execute the build
 		assert(execution_engine is not None)
