@@ -4,6 +4,7 @@ import shutil
 import subprocess
 import sys
 from typing import List, Dict, Set
+from pathlib import Path
 
 from .config import Config
 from .punchcards import PunchcardDeck
@@ -104,13 +105,12 @@ class CondorEngine(Engine):
 	def execute(self) -> None:
 		config = Config().load()
 		tasks = self.build_execution_dag()
-		# Make job files
-		exdir = os.path.abspath(os.path.join(config["paths"]["build"], "condor"))
-		if os.path.exists(exdir):
-			logging.warn("Removing previous build logs from 'condor' directory.")
-			shutil.rmtree(exdir, ignore_errors=True)
-		if not os.path.exists(exdir):
-			os.mkdir(exdir)
+
+		logdir: Path = config["paths"]["build"] / "logs"
+		if logdir.exists():
+			logging.warn("Removing previous build logs from 'logs' directory.")
+			shutil.rmtree(logdir, ignore_errors=True)
+		logdir.mkdir(exist_ok=True)
 
 		# Find cytograph
 		cytograph_exe = shutil.which('cytograph')
@@ -119,44 +119,52 @@ class CondorEngine(Engine):
 			sys.exit(1)
 
 		for task in tasks.keys():
+			if task not in self.deck.punchcards:
+				logging.error(f"Punchcard {task} not found.")
+				sys.exit(1)
+
+		for task in tasks.keys():
+			# Atomically check if the task has already been launched
+			try:
+				(logdir / (task + ".created")).touch(exist_ok=False)
+			except FileExistsError:
+				logging.info(f"Skipping '{task}' because it was already run (remove '{task}.created' from logs to force rebuild).")
+				continue
 			config = Config().load()  # Load it fresh for each task since we're clobbering it below
 			cmd = ""
-			if task not in self.deck.punchcards:
-				logging.error(f"Subset or view {task} not found.")
-				sys.exit(1)
 
 			punchcard = self.deck.punchcards[task]
 			config = Config().load(punchcard)
 			cmd = f"process {task}"
 			# Must set 'request_gpus' only if non-zero, because even asking for zero GPUs requires a node that has GPUs (weirdly)
 			request_gpus = f"request_gpus = {config['execution']['n_gpus']}" if config['execution']['n_gpus'] > 0 else ""
-			with open(os.path.join(exdir, task + ".condor"), "w") as f:
+			with open(logdir / (task + ".condor"), "w") as f:
 				f.write(f"""
 getenv       = true
 executable   = {os.path.abspath(cytograph_exe)}
 arguments    = "{cmd}"
-log          = {os.path.join(exdir, task)}.log
-output       = {os.path.join(exdir, task)}.out
-error        = {os.path.join(exdir, task)}.error
+log          = {logdir / task}.log
+output       = {logdir / task}.out
+error        = {logdir / task}.error
 request_cpus = {config["execution"]["n_cpus"]}
 {request_gpus}
 request_memory = {config["execution"]["memory"] * 1024}
 queue 1\n
 """)
 
-		with open(os.path.join(exdir, "_dag.condor"), "w") as f:
+		with open(os.path.join(logdir, "_dag.condor"), "w") as f:
 			for task in tasks.keys():
-				f.write(f"JOB {task} {os.path.join(exdir, task)}.condor DIR {config['paths']['build']}\n")
+				f.write(f"JOB {task} {logdir / task}.condor DIR {config['paths']['build']}\n")
 			for task, deps in tasks.items():
 				if len(deps) == 0:
 					continue
 				f.write(f"PARENT {' '.join(deps)} CHILD {task}\n")
 
 		if not self.dryrun:
-			logging.debug(f"condor_submit_dag {os.path.join(exdir, '_dag.condor')}")
-			subprocess.run(["condor_submit_dag", os.path.join(exdir, "_dag.condor")])
+			logging.debug(f"condor_submit_dag {logdir / '_dag.condor'}")
+			subprocess.run(["condor_submit_dag", logdir / "_dag.condor"])
 		else:
-			logging.info(f"(Dry run) condor_submit_dag {os.path.join(exdir, '_dag.condor')}")
+			logging.info(f"(Dry run) condor_submit_dag {logdir / '_dag.condor'}")
 
 # TODO: SlurmEngine using job dependencies (https://hpc.nih.gov/docs/job_dependencies.html)
 # TODO: SgeEngine using job dependencies (https://arc.leeds.ac.uk/using-the-systems/why-have-a-scheduler/advanced-sge-job-dependencies/)
