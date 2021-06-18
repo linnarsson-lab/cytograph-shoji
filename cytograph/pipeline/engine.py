@@ -195,7 +195,9 @@ class CondorEngine2(Engine):
 			logging.error("The 'cytograph' command-line tool was not found.")
 			sys.exit(1)
 
-		while True:
+		waiting_for_something = True
+		while waiting_for_something:
+			waiting_for_something = False
 			logging.info(f"Checking for new tasks to launch.")
 			tasks = self.build_execution_dag()
 
@@ -242,7 +244,9 @@ queue 1\n
 						logging.info(f"(Dry run) condor_submit {logdir / (task + '.condor')}")
 				else:
 					logging.info(f"Skipping '{task}' because not all dependencies have been completed.")
+					waiting_for_something = True
 			logging.info("Waiting one minute before checking again.")
 			time.sleep(60)
+		logging.info("All tasks completed.")
 # TODO: SlurmEngine using job dependencies (https://hpc.nih.gov/docs/job_dependencies.html)
 # TODO: SgeEngine using job dependencies (https://arc.leeds.ac.uk/using-the-systems/why-have-a-scheduler/advanced-sge-job-dependencies/)

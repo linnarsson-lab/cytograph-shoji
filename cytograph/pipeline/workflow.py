@@ -57,6 +57,8 @@ class Workflow:
 		os.makedirs(self.export_dir, exist_ok=True)
 
 	def process(self, resume_at: int = 0) -> None:
+		logdir: Path = self.config["paths"]["build"] / "logs"
+		logdir.mkdir(exist_ok=True)
 		ws = self.config["workspaces"]["build"][self.punchcard.name]
 		logging.info(f"Running recipe '{self.punchcard.recipe}' for '{self.punchcard.name}'")
 		recipe = self.config["recipes"][self.punchcard.recipe][resume_at:]
@@ -74,3 +76,4 @@ class Workflow:
 		end_all = datetime.now()
 		logging.info(f"Recipe completed in {nice_deltastring(end_all - start_all)}.")
 		logging.info("")
+		(logdir / (self.punchcard.name + ".completed")).touch()
