@@ -4,3 +4,4 @@ from .heatmap import Heatmap
 from .scatter import scatterc, scattern
 from .plot_qc import PlotQC
 from .plot_batches import PlotBatches
+from .plot_manifold import PlotManifold

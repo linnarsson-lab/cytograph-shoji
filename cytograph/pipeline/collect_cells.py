@@ -90,13 +90,18 @@ class CollectCells(Module):
 				start += batch_size
 
 		for tensor in self.renumber_tensors:
-			logging.info(f" CollectCells: Renumbering '{source}'")
-			offset = 0
+			offset = 0  # Offset of cluster IDs
+			ix = 0  # Index of cells
 			for source in punchcard.sources:
-				t = db[config["workspaces"]["samples"]][source][tensor]
-				vals = t[:]
-				t[:] = vals + offset
+				logging.info(f" CollectCells: Renumbering '{tensor}' from '{source}' with offset={offset}")
+				if source != punchcard.name and source in config["workspaces"]["build"]:
+					source_ws = config["workspaces"]["build"][source]
+				elif source in db[config["workspaces"]["samples"]]:
+					source_ws = db[config["workspaces"]["samples"]][source]
+				vals = source_ws[tensor][:]
+				ws[tensor][ix:ix + source_ws.cells.length] = vals + offset
 				offset = offset + max(vals) + 1
+				ix += source_ws.cells.length
 
 		ws.cells = shoji.Dimension(shape=ws.cells.length)  # Fix the length of the cells dimension
 		logging.info(f" CollectCells: Collected {ws.cells.length} cells")

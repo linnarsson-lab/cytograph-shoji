@@ -9,8 +9,8 @@ from cytograph import Module, requires
 from .scatter import scatterc
 
 
-class PlotEmbedding(Module):
-	def __init__(self, filename: str = "embedding.png", **kwargs) -> None:
+class PlotManifold(Module):
+	def __init__(self, filename: str = "manifold.png", **kwargs) -> None:
 		super().__init__(**kwargs)
 		self.filename = filename
 
@@ -43,5 +43,5 @@ class PlotEmbedding(Module):
 			txt.set_path_effects([PathEffects.withStroke(linewidth=3, foreground='w')])
 		plt.axis("off")
 
-		plt.savefig(self.export_dir / (ws._name + "_" + self.filename), dpi=300)
+		plt.savefig(self.export_dir / (ws._name + "_" + self.filename), dpi=300, bbox_inches='tight')
 		plt.close()

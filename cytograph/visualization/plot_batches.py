@@ -63,5 +63,5 @@ class PlotBatches(Module):
 			plt.axis("off")
 			plt.title(f"SampleID")
 
-		plt.savefig(self.export_dir / (ws._name + "_" + self.filename), dpi=300)
+		plt.savefig(self.export_dir / (ws._name + "_" + self.filename), dpi=300, bbox_inches='tight')
 		plt.close()

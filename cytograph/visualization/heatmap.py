@@ -127,7 +127,7 @@ class Heatmap(Module):
 				ax.text(np.argmax(x_norm[:, ix]) + 0.7, ix + 0.3, label, fontsize=2, color="white")
 			else:
 				ax.text(np.argmax(x_norm[:, ix]) - 0.5, ix + 0.3, label, fontsize=2, color="white", ha="right")
-		for axis in ['top','bottom','left','right']:
+		for axis in ['top', 'bottom', 'left', 'right']:
 			ax.spines[axis].set_linewidth(0.5)
 		ax.tick_params(width=0.5)
 
