@@ -196,12 +196,12 @@ class CondorEngine2(Engine):
 			sys.exit(1)
 
 		waiting_for_something = True
-		starting = 0
-		running = 0
-		waiting = 0
-		completed = 0		
 		while waiting_for_something:
 			waiting_for_something = False
+			starting = 0
+			running = 0
+			waiting = 0
+			completed = 0		
 			logging.debug(f"Checking for new tasks to launch.")
 			tasks = self.build_execution_dag()
 
@@ -258,7 +258,7 @@ queue 1\n
 					logging.debug(f"Skipping '{task}' because not all dependencies have been completed.")
 					waiting_for_something = True
 			logging.debug("Waiting one minute before checking again.")
-			logging.info(f"{starting} starting, {running} running, {waiting} waiting, {completed} completed")
+			logging.info(f"Punchcard jobs: {starting} starting, {running} running, {waiting} waiting, {completed} completed")
 			time.sleep(60)
 		logging.info("All tasks completed.")
 # TODO: SlurmEngine using job dependencies (https://hpc.nih.gov/docs/job_dependencies.html)
