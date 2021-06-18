@@ -196,16 +196,26 @@ class CondorEngine2(Engine):
 			sys.exit(1)
 
 		waiting_for_something = True
+		starting = 0
+		running = 0
+		waiting = 0
+		completed = 0		
 		while waiting_for_something:
 			waiting_for_something = False
-			logging.info(f"Checking for new tasks to launch.")
+			logging.debug(f"Checking for new tasks to launch.")
 			tasks = self.build_execution_dag()
 
 			for task in tasks.keys():
 				if task not in self.deck.punchcards:
 					logging.error(f"Punchcard {task} not found.")
 					sys.exit(1)
-
+				if (logdir / (task + ".completed")).exists():
+					completed += 1
+				elif (logdir / (task + ".created")).exists():
+					running += 1
+				else:
+					waiting += 1  # but might get started in this cycle
+				
 			for task, deps in tasks.items():
 				# Check if all the dependencies of this task have completed
 				if all((logdir / (dep + ".completed")).exists() for dep in deps):
@@ -213,9 +223,11 @@ class CondorEngine2(Engine):
 					try:
 						(logdir / (task + ".created")).touch(exist_ok=False)
 					except FileExistsError:
-						logging.info(f"Skipping '{task}' because it was already started.")
+						logging.debug(f"Skipping '{task}' because it was already started.")
 						continue
 					# Launch the task
+					starting += 1
+					waiting -= 1
 					config = Config().load()  # Load it fresh for each task since we're clobbering it below
 					cmd = ""
 
@@ -238,14 +250,15 @@ request_memory = {config["resources"]["memory"] * 1024}
 queue 1\n
 """)
 					if not self.dryrun:
-						logging.info(f"Launching '{task}'")
+						logging.debug(f"Launching '{task}'")
 						subprocess.run(["condor_submit", logdir / (task + '.condor')])
 					else:
 						logging.info(f"(Dry run) condor_submit {logdir / (task + '.condor')}")
 				else:
-					logging.info(f"Skipping '{task}' because not all dependencies have been completed.")
+					logging.debug(f"Skipping '{task}' because not all dependencies have been completed.")
 					waiting_for_something = True
-			logging.info("Waiting one minute before checking again.")
+			logging.debug("Waiting one minute before checking again.")
+			logging.info(f"{starting} starting, {running} running, {waiting} waiting, {completed} completed")
 			time.sleep(60)
 		logging.info("All tasks completed.")
 # TODO: SlurmEngine using job dependencies (https://hpc.nih.gov/docs/job_dependencies.html)
