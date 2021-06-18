@@ -242,7 +242,7 @@ queue 1\n
 						logging.info(f"(Dry run) condor_submit {logdir / (task + '.condor')}")
 				else:
 					logging.info(f"Skipping '{task}' because not all dependencies have been completed.")
-				logging.info("Waiting one minute before checking again.")
-				time.sleep(60)
+			logging.info("Waiting one minute before checking again.")
+			time.sleep(60)
 # TODO: SlurmEngine using job dependencies (https://hpc.nih.gov/docs/job_dependencies.html)
 # TODO: SgeEngine using job dependencies (https://arc.leeds.ac.uk/using-the-systems/why-have-a-scheduler/advanced-sge-job-dependencies/)
