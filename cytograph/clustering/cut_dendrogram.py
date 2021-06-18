@@ -2,6 +2,7 @@ import logging
 import shoji
 import numpy as np
 from cytograph import creates, requires, Module
+from cytograph.pipeline import Config
 from scipy.cluster.hierarchy import cut_tree
 
 
@@ -21,8 +22,9 @@ class CutDendrogram(Module):
 	@requires("Clusters", "uint32", ("cells",))
 	@creates("Subtree", "uint32", ("cells",))
 	def fit(self, ws: shoji.WorkspaceManager, save: bool) -> np.ndarray:
-		punchards_path = self.config["paths"]["build"] / "punchcards"
-		punchcard = self.config["punchcard"]
+		config = Config.load()
+		punchards_path = config["paths"]["build"] / "punchcards"
+		punchcard = config["punchcard"]
 
 		logging.info(f" CutDendrogram: Cutting to create {self.n_trees} subtrees")
 		z = self.Linkage[:].astype("float64")

@@ -5,7 +5,6 @@ import shoji
 import fdb
 import sys
 import logging
-from cytograph.pipeline import Config
 
 
 class Module:
@@ -13,7 +12,6 @@ class Module:
 		self.requires = requires if requires is not None else {}
 		self.creates = creates if creates is not None else {}
 		self.workspace: shoji.WorkspaceManager = None
-		self.config = Config.load()
 
 	def __getattr__(self, name) -> shoji.Tensor:
 		return self.__getattribute__(name)
