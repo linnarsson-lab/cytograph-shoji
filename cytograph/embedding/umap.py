@@ -7,7 +7,7 @@ import umap
 
 
 class UMAP(Module):
-	def __init__(self, n_components: int = 2, metric: Union[str, Callable] = "euclidean", n_neighbors: int = 15, min_dist: float = 0.1, density_regularization: float = 0, **kwargs):
+	def __init__(self, metric: Union[str, Callable] = "euclidean", n_neighbors: int = 15, min_dist: float = 0.1, density_regularization: float = 0, **kwargs):
 		"""
 		Uniform Manifold Approximation and Projection for Dimension Reduction.
 		See https://umap-learn.readthedocs.io/en/latest/index.html
@@ -18,7 +18,6 @@ class UMAP(Module):
 		"""
 		super().__init__(**kwargs)
 		self.metric = metric
-		self.n_components = n_components
 		self.n_neighbors = n_neighbors
 		self.min_dist = min_dist
 		self.density_regularization = density_regularization
@@ -33,29 +32,6 @@ class UMAP(Module):
 		Returns:
 			The UMAP embedding as np.ndarray
 		"""
-		logging.info(f" UMAP: Computing the embedding")
-		exaggeration = self.exaggeration
-		if exaggeration == -1:
-			exaggeration = 1
-		# Just a plain TSNE with high learning rate
-		lr = max(200, n / 12)
-		aff = affinity.PerplexityBasedNN(
-			X,
-			perplexity=self.perplexity,
-			metric=self.metric,
-			method="annoy",
-			n_jobs=-1
-		)
-
-		init = init_method(X)
-
-		Z = TSNEEmbedding(
-			init,
-			aff,
-			learning_rate=lr,
-			n_jobs=-1,
-			negative_gradient_method="fft"
-		)
-		Z.optimize(250, exaggeration=12, momentum=0.5, inplace=True, n_jobs=-1)
-		Z.optimize(750, exaggeration=exaggeration, momentum=0.8, inplace=True, n_jobs=-1)
+		logging.info(" UMAP: Computing the embedding")
+		Z = umap.UMAP(metric=self.metric, n_neighbors=self.n_neighbors, min_dist=self.min_dist, dens_lambda=self.density_regularization, densmap=self.density_regularization > 0).fit_transform(X)
 		return Z

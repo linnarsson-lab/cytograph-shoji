@@ -76,4 +76,6 @@ class Workflow:
 		end_all = datetime.now()
 		logging.info(f"Recipe completed in {nice_deltastring(end_all - start_all)}.")
 		logging.info("")
+
 		(logdir / (self.punchcard.name + ".completed")).touch()
+		(logdir / (self.punchcard.name + ".created")).unlink(missing_ok=True)

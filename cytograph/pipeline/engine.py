@@ -217,6 +217,9 @@ class CondorEngine2(Engine):
 					waiting += 1  # but might get started in this cycle
 				
 			for task, deps in tasks.items():
+				if (logdir / (task + ".completed")).exists():
+					logging.debug(f"Skipping '{task}' because it was already completed.")
+					continue
 				# Check if all the dependencies of this task have completed
 				if all((logdir / (dep + ".completed")).exists() for dep in deps):
 					# Atomically check if the task has already been launched
