@@ -143,7 +143,7 @@ class CondorEngine(Engine):
 
 			punchcard = self.deck.punchcards[task]
 			config = Config().load(punchcard)
-			cmd = f"process {task} --engine local"
+			cmd = f"process {task}"
 			# Must set 'request_gpus' only if non-zero, because even asking for zero GPUs requires a node that has GPUs (weirdly)
 			request_gpus = f"request_gpus = {config['resources']['n_gpus']}" if config['resources']['n_gpus'] > 0 else ""
 			with open(logdir / (task + ".condor"), "w") as f:
@@ -236,7 +236,7 @@ class CondorEngine2(Engine):
 
 					punchcard = self.deck.punchcards[task]
 					config = Config().load(punchcard)
-					cmd = f"process {task} --engine local"
+					cmd = f"process {task}"
 					# Must set 'request_gpus' only if non-zero, because even asking for zero GPUs requires a node that has GPUs (weirdly)
 					request_gpus = f"request_gpus = {config['resources']['n_gpus']}" if config['resources']['n_gpus'] > 0 else ""
 					with open(logdir / (task + ".condor"), "w") as f:
