@@ -8,7 +8,7 @@ import numpy as np
 import shoji
 from .._version import __version__ as version
 from .config import Config
-from .engine import CondorEngine, Engine, LocalEngine
+from .engine import CondorEngine, Engine, LocalEngine, CondorEngine2
 from .punchcards import PunchcardDeck
 from .workflow import Workflow, run_recipe
 
@@ -29,7 +29,6 @@ def pp(config: Dict, indent: int = 0) -> str:
 @click.option('--show-message/--hide-message', default=True)
 @click.option('--verbosity', default="info", type=click.Choice(['error', 'warning', 'info', 'debug']))
 def cli(show_message: bool = True, verbosity: str = "info") -> None:
-	config = Config.load()
 	level = {"error": 40, "warning": 30, "info": 20, "debug": 10}[verbosity]
 	logging.basicConfig(stream=sys.stdout, format='%(asctime)s - %(levelname)s - %(message)s', level=level, force=True)
 	logging.captureWarnings(True)
@@ -40,7 +39,7 @@ def cli(show_message: bool = True, verbosity: str = "info") -> None:
 
 
 @cli.command()
-@click.option('--engine', type=click.Choice(['local', 'condor']))
+@click.option('--engine', type=click.Choice(['local', 'condor', 'condor2']))
 @click.option('--dryrun/--no-dryrun', is_flag=True, default=False)
 def build(engine: str, dryrun: bool) -> None:
 	try:
@@ -62,6 +61,8 @@ def build(engine: str, dryrun: bool) -> None:
 			execution_engine = LocalEngine(deck, dryrun)
 		elif engine == "condor":
 			execution_engine = CondorEngine(deck, dryrun)
+		elif engine == "condor2":
+			execution_engine = CondorEngine2(deck, dryrun)
 		else:
 			logging.error("No engine was specified")
 			sys.exit(1)

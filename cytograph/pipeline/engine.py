@@ -1,5 +1,6 @@
 import logging
 import os
+import time
 import shutil
 import subprocess
 import sys
@@ -117,9 +118,6 @@ class CondorEngine(Engine):
 		tasks = self.build_execution_dag()
 
 		logdir: Path = config["paths"]["build"] / "logs"
-		if logdir.exists():
-			logging.warn("Removing previous build logs from 'logs' directory.")
-			shutil.rmtree(logdir, ignore_errors=True)
 		logdir.mkdir(exist_ok=True)
 
 		# Find cytograph
@@ -176,5 +174,75 @@ queue 1\n
 		else:
 			logging.info(f"(Dry run) condor_submit_dag {logdir / '_dag.condor'}")
 
+
+class CondorEngine2(Engine):
+	"""
+	An engine that executes tasks in parallel on a HTCondor cluster, by repeatedly launching tasks
+	when their predecessors are completed. Tasks will be executed in parallel as much as possible while respecting the
+	dependency graph. If new punchcards are added during the build (e.g. by CutDendrogram), they too will run.
+	"""
+	def __init__(self, deck: PunchcardDeck, dryrun: bool = True) -> None:
+		super().__init__(deck, dryrun)
+
+	def execute(self) -> None:
+		config = Config().load()
+		logdir: Path = config["paths"]["build"] / "logs"
+		logdir.mkdir(exist_ok=True)
+
+		# Find cytograph
+		cytograph_exe = shutil.which('cytograph')
+		if cytograph_exe is None:
+			logging.error("The 'cytograph' command-line tool was not found.")
+			sys.exit(1)
+
+		while True:
+			logging.info(f"Checking for new tasks to launch.")
+			tasks = self.build_execution_dag()
+
+			for task in tasks.keys():
+				if task not in self.deck.punchcards:
+					logging.error(f"Punchcard {task} not found.")
+					sys.exit(1)
+
+			for task, deps in tasks.items():
+				# Check if all the dependencies of this task have completed
+				if all((logdir / (dep + ".completed")).exists() for dep in deps):
+					# Atomically check if the task has already been launched
+					try:
+						(logdir / (task + ".created")).touch(exist_ok=False)
+					except FileExistsError:
+						logging.info(f"Skipping '{task}' because it was already started.")
+						continue
+					# Launch the task
+					config = Config().load()  # Load it fresh for each task since we're clobbering it below
+					cmd = ""
+
+					punchcard = self.deck.punchcards[task]
+					config = Config().load(punchcard)
+					cmd = f"process {task} --engine local"
+					# Must set 'request_gpus' only if non-zero, because even asking for zero GPUs requires a node that has GPUs (weirdly)
+					request_gpus = f"request_gpus = {config['resources']['n_gpus']}" if config['resources']['n_gpus'] > 0 else ""
+					with open(logdir / (task + ".condor"), "w") as f:
+						f.write(f"""
+getenv       = true
+executable   = {os.path.abspath(cytograph_exe)}
+arguments    = "{cmd}"
+log          = {logdir / task}.log
+output       = {logdir / task}.out
+error        = {logdir / task}.error
+request_cpus = {config["resources"]["n_cpus"]}
+{request_gpus}
+request_memory = {config["resources"]["memory"] * 1024}
+queue 1\n
+""")
+					if not self.dryrun:
+						logging.info(f"Launching '{task}'")
+						subprocess.run(["condor_submit", logdir / (task + '.condor')])
+					else:
+						logging.info(f"(Dry run) condor_submit {logdir / (task + '.condor')}")
+				else:
+					logging.info(f"Skipping '{task}' because not all dependencies have been completed.")
+				logging.info("Waiting one minute before checking again.")
+				time.sleep(60)
 # TODO: SlurmEngine using job dependencies (https://hpc.nih.gov/docs/job_dependencies.html)
 # TODO: SgeEngine using job dependencies (https://arc.leeds.ac.uk/using-the-systems/why-have-a-scheduler/advanced-sge-job-dependencies/)
