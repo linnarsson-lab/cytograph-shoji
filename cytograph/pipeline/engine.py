@@ -147,7 +147,7 @@ class CondorEngine(Engine):
 			config = Config().load(punchcard)
 			cmd = f"process {task} --engine local"
 			# Must set 'request_gpus' only if non-zero, because even asking for zero GPUs requires a node that has GPUs (weirdly)
-			request_gpus = f"request_gpus = {config['execution']['n_gpus']}" if config['execution']['n_gpus'] > 0 else ""
+			request_gpus = f"request_gpus = {config['resources']['n_gpus']}" if config['resources']['n_gpus'] > 0 else ""
 			with open(logdir / (task + ".condor"), "w") as f:
 				f.write(f"""
 getenv       = true
@@ -156,9 +156,9 @@ arguments    = "{cmd}"
 log          = {logdir / task}.log
 output       = {logdir / task}.out
 error        = {logdir / task}.error
-request_cpus = {config["execution"]["n_cpus"]}
+request_cpus = {config["resources"]["n_cpus"]}
 {request_gpus}
-request_memory = {config["execution"]["memory"] * 1024}
+request_memory = {config["resources"]["memory"] * 1024}
 queue 1\n
 """)
 

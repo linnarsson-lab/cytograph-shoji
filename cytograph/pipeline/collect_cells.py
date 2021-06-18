@@ -1,3 +1,4 @@
+from cytograph.pipeline.punchcards import Punchcard
 from typing import List
 import shoji
 import numpy as np
@@ -34,7 +35,7 @@ class CollectCells(Module):
 		"""
 		db = shoji.connect()
 		config = Config.load()
-		punchcard = config["punchcard"]
+		punchcard: Punchcard = config["punchcard"]
 
 		for ix, source in enumerate(punchcard.sources):
 			if source != punchcard.name and source in config["workspaces"]["build"]:
