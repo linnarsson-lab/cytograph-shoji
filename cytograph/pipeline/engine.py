@@ -252,10 +252,8 @@ queue 1\n
 				else:
 					logging.debug(f"Skipping '{task}' because not all dependencies have been completed.")
 			logging.debug("Waiting one minute before checking again.")
-			logging.info(f"Punchcard jobs: {starting} starting, {running} running, {waiting} waiting, {completed} completed")
-			if waiting == 0:
-				break
+			logging.info(f"Jobs: {starting} starting, {running} running, {waiting} waiting, {completed} completed")
 			time.sleep(60)
-		logging.info("No tasks waiting.")
+
 # TODO: SlurmEngine using job dependencies (https://hpc.nih.gov/docs/job_dependencies.html)
 # TODO: SgeEngine using job dependencies (https://arc.leeds.ac.uk/using-the-systems/why-have-a-scheduler/advanced-sge-job-dependencies/)
