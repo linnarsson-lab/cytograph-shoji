@@ -36,7 +36,9 @@ class CutDendrogram(Module):
 		for ix in range(self.n_trees):
 			n_clusters = len(np.unique(clusters[subtrees == ix]))
 			if n_clusters > self.split_when_over:
-				with open(punchards_path / (punchcard.name + "ABCDEFGHIJKLMNOPQRSTUVXYZ"[ix] + ".yaml"), "w") as f:
+				new_name = punchcard.name + "ABCDEFGHIJKLMNOPQRSTUVXYZ"[ix]
+				logging.info(f" CutDendrogram: Creating punchcard {new_name} from {n_clusters} clusters of branch {ix}")
+				with open(punchards_path / (new_name + ".yaml"), "w") as f:
 					f.write(f'''
 onlyif: "ws.Subtree == {ix}"
 
