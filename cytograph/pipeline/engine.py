@@ -132,12 +132,6 @@ class CondorEngine(Engine):
 				sys.exit(1)
 
 		for task in tasks.keys():
-			# Atomically check if the task has already been launched
-			try:
-				(logdir / (task + ".created")).touch(exist_ok=False)
-			except FileExistsError:
-				logging.info(f"Skipping '{task}' because it was already run (remove '{task}.created' from logs to force rebuild).")
-				continue
 			config = Config().load()  # Load it fresh for each task since we're clobbering it below
 			cmd = ""
 
@@ -262,6 +256,6 @@ queue 1\n
 			if waiting == 0:
 				break
 			time.sleep(60)
-		logging.info("All tasks completed.")
+		logging.info("No tasks waiting.")
 # TODO: SlurmEngine using job dependencies (https://hpc.nih.gov/docs/job_dependencies.html)
 # TODO: SgeEngine using job dependencies (https://arc.leeds.ac.uk/using-the-systems/why-have-a-scheduler/advanced-sge-job-dependencies/)
