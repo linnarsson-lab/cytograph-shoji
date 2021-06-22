@@ -1,13 +1,11 @@
 import logging
 from typing import Tuple, Any
-
+import sys
 import numpy as np
 from numba import jit
 from pynndescent import NNDescent
 from scipy import sparse
 from sklearn.neighbors import NearestNeighbors
-
-from cytograph.metrics import jensen_shannon_distance
 
 
 @jit(nopython=True)
