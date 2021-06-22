@@ -204,7 +204,11 @@ class BalancedKNN:
 			self.dsi, _ = self.nn.query(self.data, k=self.sight_k + 1)
 			self.dist = np.ones_like(self.dsi, dtype='float64')
 			self.dist[:, 0] = 0
-		assert np.all(np.isfinite(self.dist)), "BalancedKNN.kneighbors() some distances were not finite"
+		if not np.all(np.isfinite(self.dist)):
+			logging.error(f"BalancedKNN.kneighbors() some distances were not finite using '{self.mode}' (saving matrices to logs)")
+			np.save("/proj/cytograph/sten/human_development/logs/dists.npy", self.dist)
+			np.save("/proj/cytograph/sten/human_development/logs/X.npy", self.fitdata)
+			sys.exit(1)
 		logging.debug(f"Using the initialization network to find a {self.k}-NN graph with maximum connectivity of {self.maxl}")
 		self.dist_new, self.dsi_new, self.l = knn_balance(self.dsi, self.dist, maxl=self.maxl, k=self.k)
 		assert np.all(np.isfinite(self.dist)), "BalancedKNN.kneighbors() some distances were not finite after balancing the graph"
