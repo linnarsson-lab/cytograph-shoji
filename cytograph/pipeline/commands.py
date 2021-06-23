@@ -1,5 +1,4 @@
 import logging
-import os
 import sys
 from pathlib import Path
 from typing import List, Optional, Set
@@ -27,7 +26,7 @@ def cli(show_message: bool = True, verbosity: str = "info") -> None:
 
 
 @cli.command()
-@click.option('--engine', type=click.Choice(['local', 'condor_dag', 'condor2']))
+@click.option('--engine', type=click.Choice(['local', 'condor_dag', 'condor']))
 @click.option('--dryrun/--no-dryrun', is_flag=True, default=False)
 def build(engine: str, dryrun: bool) -> None:
 	try:
