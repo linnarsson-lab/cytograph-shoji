@@ -23,8 +23,9 @@ class CutDendrogram(Module):
 	@creates("Subtree", "uint32", ("cells",))
 	def fit(self, ws: shoji.WorkspaceManager, save: bool) -> np.ndarray:
 		config = Config.load()
-		punchards_path = config["paths"]["build"] / "punchcards"
-		punchcard = config["punchcard"]
+		punchards_path = config.path / "punchcards"
+		punchcard = config.punchcard
+		assert punchcard is not None
 
 		logging.info(f" CutDendrogram: Cutting to create {self.n_trees} subtrees")
 		z = self.Linkage[:].astype("float64")

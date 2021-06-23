@@ -30,7 +30,7 @@ paths:
 
 workspaces:
   samples: "samples"  # This is a shoji workspace path from the root
-  builds: "builds"  # This is the shoji workspace path from the root to the builds workspace, under which build results are stored
+  builds_root: "builds"  # This is the shoji workspace path from the root to the builds workspace, under which build results are stored
 
 resources:
   n_cpus: -1  # -1 means "use all available CPUs"

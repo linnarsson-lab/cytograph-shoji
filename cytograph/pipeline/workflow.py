@@ -53,15 +53,16 @@ class Workflow:
 		self.config = Config.load(punchcard)
 		self.deck = deck
 		self.punchcard = punchcard
-		self.export_dir = Path(os.path.join(self.config["paths"]["build"], "exported", punchcard.name))
-		os.makedirs(self.export_dir, exist_ok=True)
+		self.export_dir = self.config.path / "exported" / punchcard.name
+		self.export_dir.mkdir(exist_ok=True)
 
 	def process(self, resume_at: int = 0) -> None:
-		logdir: Path = self.config["paths"]["build"] / "logs"
+		logdir: Path = self.config.path / "logs"
 		logdir.mkdir(exist_ok=True)
-		ws = self.config["workspaces"]["build"][self.punchcard.name]
+		assert self.config.workspaces.build is not None
+		ws = self.config.workspaces.build[self.punchcard.name]
 		logging.info(f"Running recipe '{self.punchcard.recipe}' for '{self.punchcard.name}'")
-		recipe = self.config["recipes"][self.punchcard.recipe][resume_at:]
+		recipe = self.config.recipes[self.punchcard.recipe][resume_at:]
 		start_all = datetime.now()
 		for step in recipe:
 			for fname, args in step.items():

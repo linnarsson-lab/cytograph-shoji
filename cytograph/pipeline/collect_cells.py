@@ -28,20 +28,24 @@ class CollectCells(Module):
 
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> None:
 		"""
-		Collect cells from a list of workspaces (defined in config.include) into this workspace
+		Collect cells from a list of workspaces (defined in config.sources) into this workspace
 
 		Args:
 			ws				shoji workspace
 		"""
 		db = shoji.connect()
 		config = Config.load()
-		punchcard: Punchcard = config["punchcard"]
-
+		punchcard = config.punchcard
+		assert punchcard is not None
+		build_ws = config.workspaces.build
+		assert build_ws is not None
+		
 		for ix, source in enumerate(punchcard.sources):
-			if source != punchcard.name and source in config["workspaces"]["build"]:
-				source_ws = config["workspaces"]["build"][source]
-			elif source in db[config["workspaces"]["samples"]]:
-				source_ws = db[config["workspaces"]["samples"]][source]
+			assert build_ws is not None
+			if source != punchcard.name and source in build_ws:
+				source_ws = build_ws[source]
+			elif source in db[config.workspaces.samples_workspace_name]:
+				source_ws = db[config.workspaces.samples_workspace_name][source]
 			else:
 				logging.error(f"Source {source} not found!")
 				sys.exit(1)
@@ -94,10 +98,10 @@ class CollectCells(Module):
 			ix = 0  # Index of cells
 			for source in punchcard.sources:
 				logging.info(f" CollectCells: Renumbering '{tensor}' from '{source}' with offset={offset}")
-				if source != punchcard.name and source in config["workspaces"]["build"]:
-					source_ws = config["workspaces"]["build"][source]
-				elif source in db[config["workspaces"]["samples"]]:
-					source_ws = db[config["workspaces"]["samples"]][source]
+				if source != punchcard.name and source in build_ws:
+					source_ws = build_ws[source]
+				elif source in db[config.workspaces.samples_workspace_name]:
+					source_ws = db[config.workspaces.samples_workspace_name][source]
 				vals = source_ws[tensor][:]
 				ws[tensor][ix:ix + source_ws.cells.length] = vals + offset
 				offset = offset + max(vals) + 1

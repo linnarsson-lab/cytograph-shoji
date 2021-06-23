@@ -72,7 +72,7 @@ class LocalEngine(Engine):
 
 	def execute(self) -> None:
 		config = Config().load()
-		logdir: Path = config["paths"]["build"] / "logs"
+		logdir: Path = config.path / "logs"
 		logdir.mkdir(exist_ok=True)
 
 		# Run all the punchcards
@@ -104,7 +104,7 @@ class LocalEngine(Engine):
 				logging.info(f"cytograph process {task}")
 
 
-class CondorEngine(Engine):
+class CondorDAGEngine(Engine):
 	"""
 	An engine that executes tasks in parallel on a HTCondor cluster, using the DAGman functionality
 	of condor. Tasks will be executed in parallel as much as possible while respecting the
@@ -117,7 +117,7 @@ class CondorEngine(Engine):
 		config = Config().load()
 		tasks = self.build_execution_dag()
 
-		logdir: Path = config["paths"]["build"] / "logs"
+		logdir: Path = config.path / "logs"
 		logdir.mkdir(exist_ok=True)
 
 		# Find cytograph
@@ -139,7 +139,7 @@ class CondorEngine(Engine):
 			config = Config().load(punchcard)
 			cmd = f"process {task}"
 			# Must set 'request_gpus' only if non-zero, because even asking for zero GPUs requires a node that has GPUs (weirdly)
-			request_gpus = f"request_gpus = {config['resources']['n_gpus']}" if config['resources']['n_gpus'] > 0 else ""
+			request_gpus = f"request_gpus = {config.resources.n_gpus}" if config.resources.n_gpus > 0 else ""
 			with open(logdir / (task + ".condor"), "w") as f:
 				f.write(f"""
 getenv       = true
@@ -148,15 +148,15 @@ arguments    = "{cmd}"
 log          = {logdir / task}.log
 output       = {logdir / task}.out
 error        = {logdir / task}.error
-request_cpus = {config["resources"]["n_cpus"]}
+request_cpus = {config.resources.n_cpus}
 {request_gpus}
-request_memory = {config["resources"]["memory"] * 1024}
+request_memory = {config.resources.memory * 1024}
 queue 1\n
 """)
 
 		with open(os.path.join(logdir, "_dag.condor"), "w") as f:
 			for task in tasks.keys():
-				f.write(f"JOB {task} {logdir / task}.condor DIR {config['paths']['build']}\n")
+				f.write(f"JOB {task} {logdir / task}.condor DIR {config.path}\n")
 			for task, deps in tasks.items():
 				if len(deps) == 0:
 					continue
@@ -169,7 +169,7 @@ queue 1\n
 			logging.info(f"(Dry run) condor_submit_dag {logdir / '_dag.condor'}")
 
 
-class CondorEngine2(Engine):
+class CondorEngine(Engine):
 	"""
 	An engine that executes tasks in parallel on a HTCondor cluster, by repeatedly launching tasks
 	when their predecessors are completed. Tasks will be executed in parallel as much as possible while respecting the
@@ -180,7 +180,7 @@ class CondorEngine2(Engine):
 
 	def execute(self) -> None:
 		config = Config().load()
-		logdir: Path = config["paths"]["build"] / "logs"
+		logdir: Path = config.path / "logs"
 		logdir.mkdir(exist_ok=True)
 
 		# Find cytograph
@@ -230,7 +230,7 @@ class CondorEngine2(Engine):
 					config = Config().load(punchcard)
 					cmd = f"process {task}"
 					# Must set 'request_gpus' only if non-zero, because even asking for zero GPUs requires a node that has GPUs (weirdly)
-					request_gpus = f"request_gpus = {config['resources']['n_gpus']}" if config['resources']['n_gpus'] > 0 else ""
+					request_gpus = f"request_gpus = {config.resources.n_gpus}" if config.resources.n_gpus > 0 else ""
 					with open(logdir / (task + ".condor"), "w") as f:
 						f.write(f"""
 getenv       = true
@@ -239,9 +239,9 @@ arguments    = "{cmd}"
 log          = {logdir / task}.log
 output       = {logdir / task}.out
 error        = {logdir / task}.error
-request_cpus = {config["resources"]["n_cpus"]}
+request_cpus = {config.resources.n_cpus}
 {request_gpus}
-request_memory = {config["resources"]["memory"] * 1024}
+request_memory = {config.resources.memory * 1024}
 queue 1\n
 """)
 					if not self.dryrun:

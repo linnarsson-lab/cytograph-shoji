@@ -3,16 +3,17 @@ import os
 import sys
 from typing import Any, Dict, List, Optional
 import yaml
+from pathlib import Path
 
 
 class Punchcard:
-	def __init__(self, path: str) -> None:
-		items = os.path.basename(path).split(".")
+	def __init__(self, path: Path) -> None:
+		items = path.name.split(".")
 		if len(items) > 2:
 			logging.error("Punchcard name cannot contain dots (apart from .yaml suffix)")
 			sys.exit(1)
 		self.name = items[0]
-		if not os.path.exists(path):
+		if not path.exists():
 			logging.error(f"Punchcard '{path}' not found.")
 			sys.exit(1)
 		with open(path) as f:
@@ -32,17 +33,17 @@ class Punchcard:
 		self.resources = spec.get("resources")
 
 	@staticmethod
-	def load_all(path: str) -> List["Punchcard"]:
+	def load_all(path: Path) -> List["Punchcard"]:
 		result: List[Punchcard] = []
-		if os.path.exists(path):
+		if path.exists():
 			for f in os.listdir(path):
 				if f.lower().endswith(".yaml"):
-					result.append(Punchcard(os.path.join(path, f)))
+					result.append(Punchcard(path / f))
 		return result
 
 
 class PunchcardDeck:
-	def __init__(self, punchcard_dir: str) -> None:
+	def __init__(self, punchcard_dir: Path) -> None:
 		self.punchcards: Dict[str, Punchcard] = {}
 		for p in Punchcard.load_all(punchcard_dir):
 			self.punchcards[p.name] = p

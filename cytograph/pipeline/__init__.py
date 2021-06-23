@@ -1,4 +1,4 @@
-from .config import Config, load_and_merge_config, merge_config
+from .config import Config
 from .punchcards import Punchcard, PunchcardDeck
 from .workflow import Workflow, run_recipe
 from .utils import Tempname

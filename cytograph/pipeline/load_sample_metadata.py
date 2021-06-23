@@ -61,17 +61,19 @@ class LoadSampleMetadata(Module):
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> None:
 		db = shoji.connect()
 		config = Config.load()
-		punchcard = config["punchcard"]
+		punchcard = config.punchcard
+		assert punchcard is not None
 		missing = False
+		samples_ws = db[config.workspaces.samples_workspace_name]
 		for source in punchcard.sources:
-			if source not in db[config["workspaces"]["samples"]]:
+			if source not in samples_ws:
 				logging.error(f"Sample {source} not found!")
 				missing = True
 		if missing:
 			sys.exit(1)
 		for source in punchcard.sources:
-			if source in db[config["workspaces"]["samples"]]:
-				source_ws = db[config["workspaces"]["samples"]][source]
+			if source in samples_ws:
+				source_ws = samples_ws[source]
 			else:
 				logging.error(f"Sample {source} not found!")
 				sys.exit(1)

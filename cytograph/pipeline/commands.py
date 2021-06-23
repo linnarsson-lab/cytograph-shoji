@@ -8,21 +8,9 @@ import numpy as np
 import shoji
 from .._version import __version__ as version
 from .config import Config
-from .engine import CondorEngine, Engine, LocalEngine, CondorEngine2
+from .engine import CondorDAGEngine, Engine, LocalEngine, CondorEngine
 from .punchcards import PunchcardDeck
 from .workflow import Workflow, run_recipe
-
-
-def pp(config: Dict, indent: int = 0) -> str:
-	result = ""
-	for k, v in config.items():
-		result += " " * indent
-		result += k + ": "
-		if isinstance(v, dict):
-			result += "\n" + pp(v, indent + 2)
-		else:
-			result += str(v) + "\n"
-	return result
 
 
 @click.group()
@@ -39,30 +27,27 @@ def cli(show_message: bool = True, verbosity: str = "info") -> None:
 
 
 @cli.command()
-@click.option('--engine', type=click.Choice(['local', 'condor', 'condor2']))
+@click.option('--engine', type=click.Choice(['local', 'condor_dag', 'condor2']))
 @click.option('--dryrun/--no-dryrun', is_flag=True, default=False)
 def build(engine: str, dryrun: bool) -> None:
 	try:
 		config = Config.load()
-		workspace = Path(os.getcwd()).name
-		if not Path(config['paths']['builds']) in Path(os.getcwd()).parents:
-			logging.error(f"Current folder '{os.getcwd()}' is not a subfolder of the configured build folder '{config['paths']['builds']}' ")
+		if not (Path.cwd() / "punchcards").exists():
+			logging.info("Current folder is not a proper build folder (no 'punchcards' sub-folder)")
 			sys.exit(1)
-		config["paths"]["build"] = Path(config['paths']['builds']) / workspace
-		logging.info(f"Build folder is '{config['paths']['build']}'")
-		config["paths"]["build"].mkdir(exist_ok=True)
+		logging.info(f"Build folder is '{config.path}'")
 
 		# Load the punchcard deck
-		deck = PunchcardDeck(config['paths']['build'] / "punchcards")
+		deck = PunchcardDeck(config.path / "punchcards")
 
 		# Create the execution engine
 		execution_engine: Optional[Engine] = None
 		if engine == "local":
 			execution_engine = LocalEngine(deck, dryrun)
+		elif engine == "condor_dag":
+			execution_engine = CondorDAGEngine(deck, dryrun)
 		elif engine == "condor":
 			execution_engine = CondorEngine(deck, dryrun)
-		elif engine == "condor2":
-			execution_engine = CondorEngine2(deck, dryrun)
 		else:
 			logging.error("No engine was specified")
 			sys.exit(1)
@@ -78,46 +63,43 @@ def build(engine: str, dryrun: bool) -> None:
 @click.argument("punchcard")
 @click.option('--resume', default=0)
 def process(punchcard: str, resume: int) -> None:
-	workspace = Path(os.getcwd()).name
-	logging.info(f"Using '{workspace}' as the workspace")
+	workspace_name = Path.cwd().name
+	logging.info(f"Workspace is '{workspace_name}'")
 	try:
-		config = Config.load()  # This config will not have subset-specific settings, but we need it for the build path
-		if not Path(config['paths']['builds']) in Path(os.getcwd()).parents:
-			logging.error(f"Current folder '{os.getcwd()}' is not a subfolder of the configured build folder '{config['paths']['builds']}' ")
+		config = Config.load()
+		if not (Path.cwd() / "punchcards").exists():
+			logging.info("Current folder is not a proper build folder (no 'punchcards' sub-folder)")
 			sys.exit(1)
-		config["paths"]["build"] = Path(config['paths']['builds']) / workspace
-		logging.info(f"Build folder is '{config['paths']['build']}'")
-		config["paths"]["build"].mkdir(exist_ok=True)
+		logging.info(f"Build folder is '{config.path}'")
 
 		db = shoji.connect()
-		if config['workspaces']['builds'] not in db:
-			db[config['workspaces']['builds']] = shoji.Workspace()
-		ws_builds = db[config['workspaces']['builds']]
-		if workspace not in ws_builds:
-			logging.info(f"Creating Workspace '{config['workspaces']['builds']}.{workspace}'")
-			ws_builds[workspace] = shoji.Workspace()
+		if config.workspaces.builds_root_workspace_name not in db:
+			db[config.workspaces.builds_root_workspace_name] = shoji.Workspace()
+		builds_root_ws = db[config.workspaces.builds_root_workspace_name]
+		if workspace_name not in builds_root_ws:
+			logging.info(f"Creating Workspace '{config.workspaces.builds_root_workspace_name}.{workspace_name}'")
+			builds_root_ws[workspace_name] = shoji.Workspace()
 		
+		build_ws = builds_root_ws[workspace_name]
+		config.workspaces.build = build_ws
 		if resume > 0:
-			if punchcard not in ws_builds[workspace]:
-				logging.error(f"Cannot resume, because workspace '{config['workspaces']['builds']}.{workspace}.{punchcard}' does not exist")
+			if punchcard not in build_ws:
+				logging.error(f"Cannot resume, because workspace '{config.workspaces.builds_root_workspace_name}.{workspace_name}.{punchcard}' does not exist")
 				sys.exit(1)
 		else:
-			if punchcard in ws_builds[workspace]:
-				logging.warning(f"Deleting existing Workspace '{config['workspaces']['builds']}.{workspace}.{punchcard}'")
-				del ws_builds[workspace][punchcard]
-			logging.info(f"Creating Workspace '{config['workspaces']['builds']}.{workspace}.{punchcard}'")
-			ws_builds[workspace][punchcard] = shoji.Workspace()
-		config["workspaces"]["build"] = ws_builds[workspace]
+			if punchcard in build_ws:
+				logging.warning(f"Deleting existing Workspace '{config.workspaces.builds_root_workspace_name}.{workspace_name}.{punchcard}'")
+				del build_ws[punchcard]
+			logging.info(f"Creating Workspace '{config.workspaces.builds_root_workspace_name}.{workspace_name}.{punchcard}'")
+			build_ws[punchcard] = shoji.Workspace()
 
-		deck = PunchcardDeck(config['paths']['build'] / "punchcards")
+		deck = PunchcardDeck(config.path / "punchcards")
 		punchcard_obj = deck.punchcards[punchcard]
 		if punchcard_obj is None:
 			logging.error(f"Punchcard {punchcard} not found.")
 			sys.exit(1)
 
 		config = Config.load(punchcard_obj)  # Ensure we get any punchcard-specific configs
-		for line in pp(config).split("\n"):
-			logging.debug(line)
 
 		logging.info(f"Processing '{punchcard}'")
 		Workflow(deck, punchcard_obj).process(resume)
@@ -129,27 +111,25 @@ def process(punchcard: str, resume: int) -> None:
 @click.argument('sampleids', nargs=-1)
 @click.option("--force", default=False, is_flag=True)
 def qc(sampleids: List[str], force: bool) -> None:
+	workspace_name = Path.cwd().name
+	logging.info(f"Workspace is '{workspace_name}'")
 	try:
-		workspace = Path(os.getcwd()).name
-		logging.info(f"Using '{workspace}' as the workspace")
-
 		config = Config.load()
-		for line in pp(config).split("\n"):
-			logging.debug(line)
-		config["paths"]["build"] = Path(config['paths']['builds']) / workspace
-		logging.info(f"Build folder is '{config['paths']['build']}'")
-		config["paths"]["build"].mkdir(exist_ok=True)
+		if not (Path.cwd() / "punchcards").exists():
+			logging.info("Current folder is not a proper build folder (no 'punchcards' sub-folder)")
+			sys.exit(1)
+		logging.info(f"Build folder is '{config.path}'")
 
-		deck = PunchcardDeck(config['paths']['build'] / "punchcards")
+		deck = PunchcardDeck(config.path / "punchcards")
 
 		sampleids = np.unique(sampleids)
 		db = shoji.connect()
 		for sampleid in sampleids:
-			ws = db[config["workspaces"]["samples"]]
+			ws = db[config.workspaces.samples_workspace_name]
 			if sampleid in ws:
 				if force or "PassedQC" not in ws[sampleid]:
 					logging.info(f"Processing '{sampleid}'")
-					recipe = config["recipes"]["qc"]
+					recipe = config.recipes["qc"]
 					run_recipe(ws[sampleid], recipe)
 				else:
 					logging.info(f"Skipping '{sampleid}' because QC already done (use --force to override)")
@@ -159,7 +139,7 @@ def qc(sampleids: List[str], force: bool) -> None:
 					if sample in ws:
 						if force or "PassedQC" not in ws[sample]:
 							logging.info(f"Processing '{sample}'")
-							recipe = config["recipes"]["qc"]
+							recipe = config.recipes["qc"]
 							run_recipe(ws[sample], recipe)
 						else:
 							logging.info(f"Skipping '{sample}' because QC already done (use --force to override)")
@@ -177,11 +157,16 @@ def mkpool() -> None:
 		logging.info(f"Using '{workspace}' as the workspace")
 
 		config = Config.load()
-		config["paths"]["build"] = Path(config['paths']['builds']) / workspace
-		if (config['paths']['build'] / "punchcards" / "Pool.yaml").exists():
+		if not (Path.cwd() / "punchcards").exists():
+			logging.info("Current folder is not a proper build folder (no 'punchcards' sub-folder)")
+			sys.exit(1)
+		logging.info(f"Build folder is '{config.path}'")
+
+
+		if (config.path / "punchcards" / "Pool.yaml").exists():
 			logging.info("Pool.yaml already exists (delete it before runnning mkpool)")
 			sys.exit(1)
-		deck = PunchcardDeck(config['paths']['build'] / "punchcards")
+		deck = PunchcardDeck(config.path / "punchcards")
 		dag = Engine(deck).build_execution_dag()
 
 		leaves: List[str] = []
@@ -194,7 +179,7 @@ def mkpool() -> None:
 			if len(children) == 0:
 				leaves.append(punchcard)
 		
-		with open(config['paths']['build'] / "punchcards" / "Pool.yaml", "w") as f:
+		with open(config.path / "punchcards" / "Pool.yaml", "w") as f:
 			f.write("sources: [")
 			f.write(", ".join(leaves))
 			f.write("]")
