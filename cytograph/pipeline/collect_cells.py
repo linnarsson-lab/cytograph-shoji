@@ -39,7 +39,7 @@ class CollectCells(Module):
 		assert punchcard is not None
 		build_ws = config.workspaces.build
 		assert build_ws is not None
-		
+
 		for ix, source in enumerate(punchcard.sources):
 			assert build_ws is not None
 			if source != punchcard.name and source in build_ws:
@@ -56,11 +56,12 @@ class CollectCells(Module):
 				if not isinstance(conditions, shoji.Filter):
 					raise ValueError(f"Conditions in 'onlyif' must evaluate to a shoji.Filter, but '{onlyif}' evaluated to '{type(conditions)}'")
 				view = source_ws[conditions]
+				indices = view.filters["cells"].get_rows(source_ws)
 			else:
 				logging.info(f" CollectCells: Collecting tensors from '{source}'")
 				view = source_ws[:]
+				indices = np.arange(source_ws.cells.length)
 
-			indices = view.filters["cells"].get_rows(source_ws)
 			batch_size = 5_000
 			for start in range(0, indices.shape[0], batch_size):
 				d = {}
