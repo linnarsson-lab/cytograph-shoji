@@ -2,7 +2,7 @@ import logging
 import os
 import sys
 from pathlib import Path
-from typing import List, Optional, Dict
+from typing import List, Optional, Set
 import click
 import numpy as np
 import shoji
@@ -151,41 +151,23 @@ def qc(sampleids: List[str], force: bool) -> None:
 
 
 @cli.command()
-def mkpool() -> None:
+def leaves() -> None:
 	try:
-		workspace = Path(os.getcwd()).name
-		logging.info(f"Using '{workspace}' as the workspace")
-
 		config = Config.load()
 		if not (Path.cwd() / "punchcards").exists():
 			logging.info("Current folder is not a proper build folder (no 'punchcards' sub-folder)")
 			sys.exit(1)
-		logging.info(f"Build folder is '{config.path}'")
 
-
-		if (config.path / "punchcards" / "Pool.yaml").exists():
-			logging.info("Pool.yaml already exists (delete it before runnning mkpool)")
-			sys.exit(1)
 		deck = PunchcardDeck(config.path / "punchcards")
 		dag = Engine(deck).build_execution_dag()
+		parents: Set[str] = set()
+		for dependencies in dag.values():
+			for p in dependencies:
+				parents.add(p)
+		leaves = [p for p in dag.keys() if p not in parents]
 
-		leaves: List[str] = []
-		reverse_dependencies: Dict[str, List[str]] = {}
-		for punchcard, parents in dag.items():
-			for p in parents:
-				items = reverse_dependencies.get(p, [])
-				items.append(punchcard)
-		for punchcard, children in reverse_dependencies.items():
-			print(punchcard, children)
-			if len(children) == 0:
-				leaves.append(punchcard)
-		
-		with open(config.path / "punchcards" / "Pool.yaml", "w") as f:
-			f.write("sources: [")
-			f.write(", ".join(leaves))
-			f.write("]")
-		logging.info("Wrote 'punchcards/Pool.yaml'; please edit it as needed before processing")
+		print(", ".join(leaves))
 
 	except Exception as e:
-		logging.error(f"'mkpool' command failed: {e}")
+		logging.error(f"'leaves' command failed: {e}")
 		sys.exit(1)
