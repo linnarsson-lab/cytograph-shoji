@@ -176,6 +176,7 @@ def mkpool() -> None:
 				items = reverse_dependencies.get(p, [])
 				items.append(punchcard)
 		for punchcard, children in reverse_dependencies.items():
+			print(punchcard, children)
 			if len(children) == 0:
 				leaves.append(punchcard)
 		
