@@ -168,3 +168,37 @@ def qc(sampleids: List[str], force: bool) -> None:
 	except Exception as e:
 		logging.error(f"'qc' command failed: {e}")
 		sys.exit(1)
+
+
+@cli.command()
+def mkpool() -> None:
+	try:
+		workspace = Path(os.getcwd()).name
+		logging.info(f"Using '{workspace}' as the workspace")
+
+		config = Config.load()
+		if (config['paths']['build'] / "punchcards" / "Pool.yaml").exists():
+			logging.info("Pool.yaml already exists (delete it before runnning mkpool)")
+			sys.exit(1)
+		deck = PunchcardDeck(config['paths']['build'] / "punchcards")
+		dag = Engine(deck).build_execution_dag()
+
+		leaves: List[str] = []
+		reverse_dependencies: Dict[str, List[str]] = {}
+		for punchcard, parents in dag.items():
+			for p in parents:
+				items = reverse_dependencies.get(p, [])
+				items.append(punchcard)
+		for punchcard, children in reverse_dependencies.items():
+			if len(children) == 0:
+				leaves.append(punchcard)
+		
+		with open(config['paths']['build'] / "punchcards" / "Pool.yaml", "w") as f:
+			f.write("sources: [")
+			f.write(", ".join(leaves))
+			f.write("]")
+		logging.info("Wrote 'punchcards/Pool.yaml'; please edit it as needed before processing")
+
+	except Exception as e:
+		logging.error(f"'mkpool' command failed: {e}")
+		sys.exit(1)
