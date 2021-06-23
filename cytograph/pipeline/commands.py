@@ -177,6 +177,7 @@ def mkpool() -> None:
 		logging.info(f"Using '{workspace}' as the workspace")
 
 		config = Config.load()
+		config["paths"]["build"] = Path(config['paths']['builds']) / workspace
 		if (config['paths']['build'] / "punchcards" / "Pool.yaml").exists():
 			logging.info("Pool.yaml already exists (delete it before runnning mkpool)")
 			sys.exit(1)
