@@ -43,5 +43,5 @@ class PlotManifold(Module):
 			txt.set_path_effects([PathEffects.withStroke(linewidth=3, foreground='w')])
 		plt.axis("off")
 
-		plt.savefig(self.export_dir / (ws._name + "_" + self.filename), dpi=300, bbox_inches='tight')
+		plt.savefig(self.export_dir / (ws._name + "_" + self.filename), dpi=150 if n_cells.sum() > 500_000 else 300, bbox_inches='tight')
 		plt.close()

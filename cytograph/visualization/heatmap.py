@@ -134,5 +134,5 @@ class Heatmap(Module):
 		plt.tight_layout()
 		plt.subplots_adjust(hspace=0, left=0, right=1, top=1, bottom=0)
 		
-		plt.savefig(self.export_dir / (ws._name + "_" + self.filename), dpi=400, bbox_inches='tight')
+		plt.savefig(self.export_dir / (ws._name + "_" + self.filename), dpi=200, bbox_inches='tight')
 		plt.close()
