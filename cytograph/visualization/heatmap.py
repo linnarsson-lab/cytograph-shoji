@@ -7,10 +7,11 @@ from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
 
 class Heatmap(Module):
-	def __init__(self, filename: str = "heatmap.png", **kwargs) -> None:
+	def __init__(self, filename: str = "heatmap.png", genes_per_cluster: int = 2, **kwargs) -> None:
 		super().__init__(**kwargs)
 		self.filename = filename
-	
+		self.genes_per_cluster = genes_per_cluster
+
 	@requires("MeanExpression", "float64", ("clusters", "genes"))
 	@requires("Gene", "string", ("genes",))
 	@requires("Enrichment", "float32", ("clusters", "genes"))
@@ -36,7 +37,7 @@ class Heatmap(Module):
 					enriched_genes.append(gene)
 					x.append(mean_x[:, gene_ix])
 					count += 1
-				if count == 3:
+				if count > self.genes_per_cluster:
 					break
 		x = np.array(x)  # x is (n_genes, n_clusters)
 		enriched_genes = np.array(enriched_genes)
