@@ -69,7 +69,8 @@ class Heatmap(Module):
 		dendrogram_height = n_genes / 40
 		fig_width = n_clusters / 40
 		fig_height = dendrogram_height + (1 + 2 + n_genes) / 40
-		fig = plt.figure(figsize=(fig_width, fig_height), dpi=200)
+		dpi = min(60_000 // fig_height, 300)
+		fig = plt.figure(figsize=(fig_width, fig_height), dpi=dpi)
 		
 		heights = [dendrogram_height] + [1, 2, n_genes]
 		fig_spec = fig.add_gridspec(nrows=4, height_ratios=heights)
@@ -134,5 +135,5 @@ class Heatmap(Module):
 		plt.tight_layout()
 		plt.subplots_adjust(hspace=0, left=0, right=1, top=1, bottom=0)
 		
-		plt.savefig(self.export_dir / (ws._name + "_" + self.filename), dpi=200, bbox_inches='tight')
+		plt.savefig(self.export_dir / (ws._name + "_" + self.filename), dpi=dpi, bbox_inches='tight')
 		plt.close()
