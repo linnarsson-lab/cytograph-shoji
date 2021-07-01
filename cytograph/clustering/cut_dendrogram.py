@@ -4,10 +4,11 @@ import numpy as np
 from cytograph import creates, requires, Module
 from cytograph.pipeline import Config
 from scipy.cluster.hierarchy import cut_tree
+from typing import Dict
 
 
 class CutDendrogram(Module):
-	def __init__(self, n_trees: int = 2, split_when_over: int = 50, **kwargs) -> None:
+	def __init__(self, n_trees: int = 2, split_when_over: int = 50, split_with_settings: Dict = None, **kwargs) -> None:
 		"""
 		Cut the dendrogram of clusters and return labels for subtrees. 
 
@@ -17,6 +18,7 @@ class CutDendrogram(Module):
 		super().__init__(**kwargs)
 		self.n_trees = n_trees
 		self.split_when_over = split_when_over
+		self.split_with_settings = split_with_settings if split_with_settings is not None else {}
 
 	@requires("Linkage", "float32", (None, 4))
 	@requires("Clusters", "uint32", ("cells",))
@@ -39,16 +41,21 @@ class CutDendrogram(Module):
 			if n_clusters > self.split_when_over:
 				new_name = punchcard.name + "ABCDEFGHIJKLMNOPQRSTUVXYZ"[ix]
 				logging.info(f" CutDendrogram: Creating punchcard {new_name} from {n_clusters} clusters of branch {ix}")
+				recipe = self.split_with_settings.get("recipe", punchcard.recipe)
+				n_cpus = self.split_with_settings.get("n_cpus", punchcard.resources.n_cpus)
+				n_gpus = self.split_with_settings.get("n_gpus", punchcard.resources.n_gpus)
+				memory = self.split_with_settings.get("n_cpus", punchcard.resources.memory)
+
 				with open(punchards_path / (new_name + ".yaml"), "w") as f:
 					f.write(f'''
 onlyif: "ws.Subtree == {ix}"
 
-recipe: {punchcard.recipe}
+recipe: {recipe}
 
 resources:
-  n_cpus: {punchcard.resources["n_cpus"]}
-  n_gpus: {punchcard.resources["n_gpus"]}
-  memory: {punchcard.resources["memory"]}
+  n_cpus: {n_cpus}
+  n_gpus: {n_gpus}
+  memory: {memory}
 
 sources: [{punchcard.name}]
 ''')

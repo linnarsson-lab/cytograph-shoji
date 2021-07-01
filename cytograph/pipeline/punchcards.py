@@ -4,6 +4,7 @@ import sys
 from typing import Any, Dict, List, Optional
 import yaml
 from pathlib import Path
+from .config import ResourceConfig
 
 
 class Punchcard:
@@ -30,7 +31,11 @@ class Punchcard:
 				self.sources.append(s)
 				self.sources_onlyif.append(self.onlyif)
 		self.recipe = spec.get("recipe", "punchcard")
-		self.resources = spec.get("resources")
+		resources = spec.get("resources", {})
+		n_cpus = resources.get("n_cpus", 1)
+		n_gpus = resources.get("n_gpus", 0)
+		memory = resources.get("memory", 8)
+		self.resources = ResourceConfig(n_cpus, n_gpus, memory)
 
 	@staticmethod
 	def load_all(path: Path) -> List["Punchcard"]:

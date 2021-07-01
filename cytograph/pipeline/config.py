@@ -27,7 +27,7 @@ class Config:
 
 	def __init__(self) -> None:
 		self.workspaces = WorkspacesConfig("", "", None)
-		self.resources = ResourceConfig(0, 0, 0)
+		self.resources = ResourceConfig(1, 0, 8)
 		self.recipes: Dict[str, Any] = {}
 		self.sources: List[str] = []
 		self.onlyif: str = ""
@@ -88,7 +88,9 @@ class Config:
 				"onlyif": punchcard.onlyif
 			})
 			if punchcard.resources is not None:
-				config._merge({"resources": punchcard.resources})
+				config.resources.n_cpus = punchcard.resources.n_cpus
+				config.resources.n_gpus = punchcard.resources.n_gpus
+				config.resources.memory = punchcard.resources.memory
 			config.punchcard = punchcard
 
 		Config._singleton = config
