@@ -5,14 +5,8 @@ from typing import Any, Dict, List, Optional
 import yaml
 import shoji
 
+from .resource_config import ResourceConfig
 from .punchcards import Punchcard
-
-
-@dataclass
-class ResourceConfig:
-	n_cpus: int
-	n_gpus: int
-	memory: int
 
 
 @dataclass

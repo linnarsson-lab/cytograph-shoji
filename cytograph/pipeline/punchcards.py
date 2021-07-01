@@ -4,7 +4,7 @@ import sys
 from typing import Any, Dict, List, Optional
 import yaml
 from pathlib import Path
-from .config import ResourceConfig
+from .resource_config import ResourceConfig
 
 
 class Punchcard:
