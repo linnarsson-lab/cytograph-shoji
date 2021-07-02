@@ -44,7 +44,7 @@ class CutDendrogram(Module):
 				recipe = self.split_with_settings.get("recipe", punchcard.recipe)
 				n_cpus = self.split_with_settings.get("n_cpus", punchcard.resources.n_cpus)
 				n_gpus = self.split_with_settings.get("n_gpus", punchcard.resources.n_gpus)
-				memory = self.split_with_settings.get("n_cpus", punchcard.resources.memory)
+				memory = self.split_with_settings.get("memory", punchcard.resources.memory)
 
 				with open(punchards_path / (new_name + ".yaml"), "w") as f:
 					f.write(f'''
