@@ -7,6 +7,7 @@ import sqlite3 as sqlite
 import os
 import numpy as np
 from cytograph import Module
+import pandas as pd
 
 
 # Here's what was in the db on 2020-12-07 for 10X101_1:
@@ -82,23 +83,43 @@ class LoadSampleMetadata(Module):
 				sample_id = "10X" + source[4:]
 			else:
 				sample_id = source
-			with sqlite.connect(self.db) as sqldb:
-				cursor = sqldb.cursor()
-				cursor.execute("SELECT * FROM sample WHERE name = ? COLLATE NOCASE", (sample_id,))
-				keys = [x[0].lower() for x in cursor.description]
-				vals = cursor.fetchone()
-				if vals is None:
-					logging.warning(f"Sample '{sample_id}' not found in database")
-				else:
-					d = dict(zip(keys, vals))
-					for tensor in self.tensors:
-						if tensor.lower() not in d:
-							logging.error(f"Tensor '{tensor}' was not found in the metadata")
-							sys.exit(1)
-						val = d[tensor.lower()]
-						if isinstance(val, int):
-							source_ws[tensor] = shoji.Tensor("int32", (), inits=np.array(val, dtype="int32"))
-						elif isinstance(val, float):
-							source_ws[tensor] = shoji.Tensor("float32", (), inits=np.array(val, dtype="float32"))
-						elif isinstance(val, str):
-							source_ws[tensor] = shoji.Tensor("string", (), inits=np.array(val, dtype=object))
+			if self.db.endswith(".db"):
+				with sqlite.connect(self.db) as sqldb:
+					cursor = sqldb.cursor()
+					cursor.execute("SELECT * FROM sample WHERE name = ? COLLATE NOCASE", (sample_id,))
+					keys = [x[0].lower() for x in cursor.description]
+					vals = cursor.fetchone()
+					if vals is None:
+						logging.warning(f"Sample '{sample_id}' not found in database")
+					else:
+						d = dict(zip(keys, vals))
+						for tensor in self.tensors:
+							if tensor.lower() not in d:
+								logging.error(f"Tensor '{tensor}' was not found in the metadata")
+								sys.exit(1)
+							val = d[tensor.lower()]
+							if isinstance(val, int):
+								source_ws[tensor] = shoji.Tensor("int32", (), inits=np.array(val, dtype="int32"))
+							elif isinstance(val, float):
+								source_ws[tensor] = shoji.Tensor("float32", (), inits=np.array(val, dtype="float32"))
+							elif isinstance(val, str):
+								source_ws[tensor] = shoji.Tensor("string", (), inits=np.array(val, dtype=object))
+			elif self.db.endswith(".xlsx"):
+				table = pd.read_excel(self.db)
+				row = table[table["SampleID"] == sample_id]
+				keys = row.columns.values
+				vals = row.values[0]
+				d = dict(zip(keys, vals))
+				for tensor in self.tensors:
+					if tensor not in d:
+						logging.error(f"Tensor '{tensor}' was not found in the metadata")
+						sys.exit(1)
+					val = d[tensor]
+					if isinstance(val, int):
+						source_ws[tensor] = shoji.Tensor("int32", (), inits=np.array(val, dtype="int32"))
+					elif isinstance(val, float):
+						source_ws[tensor] = shoji.Tensor("float32", (), inits=np.array(val, dtype="float32"))
+					elif isinstance(val, str):
+						source_ws[tensor] = shoji.Tensor("string", (), inits=np.array(val, dtype=object))
+					else:
+						logging.error(f"Invalid datatype '{type(val)}' for '{tensor}'")

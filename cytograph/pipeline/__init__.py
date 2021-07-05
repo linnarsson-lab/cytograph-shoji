@@ -5,3 +5,4 @@ from .utils import Tempname
 from .initialize_workspace import InitializeWorkspace
 from .collect_cells import CollectCells
 from .load_sample_metadata import LoadSampleMetadata
+from .patch_sample_metadata import PatchSampleMetadata
