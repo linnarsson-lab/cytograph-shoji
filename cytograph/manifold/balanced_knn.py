@@ -206,8 +206,8 @@ class BalancedKNN:
 		if not np.all(np.isfinite(self.dist)):
 			logging.error(f"BalancedKNN.kneighbors() some distances were not finite; retrying with new random seed")
 			bnn = BalancedKNN(self.k, self.sight_k, self.maxl, self.mode, self.metric, self.minkowski_p, self.random_seed + 1)
-			bnn.fit(X, self.sight_k)
-			return bnn.kneighbors(X, maxl, mode)
+			bnn.fit(self.data, self.sight_k)
+			return bnn.kneighbors(self.data, maxl, mode)
 		logging.debug(f"Using the initialization network to find a {self.k}-NN graph with maximum connectivity of {self.maxl}")
 		self.dist_new, self.dsi_new, self.l = knn_balance(self.dsi, self.dist, maxl=self.maxl, k=self.k)
 		assert np.all(np.isfinite(self.dist)), "BalancedKNN.kneighbors() some distances were not finite after balancing the graph"
