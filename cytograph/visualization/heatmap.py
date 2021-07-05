@@ -70,7 +70,7 @@ class Heatmap(Module):
 		dendrogram_height = n_genes / 40
 		fig_width = n_clusters / 40
 		fig_height = dendrogram_height + (1 + 2 + n_genes) / 40
-		dpi = min(60_000 // fig_height, 300)
+		dpi = min(60_000 // fig_height, 600)
 		fig = plt.figure(figsize=(fig_width, fig_height), dpi=dpi)
 		
 		heights = [dendrogram_height] + [1, 2, n_genes]
