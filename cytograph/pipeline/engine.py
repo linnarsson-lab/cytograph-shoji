@@ -195,6 +195,7 @@ class CondorEngine(Engine):
 			waiting = 0
 			completed = 0
 			logging.debug(f"Checking for new tasks to launch.")
+			self.deck = PunchcardDeck(config.path / "punchcards")
 			tasks = self.build_execution_dag()
 
 			for task in tasks.keys():
