@@ -33,14 +33,14 @@ class CutDendrogram(Module):
 		z = self.Linkage[:].astype("float64")
 		cuts = cut_tree(z, n_clusters=self.n_trees).T[0]
 		clusters = self.Clusters[:]
+		n_clusters = len(np.unique(clusters))
 		subtrees = np.zeros_like(clusters)
 		for ix, tree in enumerate(cuts):
 			subtrees[clusters == ix] = tree
-		for ix in range(self.n_trees):
-			n_clusters = len(np.unique(clusters[subtrees == ix]))
-			if n_clusters > self.split_when_over:
+		if n_clusters > self.split_when_over:
+			for ix in range(self.n_trees):
 				new_name = punchcard.name + "ABCDEFGHIJKLMNOPQRSTUVXYZ"[ix]
-				logging.info(f" CutDendrogram: Creating punchcard {new_name} from {n_clusters} clusters of branch {ix}")
+				logging.info(f" CutDendrogram: Creating punchcard '{new_name}'")
 				recipe = self.split_with_settings.get("recipe", punchcard.recipe)
 				n_cpus = self.split_with_settings.get("n_cpus", punchcard.resources.n_cpus)
 				n_gpus = self.split_with_settings.get("n_gpus", punchcard.resources.n_gpus)
