@@ -61,7 +61,8 @@ def build(engine: str, dryrun: bool) -> None:
 @cli.command()
 @click.argument("punchcard")
 @click.option('--resume', default=0)
-def process(punchcard: str, resume: int) -> None:
+@click.option('--recipe')
+def process(punchcard: str, resume: int, recipe: str) -> None:
 	workspace_name = Path.cwd().name
 	logging.info(f"Workspace is '{workspace_name}'")
 	try:
@@ -99,7 +100,8 @@ def process(punchcard: str, resume: int) -> None:
 			sys.exit(1)
 
 		config = Config.load(punchcard_obj)  # Ensure we get any punchcard-specific configs
-
+		if recipe is not None:
+			punchcard_obj.recipe = recipe
 		logging.info(f"Processing '{punchcard}'")
 		Workflow(deck, punchcard_obj).process(resume)
 	except Exception as e:
