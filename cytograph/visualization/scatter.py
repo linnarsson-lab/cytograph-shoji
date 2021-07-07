@@ -13,7 +13,7 @@ def _draw_edges(ax: plt.Axes, pos: np.ndarray, g: np.ndarray, gcolor: str, galph
 
 def scatterc(xy: np.ndarray, *, c: np.ndarray, legend: Optional[str] = "outside", g: np.ndarray = None, gcolor: str = "thistle", galpha: float = 0.1, glinewidths: float = 0.25, **kwargs) -> None:
 	n_cells = xy.shape[0]
-	marker_size = 500_000 / n_cells
+	marker_size = 100_000 / n_cells
 
 	ordering = np.random.permutation(xy.shape[0])
 	c = c[ordering]
@@ -34,7 +34,7 @@ def scatterc(xy: np.ndarray, *, c: np.ndarray, legend: Optional[str] = "outside"
 
 def scattern(xy: np.ndarray, *, c: np.ndarray, zinf: bool = True, g: np.ndarray = None, gcolor: str = "thistle", galpha: float = 0.1, glinewidths: float = 0.25, **kwargs) -> None:
 	n_cells = xy.shape[0]
-	marker_size = 1000 / np.sqrt(n_cells)
+	marker_size = 100_000 / n_cells
 
 	ordering = np.random.permutation(xy.shape[0])
 	color = c[ordering]
