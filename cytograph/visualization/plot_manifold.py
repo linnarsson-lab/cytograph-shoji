@@ -37,9 +37,10 @@ class PlotManifold(Module):
 		plt.figure(figsize=(20, 20))
 		xy = self.Embedding[:]
 		scatterc(xy, c=np.array(labels)[clusters], legend="outside")
-		for i in range(ws.clusters.length):
+		top_clusters = np.argsort(np.bincount(clusters))[-100:]
+		for i in top_clusters:
 			pos = np.median(xy[clusters == i], axis=0)
-			txt = plt.text(pos[0], pos[1], str(i), size=14)
+			txt = plt.text(pos[0], pos[1], str(i), size=32, color="black")
 			txt.set_path_effects([PathEffects.withStroke(linewidth=3, foreground='w')])
 		plt.axis("off")
 

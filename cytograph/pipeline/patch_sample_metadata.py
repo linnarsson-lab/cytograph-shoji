@@ -63,10 +63,16 @@ class PatchSampleMetadata(Module):
 								sys.exit(1)
 							values = update_values(values, mask, d[tensor.lower()])
 				elif self.db.endswith(".xlsx"):
+					sampleID = sample.replace("TenX", "10X")
 					table = pd.read_excel(self.db)
-					row = table[table["SampleID"] == sample]
+					row = table[table["SampleID"] == sampleID]
 					keys = row.columns.values
-					vals = row.values[0]
+					try:
+						vals = row.values[0]
+					except IndexError as e:
+						logging.error(e)
+						logging.info(f"Tensor {tensor}, SampleID {sample}")
+						sys.exit(1)
 					d = dict(zip(keys, vals))
 					if tensor not in d:
 						logging.error(f"Tensor '{tensor}' was not found in the metadata")
