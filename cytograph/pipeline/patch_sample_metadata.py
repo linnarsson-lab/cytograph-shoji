@@ -34,7 +34,7 @@ class PatchSampleMetadata(Module):
 
 		samples = self.SampleID[:]
 		for tensor, dtype in self.tensors.items():
-			values = np.zeros(n_cells, dtype=dtype)
+			values = np.zeros(n_cells, dtype=dtype if dtype != "string" else "object")
 			for sample in np.unique(samples):
 				mask = (samples == sample)
 				if self.db.endswith(".db"):
