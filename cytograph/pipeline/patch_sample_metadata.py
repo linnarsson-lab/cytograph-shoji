@@ -1,7 +1,6 @@
 from cytograph.module import requires
-from typing import List, Union, Optional
+from typing import Dict
 import shoji
-from .config import Config
 import logging
 import sys
 import sqlite3 as sqlite
