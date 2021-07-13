@@ -49,13 +49,13 @@ class PatchSampleMetadata(Module):
 					logging.error(e)
 					logging.info(f"Tensor {tensor}, SampleID {sample}")
 					sys.exit(1)
-				if np.isnan(vals):
-					logging.error(f"Missing metadata for sample '{sample}'")
-					continue
 				d = dict(zip(keys, vals))
 				if tensor not in d:
 					logging.error(f"'{tensor}' was not found in the metadata")
 					sys.exit(1)
+				if np.isnan(d[tensor]):
+					logging.warning(f"No metadata found for sample '{sample}'")
+					continue
 				values[mask] = d[tensor]
 			logging.info(f" PatchSampleMetadata: Patching metadata for '{tensor}'")
 			logging.info(np.unique(values))
