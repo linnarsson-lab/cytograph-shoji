@@ -55,5 +55,5 @@ class PatchSampleMetadata(Module):
 					sys.exit(1)
 				values[mask] = d[tensor]
 			logging.info(f" PatchSampleMetadata: Patching metadata for '{tensor}'")
-			assert values is not None, f"Failed to load metadata for '{tensor}'"
+			logging.info(np.unique(values))
 			ws[tensor] = shoji.Tensor(dtype, ("cells",), inits=values)
