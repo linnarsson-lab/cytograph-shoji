@@ -58,5 +58,4 @@ class PatchSampleMetadata(Module):
 					continue
 				values[mask] = d[tensor]
 			logging.info(f" PatchSampleMetadata: Patching metadata for '{tensor}'")
-			logging.info(np.unique(values))
 			ws[tensor] = shoji.Tensor(dtype, ("cells",), inits=values)
