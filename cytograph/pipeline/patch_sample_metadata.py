@@ -53,7 +53,7 @@ class PatchSampleMetadata(Module):
 				if tensor not in d:
 					logging.error(f"'{tensor}' was not found in the metadata")
 					sys.exit(1)
-				if np.isnan(d[tensor]):
+				if d[tensor] != d[tensor]:  # Check for nan in a way that works for both strings and numbers
 					logging.warning(f"No metadata found for sample '{sample}'")
 					continue
 				values[mask] = d[tensor]
