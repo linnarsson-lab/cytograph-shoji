@@ -36,8 +36,11 @@ class PlotManifold(Module):
 			labels.append(label)
 		plt.figure(figsize=(20, 20))
 		xy = self.Embedding[:]
-		scatterc(xy, c=np.array(labels)[clusters], legend="outside")
-		top_clusters = np.argsort(np.bincount(clusters))[-100:]
+		if clusters.max() > 200:
+			scatterc(xy, c=np.array(labels)[clusters], legend=None)
+		else:
+			scatterc(xy, c=np.array(labels)[clusters], legend="outside")
+		top_clusters = np.argsort(np.bincount(clusters))[-200:]
 		for i in top_clusters:
 			pos = np.median(xy[clusters == i], axis=0)
 			txt = plt.text(pos[0], pos[1], str(i), size=32, color="black")
