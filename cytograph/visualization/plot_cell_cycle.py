@@ -10,7 +10,7 @@ import numpy_groupies as npg
 
 
 class PlotCellCycle(Module):
-	def __init__(self, filename: str = "age.png", **kwargs) -> None:
+	def __init__(self, filename: str = "cellcycle.png", **kwargs) -> None:
 		super().__init__(**kwargs)
 		self.filename = filename
 
