@@ -14,7 +14,7 @@ class PlotAge(Module):
 		super().__init__(**kwargs)
 		self.filename = filename
 
-	@requires("Age", "string", ("cells",))
+	@requires("Age", "float32", ("cells",))
 	@requires("Clusters", "uint32", ("cells",))
 	@requires("Embedding", "float32", ("cells", 2))
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> None:
