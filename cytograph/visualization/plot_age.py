@@ -59,5 +59,5 @@ class PlotAge(Module):
 		plt.scatter(xy[:, 0], xy[:, 1], c=hsv_to_rgb(hsv), s=marker_size, lw=0)
 		plt.axis("off")
 
-		plt.savefig(self.export_dir / (ws._name + "_" + self.filename), dpi=150 if n_cells.sum() > 500_000 else 300, bbox_inches='tight')
+		plt.savefig(self.export_dir / (ws._name + "_" + self.filename), dpi=150 if n_cells > 500_000 else 300, bbox_inches='tight')
 		plt.close()
