@@ -35,7 +35,7 @@ class PlotSubregion(Module):
 
 		hsv = np.ones(region_dist.shape + (3,))
 		# Set hues for regions
-		for ix in range(12):
+		for ix in range(35):
 			hsv[ix, :, 0] = ix / 35
 		hsv[..., 1] = region_dist / region_dist.max()  # saturation
 		hsv[..., 2] = 1  # value
