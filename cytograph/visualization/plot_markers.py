@@ -18,7 +18,7 @@ class PlotMarkers(Module):
 
 	@requires("Gene", "string", ("genes",))
 	@requires("ClusterID", "uint32", ("clusters",))
-	@requires("MeanExpression", "float32", ("clusters",))
+	@requires("MeanExpression", "float64", ("clusters", "genes"))
 	@requires("Embedding", "float32", ("cells", 2))
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> None:
 		logging.info(" PlotSubregion: Plotting the heatmap")
@@ -63,5 +63,5 @@ class PlotMarkers(Module):
 			ax.set_title(gene + "\n" + desc, fontsize=14)
 			plt.axis("off")
 
-		plt.savefig(self.export_dir / (ws._name + "_" + self.filename), dpi=150 if n_cells.sum() > 500_000 else 300, bbox_inches='tight')
+		plt.savefig(self.export_dir / (ws._name + "_" + self.filename), dpi=150 if n_cells > 500_000 else 300, bbox_inches='tight')
 		plt.close()

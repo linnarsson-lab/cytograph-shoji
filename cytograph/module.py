@@ -49,7 +49,7 @@ def requires(name: str, dtype: Optional[str], dims: Optional[Tuple[Union[str, in
 				raise AttributeError(f"{self.__class__} requires tensor '{tname}'")
 			tensor = ws._get_tensor(tname)
 			if dims is not None and tensor.dims != dims:
-					raise ValueError(f"{self.__class__} requires tensor '{tname}' with dims='{dims}'")
+				raise ValueError(f"{self.__class__} requires tensor '{tname}' with dims='{dims}'")
 			elif dtype is not None and tensor.dtype != dtype:
 				raise ValueError(f"{self.__class__} requires tensor '{tname}' with dtype='{dtype}'")
 			return func(self, ws, *args, **kwargs)
