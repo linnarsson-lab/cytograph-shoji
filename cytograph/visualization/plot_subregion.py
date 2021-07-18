@@ -44,7 +44,7 @@ class PlotSubregion(Module):
 		logging.info(" PlotSubregion: Plotting the manifold")
 		fig = plt.figure(figsize=(30, 30))
 		ax = fig.add_axes((0, 13 / 15, 1, 2 / 15))
-		ax.imshow(rgb, interpolation=None, aspect="auto")
+		ax.imshow(rgb, interpolation="none", aspect="auto")
 		ax.set_yticks(ticks=range(len(region_names)))
 		ax.set_yticklabels(region_names, fontsize=10)
 		fig.add_axes((0, 0, 1, 13 / 15))

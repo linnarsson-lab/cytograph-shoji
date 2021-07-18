@@ -40,7 +40,7 @@ class PlotAge(Module):
 		hsv[..., 2] = 1  # value
 		rgb = hsv_to_rgb(hsv)
 
-		ax.imshow(rgb, cmap="Greys", interpolation=None, aspect="auto", origin="upper")
+		ax.imshow(rgb, cmap="Greys", interpolation="none", aspect="auto", origin="upper")
 		ax.set_yticks(ticks=range(15))
 		ax.set_yticklabels(labels=range(15), fontsize=10)
 		ax.set_ylabel("Age (p.c.w.)", fontsize=14)

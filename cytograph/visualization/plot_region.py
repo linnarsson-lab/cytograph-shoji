@@ -39,7 +39,7 @@ class PlotRegion(Module):
 		logging.info(" PlotRegion: Plotting the manifold")
 		fig = plt.figure(figsize=(30, 30))
 		ax = fig.add_axes((0, 14 / 15, 1, 1 / 15))
-		ax.imshow(rgb, interpolation=None, aspect="auto")
+		ax.imshow(rgb, interpolation="none", aspect="auto")
 		ax.set_yticks(ticks=range(rgb.shape[0]))
 		ax.set_yticklabels(region_names, fontsize=12)
 		fig.add_axes((0, 0, 1, 14 / 15))

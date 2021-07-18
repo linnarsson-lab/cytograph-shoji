@@ -14,7 +14,7 @@ class PlotCellCycle(Module):
 		super().__init__(**kwargs)
 		self.filename = filename
 
-	@requires("CellCycleFraction", "string", ("cells",))
+	@requires("CellCycleFraction", "float32", ("cells",))
 	@requires("Clusters", "uint32", ("cells",))
 	@requires("Embedding", "float32", ("cells", 2))
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> None:
@@ -34,7 +34,7 @@ class PlotCellCycle(Module):
 		fig = plt.figure(figsize=(30, 30))
 		ax = fig.add_axes((0, 14 / 15, 1, 1 / 15))
 
-		ax.imshow(cc_dist, cmap="Greys", interpolation=None, aspect="auto", origin="lower")
+		ax.imshow(cc_dist, cmap="Greys", interpolation="none", aspect="auto", origin="lower")
 		ax.set_yticks(ticks=(0, 3.5, 9.5, 19.5))
 		ax.set_yticklabels(labels=["0", "0.4%", "1%", "2%"], fontsize=15)
 		ax.set_ylabel("Cell cycle (% UMIs)", fontsize=18)
