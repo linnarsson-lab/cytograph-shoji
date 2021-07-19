@@ -26,26 +26,33 @@ class PlotManifold(Module):
 		labels = []
 		n_cells = self.NCells[:]
 		clusters = self.Clusters[:]
+		n_clusters = clusters.max() + 1
 		cluster_ids = self.ClusterID[:]
 		genes = self.Gene[:]
 		enrichment = self.Enrichment[:]
+		xy = self.Embedding[:]
+
 		for i in range(ws.clusters.length):
 			n = n_cells[cluster_ids == i][0]
 			label = f"{i:>3} ({n:,} cells) "
 			label += " ".join(genes[np.argsort(-enrichment[cluster_ids == i, :][0])[:10]])
 			labels.append(label)
+
 		plt.figure(figsize=(20, 20))
-		xy = self.Embedding[:]
-		if clusters.max() > 200:
-			scatterc(xy, c=np.array(labels)[clusters], legend=None)
-		else:
-			scatterc(xy, c=np.array(labels)[clusters], legend="outside")
-		top_clusters = np.argsort(np.bincount(clusters))[-200:]
+
+		MAX_CLUSTERS = 100
+		top_clusters = np.argsort(np.bincount(clusters))[-MAX_CLUSTERS:]
 		for i in top_clusters:
 			pos = np.median(xy[clusters == i], axis=0)
-			txt = plt.text(pos[0], pos[1], str(i), size=32, color="black")
+			txt = plt.text(pos[0], pos[1], str(i), size=18, color="black")
 			txt.set_path_effects([PathEffects.withStroke(linewidth=3, foreground='w')])
+
+		if n_clusters > MAX_CLUSTERS:
+			mask = np.isin(clusters, top_clusters)
+			clusters[~mask] = n_clusters
+			labels.append(f"{n_clusters} ({n_clusters - MAX_CLUSTERS} clusters not shown)")
+		scatterc(xy, c=np.array(labels)[clusters], legend="outside")
 		plt.axis("off")
 
-		plt.savefig(self.export_dir / (ws._name + "_" + self.filename), dpi=150 if n_cells.sum() > 500_000 else 300, bbox_inches='tight')
+		plt.savefig(self.export_dir / (ws._name + "_" + self.filename), dpi=300, bbox_inches='tight')
 		plt.close()

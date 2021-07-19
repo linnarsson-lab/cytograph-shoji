@@ -1,4 +1,3 @@
-import matplotlib.patheffects as PathEffects
 import logging
 
 import matplotlib.pyplot as plt
@@ -32,23 +31,24 @@ class PlotRegion(Module):
 		# Set hues for regions
 		for ix in range(12):
 			hsv[ix, :, 0] = ix / 12
-		hsv[..., 1] = region_dist / region_dist.max()  # saturation
+		hsv[..., 1] = div0(region_dist, region_dist.max())  # saturation
 		hsv[..., 2] = 1  # value
 		rgb = hsv_to_rgb(hsv)
 
-		logging.info(" PlotRegion: Plotting the manifold")
 		fig = plt.figure(figsize=(30, 30))
 		ax = fig.add_axes((0, 14 / 15, 1, 1 / 15))
 		ax.imshow(rgb, interpolation="none", aspect="auto")
 		ax.set_yticks(ticks=range(rgb.shape[0]))
 		ax.set_yticklabels(region_names, fontsize=12)
+
+		logging.info(" PlotRegion: Plotting the manifold")
 		fig.add_axes((0, 0, 1, 14 / 15))
 		xy = ws.Embedding[:]
 		n_cells = xy.shape[0]
 
 		marker_size = 2_000_000 / n_cells
 		ordering = np.random.permutation(xy.shape[0])
-		c = ws.Region[:][ordering]
+		c = self.Region[:][ordering]
 		hsv = np.ones(c.shape + (3,))
 		for ix, region in enumerate(region_names):
 			hsv[c == region, 0] = ix / 12
