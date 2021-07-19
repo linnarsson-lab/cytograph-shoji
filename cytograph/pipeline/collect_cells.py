@@ -103,11 +103,16 @@ class CollectCells(Module):
 					source_ws = build_ws[source]
 				elif source in db[config.workspaces.samples_workspace_name]:
 					source_ws = db[config.workspaces.samples_workspace_name][source]
-				vals = source_ws[tensor][:]
-				ws[tensor][ix:ix + source_ws.cells.length] = vals + offset
+				if onlyif is not None:
+					conditions = eval(onlyif, {"ws": source_ws, "np": np, "shoji": shoji, "cg": cg})
+					view = source_ws[conditions]
+				else:
+					view = source_ws[:]
+				vals = view[tensor]
+				ws[tensor][ix:ix + vals.shape[0]] = vals + offset
 				logging.info(f" CollectCells: Using numbers {np.unique(vals + offset)}")
 				offset = offset + max(vals) + 1
-				ix += source_ws.cells.length
+				ix += vals.shape[0]
 
 		ws.cells = shoji.Dimension(shape=ws.cells.length)  # Fix the length of the cells dimension
 		logging.info(f" CollectCells: Collected {ws.cells.length} cells")
