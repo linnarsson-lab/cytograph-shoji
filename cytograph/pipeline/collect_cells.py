@@ -7,6 +7,7 @@ import logging
 import cytograph as cg
 from cytograph import Module
 import sys
+from sklearn.preprocessing import LabelEncoder
 
 
 class CollectCells(Module):
@@ -74,7 +75,7 @@ class CollectCells(Module):
 						logging.error(f"Tensor '{tensor}' missing in source workspace '{source}")
 						sys.exit(1)
 					t = source_ws[tensor]
-					if tensor in self.renumber_tensors and t.rank != 1:
+					if new_name in self.renumber_tensors and t.rank != 1:
 						logging.error(f"Cannot renumber tensor '{tensor}' because rank is not 1")
 						sys.exit(1)
 					if t.rank > 0:
@@ -108,9 +109,12 @@ class CollectCells(Module):
 					view = source_ws[conditions]
 				else:
 					view = source_ws[:]
-				vals = view[tensor]
+				vals = LabelEncoder().fit_transform(view[tensor])
+				logging.info(f"{np.unique(ws[tensor][:])}")
 				ws[tensor][ix:ix + vals.shape[0]] = vals + offset
 				logging.info(f" CollectCells: Using numbers {np.unique(vals + offset)}")
+				logging.info(f" CollectCells: {ix} {ix + vals.shape[0]}")
+				logging.info(f"{np.unique(ws[tensor][:])}")
 				offset = offset + max(vals) + 1
 				ix += vals.shape[0]
 
