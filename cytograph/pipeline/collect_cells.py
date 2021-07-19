@@ -110,11 +110,7 @@ class CollectCells(Module):
 				else:
 					view = source_ws[:]
 				vals = LabelEncoder().fit_transform(view[tensor])
-				logging.info(f"{np.unique(ws[tensor][:])}")
 				ws[tensor][ix:ix + vals.shape[0]] = vals + offset
-				logging.info(f" CollectCells: Using numbers {np.unique(vals + offset)}")
-				logging.info(f" CollectCells: {ix} {ix + vals.shape[0]}")
-				logging.info(f"{np.unique(ws[tensor][:])}")
 				offset = offset + max(vals) + 1
 				ix += vals.shape[0]
 
