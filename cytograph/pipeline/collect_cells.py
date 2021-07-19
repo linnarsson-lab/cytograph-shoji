@@ -105,6 +105,7 @@ class CollectCells(Module):
 					source_ws = db[config.workspaces.samples_workspace_name][source]
 				vals = source_ws[tensor][:]
 				ws[tensor][ix:ix + source_ws.cells.length] = vals + offset
+				logging.info(f" CollectCells: Using numbers {np.unique(vals + offset)}")
 				offset = offset + max(vals) + 1
 				ix += source_ws.cells.length
 
