@@ -103,7 +103,7 @@ class Heatmap(Module):
 		ax = fig.add_subplot(fig_spec[subplot])
 		if "MeanAge" in ws:
 			ages = ws.MeanAge[:][ordering]
-			ax.imshow(ages[None, :], cmap="rainbow", vmin=min(ages[ages > 0]), vmax=max(ages))
+			ax.imshow(ages[None, :], cmap="rainbow", vmin=min(ages), vmax=max(ages))
 			ax.set_xlim(-0.5, n_clusters - 0.5)
 			plt.axis("off")
 		subplot += 1

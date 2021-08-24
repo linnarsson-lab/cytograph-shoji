@@ -34,7 +34,7 @@ class PlotBatches(Module):
 		if "Age" in ws:
 			age = expand_scalars(ws.Age[:])
 			plt.subplot(2, 2, 1)
-			plt.scatter(xy[:, 0], xy[:, 1], c=age, s=marker_size, lw=0, cmap="rainbow", vmin=min(age[age > 0]))
+			plt.scatter(xy[:, 0], xy[:, 1], c=age, s=marker_size, lw=0, cmap="rainbow", vmin=min(age))
 			plt.colorbar(fraction=0.02, pad=0.04)
 			plt.axis("off")
 			plt.title(f"Age")

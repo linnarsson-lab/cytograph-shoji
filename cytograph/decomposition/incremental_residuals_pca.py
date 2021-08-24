@@ -29,6 +29,7 @@ class IncrementalResidualsPCA(Module):
 	@creates("Loadings", "float32", ("genes", None))
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> Tuple[np.ndarray, np.ndarray]:
 		logging.info(" ResidualsPCA: Loading gene and cell totals")
+		n_cells = ws.cells.length
 		totals = self.TotalUMIs[:].astype("float32")
 		gene_totals = self.GeneTotalUMIs[ws.SelectedFeatures == True][:].astype("float32")
 		overall_totals = self.OverallTotalUMIs[:]
@@ -40,6 +41,7 @@ class IncrementalResidualsPCA(Module):
 			data = ws[self.requires["Expression"]][ix:ix + batch_size, ws.SelectedFeatures == True]  # self.requires["Expression"] ensures that the user can rename the input tensor if desired
 			expected = totals[ix:ix + batch_size, None] @ (gene_totals[None, :] / overall_totals)
 			residuals = (data - expected) / np.sqrt(expected + np.power(expected, 2) / 100)
+			residuals = np.clip(residuals, -np.sqrt(n_cells), np.sqrt(n_cells))
 			pca.partial_fit(residuals)
 
 		logging.info(f" ResidualsPCA: Transforming residuals incrementally in batches of {batch_size:,} cells")
@@ -48,6 +50,7 @@ class IncrementalResidualsPCA(Module):
 			data = ws[self.requires["Expression"]][ix:ix + batch_size, ws.SelectedFeatures == True]  # self.requires["Expression"] ensures that the user can rename the input tensor if desired
 			expected = totals[ix:ix + batch_size, None] @ (gene_totals[None, :] / overall_totals)
 			residuals = (data - expected) / np.sqrt(expected + np.power(expected, 2) / 100)
+			residuals = np.clip(residuals, -np.sqrt(n_cells), np.sqrt(n_cells))
 			factors[ix:ix + batch_size] = pca.transform(residuals)
 
 		loadings = pca.components_.T

@@ -12,7 +12,7 @@ from sklearn.preprocessing import LabelEncoder
 
 
 class PolishedLeiden(Module):
-	def __init__(self, resolution: float = 1.0, method: str = "modularity", max_size: int = 0, min_size: int = 25, **kwargs) -> None:
+	def __init__(self, resolution: float = 1.0, method: str = "modularity", max_size: int = 0, min_size: int = 10, **kwargs) -> None:
 		"""
 		Find clusters on the manifold using the Leiden algorithm, then polish clusters on the embedding.
 
@@ -20,7 +20,7 @@ class PolishedLeiden(Module):
 			resolution: The resolution parameter (typically 0.01 - 1; default: 1)
 			method:     The partitioning method ("modularity", "cpm", "surprise", "rb", "rber", or "significance"; default: "modularity")
 			max_size:   The maximum size of clusters (default: 0, i.e. no limit)
-			min_size:   The minimum size of clusters (default: 25)
+			min_size:   The minimum size of clusters (default: 10)
 
 		Remarks:
 			The default method, "modularity", is equivalent to Louvain clustering but the Leiden algorithm is faster

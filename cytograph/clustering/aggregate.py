@@ -31,6 +31,8 @@ class Aggregate(Module):
 
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> np.ndarray:
 		logging.info(f" Aggregate: Grouping by '{self.by}' using '{self.using}'")
+		assert self.by in ws, f"Required tensor '{self.by}' is missing"
+		assert self.tensor in ws, f"Required tensor '{self.tensor}' is missing"
 		grouped = ws[:].groupby(self.by)
 		tensor = ws._get_tensor(self.tensor)
 		if self.using == "sum":
