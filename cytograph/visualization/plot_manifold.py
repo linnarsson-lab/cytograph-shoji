@@ -1,4 +1,5 @@
 import matplotlib.patheffects as PathEffects
+from matplotlib.collections import LineCollection
 import logging
 
 import matplotlib.pyplot as plt
@@ -17,6 +18,7 @@ class PlotManifold(Module):
 	@requires("Gene", "string", ("genes",))
 	@requires("Clusters", "uint32", ("cells",))
 	@requires("Embedding", "float32", ("cells", 2))
+	@requires("ManifoldIndices", "uint32", (None, 2))
 	@requires("NCells", "uint64", ("clusters",))
 	@requires("ClusterID", "uint32", ("clusters",))
 	@requires("Enrichment", "float32", ("clusters", "genes"))
@@ -39,6 +41,10 @@ class PlotManifold(Module):
 			labels.append(label)
 
 		plt.figure(figsize=(20, 20))
+		ax = plt.subplot(111)
+		edges = self.ManifoldIndices[:]
+		lc = LineCollection(zip(xy[edges[:, 0]], xy[edges[:, 1]]), linewidths=0.25, zorder=0, color='thistle', alpha=0.1)
+		ax.add_collection(lc)
 
 		MAX_CLUSTERS = 100
 		top_clusters = np.argsort(np.bincount(clusters))[-MAX_CLUSTERS:]
