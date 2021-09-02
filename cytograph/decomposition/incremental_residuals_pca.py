@@ -30,6 +30,7 @@ class IncrementalResidualsPCA(Module):
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> Tuple[np.ndarray, np.ndarray]:
 		logging.info(" ResidualsPCA: Loading gene and cell totals")
 		n_cells = ws.cells.length
+		self.n_factors = min(self.n_factors, n_cells)
 		totals = self.TotalUMIs[:].astype("float32")
 		gene_totals = self.GeneTotalUMIs[ws.SelectedFeatures == True][:].astype("float32")
 		overall_totals = self.OverallTotalUMIs[:]
