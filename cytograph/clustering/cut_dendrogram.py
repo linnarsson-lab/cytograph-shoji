@@ -8,7 +8,7 @@ from typing import Dict
 
 
 class CutDendrogram(Module):
-	def __init__(self, n_trees: int = 2, split_when_over: int = 50, split_with_settings: Dict = None, **kwargs) -> None:
+	def __init__(self, n_trees: int = 2, min_cells: int = 500, split_when_over: int = 50, split_with_settings: Dict = None, **kwargs) -> None:
 		"""
 		Cut the dendrogram of clusters and return labels for subtrees. 
 
@@ -17,6 +17,8 @@ class CutDendrogram(Module):
 		"""
 		super().__init__(**kwargs)
 		self.n_trees = n_trees
+		assert n_trees <= 52, "Cannot split into more than 52 subtrees"
+		self.min_cells = min_cells
 		self.split_when_over = split_when_over
 		self.split_with_settings = split_with_settings if split_with_settings is not None else {}
 
@@ -30,16 +32,27 @@ class CutDendrogram(Module):
 		assert punchcard is not None
 
 		logging.info(f" CutDendrogram: Cutting to create {self.n_trees} subtrees")
-		z = self.Linkage[:].astype("float64")
-		cuts = cut_tree(z, n_clusters=self.n_trees).T[0]
-		clusters = self.Clusters[:]
-		n_clusters = len(np.unique(clusters))
-		subtrees = np.zeros_like(clusters)
-		for ix, tree in enumerate(cuts):
-			subtrees[clusters == ix] = tree
-		if n_clusters > self.split_when_over:
+		splitting = True
+		while splitting and self.n_trees > 1:
+			z = self.Linkage[:].astype("float64")
+			cuts = cut_tree(z, n_clusters=self.n_trees).T[0]
+			clusters = self.Clusters[:]
+			n_clusters = len(np.unique(clusters))
+			subtrees = np.zeros_like(clusters)
+			for ix, tree in enumerate(cuts):
+				subtrees[clusters == ix] = tree
+
+			# If there are subtrees that have too few cells, split with fewer subtrees
+			splitting = False
 			for ix in range(self.n_trees):
-				new_name = punchcard.name + "ABCDEFGHIJKLMNOPQRSTUVWXYZ"[ix]
+				if (subtrees == ix).sum() < self.min_cells:
+					self.n_trees -= 1
+					splitting = True
+					continue
+
+		if self.n_trees > 1 and n_clusters > self.split_when_over:
+			for ix in range(self.n_trees):
+				new_name = punchcard.name + "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"[ix]
 				logging.info(f" CutDendrogram: Creating punchcard '{new_name}'")
 				recipe = self.split_with_settings.get("recipe", punchcard.recipe)
 				n_cpus = self.split_with_settings.get("n_cpus", punchcard.resources.n_cpus)
