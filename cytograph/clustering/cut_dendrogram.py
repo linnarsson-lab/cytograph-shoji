@@ -31,7 +31,7 @@ class CutDendrogram(Module):
 		punchcard = config.punchcard
 		assert punchcard is not None
 
-		logging.info(f" CutDendrogram: Cutting to create {self.n_trees} subtrees")
+		logging.info(f" CutDendrogram: Trying to create {self.n_trees} subtrees")
 		splitting = True
 		while splitting and self.n_trees > 1:
 			z = self.Linkage[:].astype("float64")
@@ -51,6 +51,7 @@ class CutDendrogram(Module):
 					continue
 
 		if self.n_trees > 1 and n_clusters > self.split_when_over:
+			logging.info(f" CutDendrogram: Creating {self.n_trees} subtrees")
 			for ix in range(self.n_trees):
 				new_name = punchcard.name + "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"[ix]
 				logging.info(f" CutDendrogram: Creating punchcard '{new_name}'")
@@ -72,4 +73,6 @@ resources:
 
 sources: [{punchcard.name}]
 ''')
+		else:
+			logging.info(f" CutDendrogram: Unable to create subtrees because branches would be too thin")
 		return subtrees

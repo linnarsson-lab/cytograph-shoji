@@ -1,2 +1,2 @@
-from .auto_annotator import AutoAnnotator
+from .auto_annotate import AutoAnnotate
 from .karyotyper import Karyotyper
