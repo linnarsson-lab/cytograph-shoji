@@ -6,3 +6,4 @@ from .initialize_workspace import InitializeWorkspace
 from .collect_cells import CollectCells
 from .load_sample_metadata import LoadSampleMetadata
 from .patch_sample_metadata import PatchSampleMetadata
+from .patch_gene_metadata import PatchGeneMetadata

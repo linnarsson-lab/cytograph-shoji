@@ -72,7 +72,8 @@ class AutoAnnotate(Module):
 	@requires("Clusters", "uint32", ("cells",))
 	@requires("NCells", "uint64", ("clusters",))
 	@requires("MeanExpression", None, ("clusters", "genes"))
-	@creates("Annotation", "string", ("annotations",))
+	@creates("AnnotationName", "string", ("annotations",))
+	@creates("AnnotationDefinition", "string", ("annotations",))
 	@creates("AnnotationDescription", "string", ("annotations",))
 	@creates("AnnotationPosterior", "float32", ("clusters", "annotations"))
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> np.ndarray:
@@ -139,11 +140,13 @@ class AutoAnnotate(Module):
 
 		# Recreate the annotations dimension
 		if "annotations" in ws._dimensions():
-			del ws.Annotation
+			del ws.AnnotationName
+			del ws.AnnotationDefinition
 			del ws.AnnotationDescription
 			del ws.AnnotationPosterior
 		ws.annotations = shoji.Dimension(shape=len(definitions))
 
-		names = np.array([ann.name for ann in definitions], dtype="object")
+		names = np.array([ann.abbreviation for ann in definitions], dtype="object")
+		defs = np.array([ann.definition for ann in definitions], dtype="object")
 		descs = np.array([str(ann) for ann in definitions], dtype="object")
-		return names, descs, posteriors
+		return names, defs, descs, posteriors.T

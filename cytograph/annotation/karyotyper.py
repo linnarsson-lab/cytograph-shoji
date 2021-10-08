@@ -1,53 +1,138 @@
-import loompy
+from statsmodels.nonparametric.smoothers_lowess import lowess
+from ..utils import div0
+from ..module import requires, creates, Module
 import numpy as np
+import shoji
 
-chromosomes = ["chr1", "chr2", "chr3", "chr4", "chr5", "chr6", "chr7", "chr8", "chr9", "chr10", "chr11", "chr12", "chr13", "chr14", "chr15", "chr16", "chr17", "chr18", "chr19", "chr20", "chr21", "chr22", "chrX", "chrY"]
+
+def windowed_mean(x: np.ndarray, n: int):
+	if len(x) == 0:
+		return x
+	y = np.zeros_like(x)
+	for ix in range(len(x)):
+		i = min(ix, len(x) - n)
+		w = x[i:i + n]
+		y[ix] = np.mean(w)
+	return y
 
 
-class Karyotyper:
-	"""
-	### NOT YET UPDATED TO cytograph-shoji
-	"""
-	def __init__(self, window: int = 200, use_chr: bool = True) -> None:
-		self.window = window
-		if use_chr:
-			self.chromosomes = chromosomes
+class Karyotyper(Module):
+	def __init__(self, max_rv = 3, min_umis = 1, window_size: int = 20, smoothing_bandwidth: int = 0):
+		self.max_rv = max_rv
+		self.min_umis = min_umis
+		self.window_size = window_size
+		self.smoothing_bandwidth = smoothing_bandwidth
+		
+		# The genome offsets of the starts of all the true chromosomes
+		self.chr_starts = {
+			'1': 0,
+			'2': 248956422,
+			'3': 491149951,
+			'4': 689445510,
+			'5': 879660065,
+			'6': 1061198324,
+			'7': 1232004303,
+			'8': 1391350276,
+			'9': 1536488912,
+			'10': 1674883629,
+			'11': 1808681051,
+			'12': 1943767673,
+			'13': 2077042982,
+			'14': 2191407310,
+			'15': 2298451028,
+			'16': 2400442217,
+			'17': 2490780562,
+			'18': 2574038003,
+			'19': 2654411288,
+			'20': 2713028904,
+			'21': 2777473071,
+			'22': 2824183054,
+			'X': 2875001522,
+			'Y': 3031042417
+		}
+
+	@requires("PearsonResidualsVariance", "float32", ("genes",))
+	@requires("GeneTotalUMIs", "uint32", ("genes",))
+	@requires("Chromosome", "string", ("genes",))
+	@requires("Start", "int64", ("genes",))
+	@requires("ClusterID", "uint32", ("clusters",))
+	@requires("MeanExpression", "float64", ("clusters", "genes"))
+	@requires("AnnotationName", "string", ("annotations",))
+	@requires("AnnotationPosterior", "float32", ("clusters", "annotations"))
+	@creates("Aneuploid", "bool", ("clusters",))
+	@creates("KaryotypePloidy", "float32", ("clusters", "karyotype",))
+	@creates("KaryotypePosition", "float32", ("karyotype",))
+	@creates("KaryotypeChromosome", "string", ("karyotype",))
+	@creates("ChromosomeStart", "uint32", ("chromosomes",))
+	@creates("ChromosomeLength", "uint32", ("chromosomes",))
+	@creates("ChromosomeName", "string", ("chromosomes",))
+	def fit(self, ws: shoji.WorkspaceManager, save: bool = False):
+		# Identify housekeeping genes
+		self.housekeeping = (self.PearsonResidualsVariance[:] < self.max_rv) & ((self.GeneTotalUMIs[:] / ws.cells.length) > self.min_umis)
+
+		# Order by genomic position
+		chrs = self.Chromosome[self.housekeeping]
+		starts = self.Start[self.housekeeping]
+		for chrom in self.chr_starts.keys():
+			starts[chrs == chrom] += self.chr_starts[chrom]
+		self.ordering = np.argsort(starts)
+		self.chromosomes = chrs[self.ordering]
+		self.starts = starts[self.ordering]
+
+		# Load the aggregated expression data
+		y_sample = self.MeanExpression[:]
+		totals = y_sample.sum(axis=1)
+		y_sample = (y_sample.T / totals * np.median(totals)).T
+		y_sample = y_sample[:, self.housekeeping]
+		self.y_sample = y_sample[:, self.ordering]
+		self.y_sample_mean = self.y_sample.mean(axis=1)
+
+		# Load the immune cell clusters
+		self.immune = (self.AnnotationPosterior[:, self.AnnotationName[:] == "M-IMMUNE"] > 0.9)[:, 0]
+		y_ref = self.MeanExpression[self.immune, :]
+		totals = y_ref.sum(axis=1)
+		y_ref = (y_ref.T / totals * np.median(totals)).T
+		y_ref = y_ref[:, self.housekeeping]
+		self.y_ref = y_ref[:, self.ordering].mean(axis=0)
+		self.y_ref_mean = self.y_ref.mean()
+
+		# Bin locally along each chromosome
+		for chrom in self.chr_starts.keys():
+			selected = (self.chromosomes == chrom)
+			if selected.sum() == 0:
+				continue
+			self.y_ref[selected] = windowed_mean(self.y_ref[selected], self.window_size)
+			for i in range(self.y_sample.shape[0]):
+				self.y_sample[i, selected] = windowed_mean(self.y_sample[i, selected], self.window_size)
+		
+		# Center using the reference residuals
+		self.y_ratio = (div0(self.y_sample, self.y_ref).T * self.y_ref_mean / self.y_sample_mean).T
+
+		if self.smoothing_bandwidth > 0:
+			# Loess smoothing along each chromosome
+			self.y_ratio_smooth = np.copy(self.y_ratio)
+			for chrom in self.chr_starts.keys():
+				selected = (self.chromosomes == chrom)
+				for i in range(self.y_ratio_smooth.shape[0]):
+					self.y_ratio_smooth[i, selected] = lowess(self.y_ratio_smooth[i, selected], self.starts[selected], frac=min(0.5, self.smoothing_bandwidth / selected.sum()), return_sorted=False)
 		else:
-			self.chromosomes = [c[3:] for c in chromosomes]
+			self.y_ratio_smooth = None
 
-	def fit(self, refpath: str) -> None:
-		with loompy.connect(refpath) as ds:
-			self.median = np.median(ds.ca.TotalUMIs)
-			size_f = self.median / ds.ca.TotalUMIs
-			# Count the number of windows
-			self.n_bins = 0
-			for c in chromosomes:
-				genes = (ds.ra.Chromosome == c)
-				self.n_bins += np.ceil((ds.ra.Chromosome == c).sum() / self.window)
-			self.n_bins = int(self.n_bins)
-			self.ref_profile = np.zeros(self.n_bins)
-			self.chromosomes = np.zeros(self.n_bins, dtype=object)
-			for ix, selection, view in ds.scan(axis=1):
-				offset = int(0)
-				for c in chromosomes:
-					genes = (ds.ra.Chromosome == c)
-					ordering = np.argsort(ds.ra.ChromosomeStart[genes])
-					for i in range(0, genes.sum(), self.window):
-						self.ref_profile[(i // self.window) + offset] += (view[genes, :][ordering, :][i: i + self.window, :].sum(axis=0) * size_f[selection]).sum()
-						self.chromosomes[(i // self.window) + offset] = c
-					offset += int(np.ceil((ds.ra.Chromosome == c).sum() / self.window))
-			self.ref_profile /= ds.shape[1]
+		if "karyotype" in ws:
+			del ws.KaryotypePloidy
+			del ws.KaryotypePosition
+			del ws.KaryotypeChromosome
+			del ws.Aneuploid
+			del ws.karyotype
 
-	def transform(self, testpath: str) -> np.ndarray:
-		with loompy.connect(testpath) as ds:
-			size_f = self.median / ds.ca.TotalUMIs
-			self.test_profile = np.zeros((self.n_bins, ds.shape[1]))
-			for ix, selection, view in ds.scan(axis=1):
-				offset = int(0)
-				for c in chromosomes:
-					genes = (ds.ra.Chromosome == c)
-					ordering = np.argsort(ds.ra.ChromosomeStart[genes])
-					for i in range(0, genes.sum(), self.window):
-						self.test_profile[(i // self.window) + offset, selection] = view[genes, :][ordering, :][i: i + self.window].sum(axis=0) * size_f[selection]
-					offset += int(np.ceil((ds.ra.Chromosome == c).sum() / self.window))
-		return self.test_profile
+		ws.karyotype = shoji.Dimension(shape=self.y_ratio.shape[1])
+		ws.chromosomes = shoji.Dimension(shape=len(self.chr_starts))
+
+		sig_std = np.percentile(np.std(self.y_ratio[self.immune], axis=1), 95)
+		aneuploid = np.std(self.y_ratio, axis=1)[self.ClusterID[:]] > sig_std
+
+		chr_starts = np.array(list(self.chr_starts.values()))
+		chr_lengths = np.diff(np.append(chr_starts, int(3.04e9)))
+		chr_names = np.array(list(self.chr_starts.keys()))
+
+		return aneuploid, 2 * self.y_ratio, self.starts, self.chromosomes, chr_starts, chr_lengths, chr_names
