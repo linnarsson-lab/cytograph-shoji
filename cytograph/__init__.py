@@ -7,7 +7,7 @@ from .embedding import *
 from .enrichment import *
 from .manifold import *
 from .metrics import *
-from .pipeline import InitializeWorkspace, CollectCells, LoadSampleMetadata, PatchSampleMetadata
+from .pipeline import InitializeWorkspace, CollectCells, LoadSampleMetadata, PatchSampleMetadata, PatchGeneMetadata
 from .preprocessing import *
 from .species import *
 from .utils import *
