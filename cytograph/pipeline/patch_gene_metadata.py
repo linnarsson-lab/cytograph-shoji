@@ -29,9 +29,9 @@ class PatchGeneMetadata(Module):
 		logging.info(f" PatchGeneMetadata: Loading gene metadata")
 		accessions = pd.DataFrame({"Accession": ws.Accession[:]})
 		accessions = accessions.set_index("Accession")
-		metadata = metadata.drop_duplicates("Accession")
-		metadata.set_index("Accession")
-		joined = pd.merge(accessions, metadata, on="Accession", how="left", validate="one_to_one")
+		metadata = metadata.drop_duplicates("AccessionVersion")
+		metadata.set_index("AccessionVersion")
+		joined = pd.merge(accessions, metadata, left_on="Accession", right_on="AccessionVersion", how="left", validate="one_to_one")
 
 		logging.info(f" PatchGeneMetadata: Patching gene metadata")
 		ws["GeneFullName"] = shoji.Tensor("string", ("genes",), inits=joined["FullName"].fillna("").values)
