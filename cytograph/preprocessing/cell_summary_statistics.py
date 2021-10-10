@@ -13,7 +13,7 @@ class CellSummaryStatistics(Module):
 	@requires("Expression", "uint16", ("cells", "genes"))
 	@requires("Chromosome", "string", ("genes",))
 	@requires("Gene", "string", ("genes",))
-	@requires("Unspliced", "uint16", ("cells", "genes"))
+	@requires("Unspliced", None, ("cells", "genes"))
 	@requires("Species", "string", ())
 	@creates("NGenes", "uint32", ("cells",))
 	@creates("TotalUMIs", "uint32", ("cells",))
