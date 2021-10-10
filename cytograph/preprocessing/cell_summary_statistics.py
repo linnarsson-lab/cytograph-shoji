@@ -41,7 +41,7 @@ class CellSummaryStatistics(Module):
 		"""
 		logging.info(" CellSummaryStatistics: Loading 'Expression' and 'Unspliced' tensors")
 		x = self.Expression[:]
-		u = self.Unspliced[:]
+		u = self.Unspliced[:].astype("uint16")
 
 		mito_genes = self.Chromosome[:] == "MT"
 
