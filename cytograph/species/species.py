@@ -27,13 +27,14 @@ class Species:
 			}
 			self.markers = {
 				"CellCycle": ["PCNA", "CDK1", "TOP2A"],
-				"RadialGlia": ["FABP7", "FABP5", "HOPX"],
+				"RadialGlia": ["HES1", "HES5", "HOPX"],
 				"Immune": ["PTPRC"],
 				"Macrophages": ["AIF1", "HEXB", "MRC1"],
 				"Fibroblasts": ["LUM", "DCN", "COL1A1"],
 				"Endothelial": ["CLDN5"],
 				"VSMC": ["ACTA2", "TAGLN"],
 				"Ependymal": ["TMEM212", "FOXJ1"],
+				"Choroid": ["TTR"],
 				"Astrocytes": ["AQP4", "GJA1"],
 				"Neurons": ["RBFOX3"],
 				"Neuroblasts": ["NHLH1", "NHLH2"],
@@ -47,7 +48,8 @@ class Species:
 				"Noradrenergic": ["DBH"],
 				"Adrenergic": ["PNMT"],
 				"Oligodendrocytes": ["PDGFRA", "PLP1", "SOX10", "MOG", "MBP"],
-				"Schwann": ["MPZ"]
+				"Schwann": ["MPZ"],
+				"Sex": ["XIST", "TSIX", "SRY"]
 			}
 		elif self.name == "Mus musculus":
 			genes = {
