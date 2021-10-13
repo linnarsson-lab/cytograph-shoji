@@ -62,7 +62,7 @@ class PlotQC(Module):
 		plt.colorbar(fraction=0.02, pad=0.04)
 
 		# Unspliced
-		plt.subplot(3,2,5)
+		plt.subplot(3, 2, 5)
 		uf = self.UnsplicedFraction[:]
 		plt.scatter(xy[:, 0], xy[:, 1], c=uf * 100, s=marker_size, lw=0, cmap="pink")
 		plt.colorbar(fraction=0.02, pad=0.04)

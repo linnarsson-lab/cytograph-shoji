@@ -9,7 +9,7 @@ from .._version import __version__ as version
 from .config import Config
 from .engine import CondorDAGEngine, Engine, LocalEngine, CondorEngine
 from .punchcards import PunchcardDeck
-from .workflow import Workflow, run_recipe
+from .workflow import Workflow, run_qc
 
 
 @click.group()
@@ -131,7 +131,7 @@ def qc(sampleids: List[str], force: bool) -> None:
 				if force or "PassedQC" not in ws[sampleid]:
 					logging.info(f"Processing '{sampleid}'")
 					recipe = config.recipes["qc"]
-					run_recipe(ws[sampleid], recipe)
+					run_qc(ws[sampleid], recipe)
 				else:
 					logging.info(f"Skipping '{sampleid}' because QC already done (use --force to override)")
 			elif sampleid in deck.punchcards:
@@ -141,7 +141,7 @@ def qc(sampleids: List[str], force: bool) -> None:
 						if force or "PassedQC" not in ws[sample]:
 							logging.info(f"Processing '{sample}'")
 							recipe = config.recipes["qc"]
-							run_recipe(ws[sample], recipe)
+							run_qc(ws[sample], recipe)
 						else:
 							logging.info(f"Skipping '{sample}' because QC already done (use --force to override)")
 					else:

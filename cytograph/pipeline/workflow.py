@@ -28,14 +28,19 @@ def nice_deltastring(delta):
 		return f"{delta.microseconds // 1000} ms"
 
 
-def run_recipe(ws: shoji.WorkspaceManager, recipe: Dict) -> None:
+def run_qc(ws: shoji.WorkspaceManager, recipe: Dict) -> None:
 	start_all = datetime.now()
+	config = Config.load()
+	export_dir = config.path / "exported" / "qc"
+	export_dir.mkdir(exist_ok=True)
+	
 	for step in recipe:
 		for fname, args in step.items():  # This is almost always only a single function and args, but could in principle be several as long as they have distinct names
 			logging.info(f"{fname}: {args}")
 			start = datetime.now()
 			# logging.info(f"(not running)")
 			instance = getattr(cg, fname)(**args)
+			instance.export_dir = export_dir
 			instance.fit(ws, save=True)
 			end = datetime.now()
 			logging.info(f"{fname}: Done in {nice_deltastring(end - start)}.")

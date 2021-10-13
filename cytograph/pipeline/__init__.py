@@ -1,6 +1,6 @@
 from .config import Config
 from .punchcards import Punchcard, PunchcardDeck
-from .workflow import Workflow, run_recipe
+from .workflow import Workflow, run_qc
 from .utils import Tempname
 from .initialize_workspace import InitializeWorkspace
 from .collect_cells import CollectCells
