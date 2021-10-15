@@ -152,6 +152,21 @@ def qc(sampleids: List[str], force: bool) -> None:
 
 
 @cli.command()
+@click.argument('workspace')
+@click.argument('loomfiles', nargs=-1)
+def import_(workspace: str, loomfiles: List[str]) -> None:
+	try:
+		db = shoji.connect()
+		ws = db[workspace]
+		for lf in loomfiles:
+			logging.info(f"Importing '{lf}'")
+			ws._from_loom(lf)
+	except Exception as e:
+		logging.error(f"'qc' command failed: {e}")
+		sys.exit(1)
+
+
+@cli.command()
 def leaves() -> None:
 	try:
 		config = Config.load()
