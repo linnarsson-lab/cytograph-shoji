@@ -75,15 +75,18 @@ class DoubletFinder(Module):
 
 		data_wdoublets = np.concatenate((expression.T, doublets), axis=1)  # Transpose the expression matrix to be (genes, cells)
 		logging.info(" DoubletFinder: Feature selection and dimensionality reduction")
-		genes = FeatureSelectionByVariance(2000).fit(ws)
+		genes = FeatureSelectionByVariance(500).fit(ws)
 		logging.info(" DoubletFinder: Computing size factors")
 		f = np.divide(data_wdoublets.sum(axis=0), 10e4)
 		logging.info(" DoubletFinder: Normalizing by size factors")
 		norm_data = np.divide(data_wdoublets, f)
 		logging.info(" DoubletFinder: Log transforming")
 		norm_data = np.log(norm_data + 1)
-		logging.info(" DoubletFinder: PCA to 50 components")
-		pca = PCA(n_components=50).fit_transform(norm_data[genes, :].T)
+		logging.info(" DoubletFinder: Extracting subset of selected genes")
+		subset = norm_data[genes, :].T
+		logging.info(f" DoubletFinder: PCA to 50 components with data of shape {subset.shape}")
+		pca = PCA(n_components=50).fit_transform(subset)
+		logging.info(" DoubletFinder: PCA to 50 components done")
 		
 		if self.k is None:
 			k = int(np.min([100, n_real_cells * 0.01]))
