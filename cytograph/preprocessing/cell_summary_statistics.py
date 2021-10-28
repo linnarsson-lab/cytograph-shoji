@@ -44,6 +44,8 @@ class CellSummaryStatistics(Module):
 		u = self.Unspliced[:].astype("uint16")
 
 		mito_genes = self.Chromosome[:] == "MT"
+		if mito_genes.sum() == 0:
+			mito_genes = self.Chromosome[:] == "chrM"
 
 		logging.info(f" CellSummaryStatistics: Computing summary statistics for {ws.cells.length} cells")
 		nnz = np.count_nonzero(x, axis=1)
