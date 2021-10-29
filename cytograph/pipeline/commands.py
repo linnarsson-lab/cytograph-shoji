@@ -17,7 +17,10 @@ from .workflow import Workflow, run_qc
 @click.option('--verbosity', default="info", type=click.Choice(['error', 'warning', 'info', 'debug']))
 def cli(show_message: bool = True, verbosity: str = "info") -> None:
 	level = {"error": 40, "warning": 30, "info": 20, "debug": 10}[verbosity]
-	logging.basicConfig(stream=sys.stdout, format='%(asctime)s - %(levelname)s - %(message)s', level=level, force=True)
+	if sys.version_info >= (3, 8):
+		logging.basicConfig(stream=sys.stdout, format='%(asctime)s - %(levelname)s - %(message)s', level=level, force=True)
+	else:
+		logging.basicConfig(stream=sys.stdout, format='%(asctime)s - %(levelname)s - %(message)s', level=level)
 	logging.captureWarnings(True)
 
 	if show_message:
