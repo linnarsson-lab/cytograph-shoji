@@ -12,3 +12,4 @@ from .plot_subregion import PlotSubregion
 from .plot_cell_cycle import PlotCellCycle
 from .plot_markers import PlotMarkers
 from .plot_karyotype import PlotKaryotype
+from .plot_droplet_classes import PlotDropletClasses
