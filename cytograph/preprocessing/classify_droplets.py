@@ -86,13 +86,17 @@ class ClassifyDroplets(Module):
 		classes[~passed & (X_all[:, 0] < cellular_min_unspliced)] = 3
 		
 		total_UMIs = 10 ** t
-		mt_fraction = self.Expression[:, self.Chromosome == "MT"].sum(axis=1) / total_UMIs
-		if mt_fraction.sum() == 0:
+		chrs = np.unique(self.Chromosome[:])
+		if "MT" in chrs:
+			mt_fraction = self.Expression[:, self.Chromosome == "MT"].sum(axis=1) / total_UMIs
+		elif "chrM" in chrs:
 			mt_fraction = self.Expression[:, self.Chromosome == "chrM"].sum(axis=1) / total_UMIs
-		if mt_fraction.sum() == 0:
+		elif "M" in chrs:
 			mt_fraction = self.Expression[:, self.Chromosome == "M"].sum(axis=1) / total_UMIs
+		else:
+			mt_fraction = np.zeros(ws.genes.length)
 		classes[mt_fraction > self.max_mito_fraction] = 6
 		classes[selected & ~passed & (total_UMIs > np.median(total_UMIs))] = 1
 		classes[self.DoubletScore[:] > self.max_doublet_score] = 2
-		logging.info(f" ClassifyDroplets: {int((classes == 0).sum() / classes.shape[0])}% cells passed")
+		logging.info(f" ClassifyDroplets: {int((classes == 0).sum() / ws.cells.length)}% cells passed")
 		return classes, classes == 0
