@@ -94,7 +94,8 @@ class ClassifyDroplets(Module):
 		elif "M" in chrs:
 			mt_fraction = self.Expression[:, self.Chromosome == "M"].sum(axis=1) / total_UMIs
 		else:
-			mt_fraction = np.zeros(ws.genes.length)
+			logging.error(f" ClassifyDroplets: No mitochondrial chromosome among {chrs}")
+			raise ValueError("No mitochondrial chromosome")
 		classes[mt_fraction > self.max_mito_fraction] = 6
 		classes[selected & ~passed & (total_UMIs > np.median(total_UMIs))] = 1
 		classes[self.DoubletScore[:] > self.max_doublet_score] = 2
