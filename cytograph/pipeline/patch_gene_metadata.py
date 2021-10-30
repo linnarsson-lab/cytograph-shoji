@@ -10,7 +10,7 @@ import pandas as pd
 
 
 class PatchGeneMetadata(Module):
-	def __init__(self, table: str, **kwargs, patch_accession_from: str = None) -> None:
+	def __init__(self, table: str, patch_accession_from: str = None, **kwargs) -> None:
 		"""
 		Args:
 			table 			Full path to the metadata database file (a sqlite .db file)
