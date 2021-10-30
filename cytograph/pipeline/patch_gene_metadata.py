@@ -50,5 +50,5 @@ class PatchGeneMetadata(Module):
 		ws["IsTF"] = shoji.Tensor("bool", ("genes",), inits=joined["IsTF"].fillna(False).values.astype(bool))
 		ws["DnaBindingDomain"] = shoji.Tensor("string", ("genes",), inits=joined["DnaBindingDomain"].fillna("").values)
 		ws["Chromosome"] = shoji.Tensor("string", ("genes",), inits=joined["Chromosome"].fillna("").values)
-		ws["ChromosomeStart"] = shoji.Tensor("uint32", ("genes",), inits=joined["ChromosomeStart"].fillna(0).values)
-		ws["ChromosomeEnd"] = shoji.Tensor("uint32", ("genes",), inits=joined["ChromosomeEnd"].fillna(0).values)
+		ws["ChromosomeStart"] = shoji.Tensor("uint32", ("genes",), inits=joined["ChromosomeStart"].fillna(0).values.astype("uint32"))
+		ws["ChromosomeEnd"] = shoji.Tensor("uint32", ("genes",), inits=joined["ChromosomeEnd"].fillna(0).values.astype("uint32"))
