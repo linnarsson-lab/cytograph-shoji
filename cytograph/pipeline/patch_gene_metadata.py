@@ -10,7 +10,7 @@ import pandas as pd
 
 
 class PatchGeneMetadata(Module):
-	def __init__(self, table: str, **kwargs) -> None:
+	def __init__(self, table: str, **kwargs, patch_accession_from: str = None) -> None:
 		"""
 		Args:
 			table 			Full path to the metadata database file (a sqlite .db file)
@@ -18,6 +18,7 @@ class PatchGeneMetadata(Module):
 		super().__init__(**kwargs)
 
 		self.table = table
+		self.patch_accession_from = patch_accession_from
 		if not os.path.exists(table):
 			logging.error(f"Gene metadata file '{table}' not found")
 			sys.exit(1)
@@ -25,6 +26,11 @@ class PatchGeneMetadata(Module):
 	@requires("Accession", "string", ("genes",))
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> None:
 		metadata = pd.read_csv(self.table, delimiter="\t", keep_default_na=False)
+
+		if self.patch_accession_from is not None:
+			logging.info(f" PatchGeneMetadata: Patching accessions from {self.patch_accession_from}")
+			db = shoji.connect()
+			ws.Accession = shoji.Tensor("string", ("genes",), inits=db.samples_ih[self.patch_accession_from].Accession[:])
 
 		logging.info(f" PatchGeneMetadata: Loading gene metadata")
 		accessions = pd.DataFrame({"Accession": ws.Accession[:]})
