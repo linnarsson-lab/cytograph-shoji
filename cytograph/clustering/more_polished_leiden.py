@@ -1,5 +1,5 @@
 import logging
-
+from typing import Tuple
 import leidenalg as la
 import igraph
 import numpy as np
@@ -8,9 +8,10 @@ import shoji
 from sklearn.neighbors import NearestNeighbors
 from sklearn.cluster import DBSCAN
 from sklearn.decomposition import PCA
-from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.svm import LinearSVC
 from sklearn.calibration import CalibratedClassifierCV
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import make_pipeline
 
 
 class MorePolishedLeiden(Module):
@@ -144,7 +145,7 @@ class MorePolishedLeiden(Module):
 	@creates("ClustersSecondary", "uint32", ("cells",))
 	@creates("ClusterProbability", "float32", ("cells",))
 	@creates("ClusterSecondaryProbability", "float32", ("cells",))
-	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> np.ndarray:
+	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
 		"""
 		Given a sparse adjacency matrix, perform Leiden clustering
 
@@ -191,7 +192,7 @@ class MorePolishedLeiden(Module):
 		too_small = np.isin(labels, np.where(np.bincount(labels) < self.min_size)[0])
 
 		factors = self.Factors[:]
-		classifier = CalibratedClassifierCV(LinearSVC(max_iter=10_000, loss="hinge"))
+		classifier = make_pipeline(StandardScaler(), CalibratedClassifierCV(LinearSVC(class_weight='balanced')))
 		classifier.fit(factors[~too_small, :], labels[~too_small])
 		probs = classifier.predict_proba(factors)
 		# predicted = probs.argmax(axis=1)
@@ -203,6 +204,6 @@ class MorePolishedLeiden(Module):
 		secondary = ordered[:, -2]
 		max_proba = probs[np.arange(len(predicted)), predicted]
 		secondary_proba = probs[np.arange(len(secondary)), secondary]
-
+		assert len(np.unique(predicted)) == predicted.max() + 1, "Missing cluster labels due to reclassification"
 		return predicted, secondary, max_proba, secondary_proba
 

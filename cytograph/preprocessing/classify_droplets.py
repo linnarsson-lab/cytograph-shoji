@@ -59,7 +59,8 @@ class ClassifyDroplets(Module):
 	@requires("Chromosome", "string", ("genes",))
 	@creates("DropletClass", "uint8", ("cells",))
 	@creates("ValidCells", "bool", ("cells",))
-	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> Tuple[np.ndarray, np.ndarray]:
+	@creates("PassedQC", "bool", ())
+	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
 		logging.info(" ClassifyDroplets: Fitting Gaussian MLE")
 
 		classes = np.zeros(ws.cells.length, dtype="uint8")
@@ -100,4 +101,4 @@ class ClassifyDroplets(Module):
 		classes[selected & ~passed & (total_UMIs > np.median(total_UMIs))] = 1
 		classes[self.DoubletScore[:] > self.max_doublet_score] = 2
 		logging.info(f" ClassifyDroplets: {int((classes == 0).sum() / ws.cells.length * 100)}% cells passed")
-		return classes, classes == 0
+		return classes, classes == 0, np.array(True, dtype=bool)
