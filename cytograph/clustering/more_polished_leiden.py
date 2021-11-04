@@ -8,9 +8,10 @@ import shoji
 from sklearn.neighbors import NearestNeighbors
 from sklearn.cluster import DBSCAN
 from sklearn.decomposition import PCA
-from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import make_pipeline
+from sklearn.calibration import CalibratedClassifierCV
+from sklearn.linear_model import SGDClassifier
 
 
 class MorePolishedLeiden(Module):
@@ -142,8 +143,8 @@ class MorePolishedLeiden(Module):
 	@requires("ManifoldWeights", "float32", (None))
 	@creates("Clusters", "uint32", ("cells",))
 	@creates("ClustersSecondary", "uint32", ("cells",))
-	@creates("ClusterProbability", "float32", ("cells",))
-	@creates("ClusterSecondaryProbability", "float32", ("cells",))
+	@creates("ClustersProbability", "float32", ("cells",))
+	@creates("ClustersSecondaryProbability", "float32", ("cells",))
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
 		"""
 		Given a sparse adjacency matrix, perform Leiden clustering
@@ -154,6 +155,7 @@ class MorePolishedLeiden(Module):
 		Returns:
 			labels:	The cluster labels
 		"""
+		n_cells = ws.cells.length
 		logging.info(" MorePolishedLeiden: Loading graph data")
 		rc = self.ManifoldIndices[:]
 		logging.info(" MorePolishedLeiden: Constructing the graph")
@@ -190,25 +192,36 @@ class MorePolishedLeiden(Module):
 		logging.info(f" MorePolishedLeiden: Removing clusters with less than {self.min_size} cells")
 		too_small = np.isin(labels, np.where(np.bincount(labels) < self.min_size)[0])
 		n_large_clusters = np.unique(labels[~too_small]).shape[0]
-		logging.info(f" MorePolishedLeiden: {too_small.sum()} ({int(too_small.sum() / too_small.shape[0] * 100)}%) cells lost their cluster labels")
+		logging.info(f" MorePolishedLeiden: {too_small.sum()} cells lost their cluster labels ({int(too_small.sum() / n_cells * 100)}%)")
 
 		logging.info(f" MorePolishedLeiden: Reclassifying all cells to the remaining {n_large_clusters} clusters")
 		factors = self.Factors[:]
-		classifier = make_pipeline(StandardScaler(), RandomForestClassifier(oob_score=True, class_weight='balanced', n_jobs=-1))
+		sgdc = SGDClassifier(loss="hinge", penalty="l2", class_weight='balanced', tol=0.01, n_jobs=-1)
+		classifier = make_pipeline(StandardScaler(), CalibratedClassifierCV(sgdc))
 		classifier.fit(factors[~too_small, :], labels[~too_small])
-		probs = classifier.predict_proba(factors)
-		oob_score = classifier.named_steps["randomforestclassifier"].oob_score_
-		logging.info(f" MorePolishedLeiden: Out-of-band score {oob_score:.2f}")
 		
 		# We would really like to renumber the clusters, but the 'secondary' calculation below makes it difficult
 		# predicted = probs.argmax(axis=1)
 		# labels = LabelEncoder().fit_transform(predicted)  # Renumber just in case some cluster gets zero cells
 		# max_proba = probs[np.arange(len(labels)), labels]
 
-		ordered = probs.argsort(axis=1)
-		predicted = ordered[:, -1]
-		secondary = ordered[:, -2]
-		max_proba = probs[np.arange(len(predicted)), predicted]
-		secondary_proba = probs[np.arange(len(secondary)), secondary]
+		# Avoid materializing a whole probability matrix (n_cells, n_clusters), which might be too large
+		ix = 0
+		BATCH_SIZE = 10_000
+		predicted = np.zeros(n_cells, dtype="uint32")
+		secondary = np.zeros(n_cells, dtype="uint32")
+		predicted_proba = np.zeros(n_cells, dtype="float32")
+		secondary_proba = np.zeros(n_cells, dtype="float32")
+		while ix < n_cells:
+			probs = classifier.predict_proba(factors[ix: ix + BATCH_SIZE])
+			ordered = probs.argsort(axis=1)
+			predicted[ix: ix + BATCH_SIZE] = classifier.classes_[ordered[:, -1]]
+			secondary[ix: ix + BATCH_SIZE] = classifier.classes_[ordered[:, -2]]
+			predicted_proba[ix: ix + BATCH_SIZE] = probs[np.arange(len(predicted)), ordered[:, -1]]
+			secondary_proba[ix: ix + BATCH_SIZE] = probs[np.arange(len(secondary)), ordered[:, -2]]
+			ix += BATCH_SIZE
 		assert len(np.unique(predicted)) == predicted.max() + 1, "Missing cluster labels due to reclassification"
-		return predicted, secondary, max_proba, secondary_proba
+
+		accuracy = (predicted[~too_small] == labels[~too_small]).sum() / (~too_small).sum()
+		logging.info(f" MorePolishedLeiden: {int(accuracy * 100)}% classification accuracy on non-orphan cells")
+		return predicted, secondary, predicted_proba, secondary_proba
