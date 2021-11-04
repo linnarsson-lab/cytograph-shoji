@@ -101,4 +101,4 @@ class ClassifyDroplets(Module):
 		classes[selected & ~passed & (total_UMIs > np.median(total_UMIs))] = 1
 		classes[self.DoubletScore[:] > self.max_doublet_score] = 2
 		logging.info(f" ClassifyDroplets: {int((classes == 0).sum() / ws.cells.length * 100)}% cells passed")
-		return classes, (classes == 0 | classes == 1), np.array(True, dtype=bool)
+		return classes, classes == 0, np.array(True, dtype=bool)
