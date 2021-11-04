@@ -8,8 +8,7 @@ import shoji
 from sklearn.neighbors import NearestNeighbors
 from sklearn.cluster import DBSCAN
 from sklearn.decomposition import PCA
-from sklearn.svm import LinearSVC
-from sklearn.calibration import CalibratedClassifierCV
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import make_pipeline
 
@@ -188,13 +187,20 @@ class MorePolishedLeiden(Module):
 		logging.info(f" MorePolishedLeiden: Found {labels.max() + 1} clusters after breaking clusters on the embedding")
 
 		# Assign each orphan cell to the same cluster as the nearest non-orphan
-		logging.info(f" MorePolishedLeiden: Reclassifying cells from clusters with less than {self.min_size} cells")
+		logging.info(f" MorePolishedLeiden: Removing clusters with less than {self.min_size} cells")
 		too_small = np.isin(labels, np.where(np.bincount(labels) < self.min_size)[0])
+		n_large_clusters = np.unique(labels[~too_small]).shape[0]
+		logging.info(f" MorePolishedLeiden: {too_small.sum()} ({int(too_small.sum() / too_small.shape[0] * 100)}%) cells lost their cluster labels")
 
+		logging.info(f" MorePolishedLeiden: Reclassifying all cells to the remaining {n_large_clusters} clusters")
 		factors = self.Factors[:]
-		classifier = make_pipeline(StandardScaler(), CalibratedClassifierCV(LinearSVC(class_weight='balanced')))
+		classifier = make_pipeline(StandardScaler(), RandomForestClassifier(oob_score=True, class_weight='balanced', n_jobs=-1))
 		classifier.fit(factors[~too_small, :], labels[~too_small])
 		probs = classifier.predict_proba(factors)
+		oob_score = classifier.named_steps["randomforestclassifier"].oob_score_
+		logging.info(f" MorePolishedLeiden: Out-of-band score {oob_score:.2f}")
+		
+		# We would really like to renumber the clusters, but the 'secondary' calculation below makes it difficult
 		# predicted = probs.argmax(axis=1)
 		# labels = LabelEncoder().fit_transform(predicted)  # Renumber just in case some cluster gets zero cells
 		# max_proba = probs[np.arange(len(labels)), labels]
@@ -206,4 +212,3 @@ class MorePolishedLeiden(Module):
 		secondary_proba = probs[np.arange(len(secondary)), secondary]
 		assert len(np.unique(predicted)) == predicted.max() + 1, "Missing cluster labels due to reclassification"
 		return predicted, secondary, max_proba, secondary_proba
-
