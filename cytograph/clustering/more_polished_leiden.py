@@ -8,7 +8,7 @@ import shoji
 from sklearn.neighbors import NearestNeighbors
 from sklearn.cluster import DBSCAN
 from sklearn.decomposition import PCA
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.pipeline import make_pipeline
 from sklearn.calibration import CalibratedClassifierCV
 from sklearn.linear_model import SGDClassifier
@@ -191,19 +191,16 @@ class MorePolishedLeiden(Module):
 		# Assign each orphan cell to the same cluster as the nearest non-orphan
 		logging.info(f" MorePolishedLeiden: Removing clusters with less than {self.min_size} cells")
 		too_small = np.isin(labels, np.where(np.bincount(labels) < self.min_size)[0])
-		n_large_clusters = np.unique(labels[~too_small]).shape[0]
+		# Relabel, in case some labels are missing
+		labels_not_too_small = LabelEncoder().fit_transform(labels[~too_small])
+		n_large_clusters = np.unique(labels_not_too_small).shape[0]
 		logging.info(f" MorePolishedLeiden: {too_small.sum()} cells lost their cluster labels ({int(too_small.sum() / n_cells * 100)}%)")
 
 		logging.info(f" MorePolishedLeiden: Reclassifying all cells to the remaining {n_large_clusters} clusters")
 		factors = self.Factors[:]
 		sgdc = SGDClassifier(loss="hinge", penalty="l2", class_weight='balanced', tol=0.01, n_jobs=-1)
 		classifier = make_pipeline(StandardScaler(), CalibratedClassifierCV(sgdc))
-		classifier.fit(factors[~too_small, :], labels[~too_small])
-		
-		# We would really like to renumber the clusters, but the 'secondary' calculation below makes it difficult
-		# predicted = probs.argmax(axis=1)
-		# labels = LabelEncoder().fit_transform(predicted)  # Renumber just in case some cluster gets zero cells
-		# max_proba = probs[np.arange(len(labels)), labels]
+		classifier.fit(factors[~too_small, :], labels_not_too_small)
 
 		# Avoid materializing a whole probability matrix (n_cells, n_clusters), which might be too large
 		ix = 0
@@ -220,8 +217,10 @@ class MorePolishedLeiden(Module):
 			predicted_proba[ix: ix + BATCH_SIZE] = probs[np.arange(len(ordered)), ordered[:, -1]]
 			secondary_proba[ix: ix + BATCH_SIZE] = probs[np.arange(len(ordered)), ordered[:, -2]]
 			ix += BATCH_SIZE
-		assert len(np.unique(predicted)) == predicted.max() + 1, "Missing cluster labels due to reclassification"
+		
+		labels[too_small] = predicted[too_small]  # New labels for the too_small clusters
+		assert len(np.unique(labels)) == labels.max() + 1, "Missing cluster labels due to reclassification"
 
 		accuracy = (predicted[~too_small] == labels[~too_small]).sum() / (~too_small).sum()
 		logging.info(f" MorePolishedLeiden: {int(accuracy * 100)}% classification accuracy on non-orphan cells")
-		return predicted, secondary, predicted_proba, secondary_proba
+		return labels, secondary, predicted_proba, secondary_proba
