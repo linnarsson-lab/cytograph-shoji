@@ -217,8 +217,8 @@ class MorePolishedLeiden(Module):
 			ordered = probs.argsort(axis=1)
 			predicted[ix: ix + BATCH_SIZE] = classifier.classes_[ordered[:, -1]]
 			secondary[ix: ix + BATCH_SIZE] = classifier.classes_[ordered[:, -2]]
-			predicted_proba[ix: ix + BATCH_SIZE] = probs[np.arange(len(predicted)), ordered[:, -1]]
-			secondary_proba[ix: ix + BATCH_SIZE] = probs[np.arange(len(secondary)), ordered[:, -2]]
+			predicted_proba[ix: ix + BATCH_SIZE] = probs[np.arange(len(ordered)), ordered[:, -1]]
+			secondary_proba[ix: ix + BATCH_SIZE] = probs[np.arange(len(ordered)), ordered[:, -2]]
 			ix += BATCH_SIZE
 		assert len(np.unique(predicted)) == predicted.max() + 1, "Missing cluster labels due to reclassification"
 
