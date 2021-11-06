@@ -219,6 +219,7 @@ class MorePolishedLeiden(Module):
 			ix += BATCH_SIZE
 		
 		labels[too_small] = predicted[too_small]  # New labels for the too_small clusters
+		labels[~too_small] = labels_not_too_small  # Keep the labels for the not too small clusters, to avoid holes in the label sequence
 		assert len(np.unique(labels)) == labels.max() + 1, "Missing cluster labels due to reclassification"
 
 		accuracy = (predicted[~too_small] == labels[~too_small]).sum() / (~too_small).sum()
