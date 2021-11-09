@@ -1,7 +1,7 @@
 import logging
 import os
 import re
-from typing import List
+from typing import List, Tuple
 
 from numpy.core.fromnumeric import size
 from cytograph import creates, requires, Module
@@ -76,7 +76,7 @@ class AutoAnnotate(Module):
 	@creates("AnnotationDefinition", "string", ("annotations",))
 	@creates("AnnotationDescription", "string", ("annotations",))
 	@creates("AnnotationPosterior", "float32", ("clusters", "annotations"))
-	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> np.ndarray:
+	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
 		"""
 		Compute auto-annotation for the workspace using the given definitions
 			
