@@ -36,9 +36,11 @@ class IncrementalResidualsPCA(Module):
 		overall_totals = self.OverallTotalUMIs[:]
 
 		batch_size = 100_000
+		while n_cells % batch_size < self.n_factors:  # This is necessary to avoid a small final batch with too few samples
+			batch_size -= self.n_factors
 		logging.info(f" ResidualsPCA: Fitting PCA on Pearson residuals incrementally in batches of {batch_size:,} cells")
 		pca = IncrementalPCA(n_components=self.n_factors)
-		for ix in range(0, ws.cells.length, batch_size):
+		for ix in range(0, n_cells, batch_size):
 			data = ws[self.requires["Expression"]][ix:ix + batch_size, ws.SelectedFeatures == True]  # self.requires["Expression"] ensures that the user can rename the input tensor if desired
 			expected = totals[ix:ix + batch_size, None] @ (gene_totals[None, :] / overall_totals)
 			residuals = (data - expected) / np.sqrt(expected + np.power(expected, 2) / 100)
