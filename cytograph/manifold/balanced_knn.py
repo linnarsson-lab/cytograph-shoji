@@ -4,6 +4,7 @@ import sys
 import numpy as np
 from numba import jit
 from pynndescent import NNDescent
+
 from scipy import sparse
 from sklearn.neighbors import NearestNeighbors
 
@@ -204,8 +205,8 @@ class BalancedKNN:
 			self.dist = np.ones_like(self.dsi, dtype='float64')
 			self.dist[:, 0] = 0
 		if not np.all(np.isfinite(self.dist)):
-			logging.error(f"BalancedKNN.kneighbors() some distances were not finite; retrying with new random seed")
-			bnn = BalancedKNN(self.k, self.sight_k, self.maxl, self.mode, self.metric, self.minkowski_p, self.random_seed + 1)
+			logging.error(f"BalancedKNN.kneighbors() some distances were not finite; retrying with new random seed {self.random_seed + 1}")
+			bnn = BalancedKNN(self.k, self.sight_k, self.maxl, self.mode, self.metric, self.minkowski_p, n_jobs=self.n_jobs, random_seed=self.random_seed + 1)
 			bnn.fit(self.data, self.sight_k)
 			return bnn.kneighbors(self.data, maxl, mode)
 		logging.debug(f"Using the initialization network to find a {self.k}-NN graph with maximum connectivity of {self.maxl}")
