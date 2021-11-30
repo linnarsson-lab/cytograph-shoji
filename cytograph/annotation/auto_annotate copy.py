@@ -4,6 +4,8 @@ import re
 from typing import List, Tuple
 
 from cytograph import creates, requires, Module
+import numpy_groupies as npg
+from scipy.special import gammaincc
 
 import numpy as np
 import yaml
@@ -51,16 +53,23 @@ class Annotation:
 
 
 class AutoAnnotate(Module):
-	def __init__(self, path: str, **kwargs) -> None:
+	def __init__(self, path: str, threshold: float = 1, **kwargs) -> None:
 		"""
 		Args:
-			path: 	Path to the auto-annotation database
+			path: 		Path to the auto-annotation database
+			threshold: 	Expression threshold required (default: 1)
 		"""
 		super().__init__(**kwargs)
 		self.root = path
+		self.threshold = threshold
 
 	@requires("Gene", "string", ("genes",))
-	@requires("Trinaries", "float32", ("clusters", "genes"))
+	@requires("TotalUMIs", "uint32", ("cells",))
+	@requires("GeneTotalUMIs", "uint32", ("genes",))
+	@requires("OverallTotalUMIs", "uint64", ())
+	@requires("Clusters", "uint32", ("cells",))
+	@requires("NCells", "uint64", ("clusters",))
+	@requires("MeanExpression", None, ("clusters", "genes"))
 	@creates("AnnotationName", "string", ("annotations",))
 	@creates("AnnotationDefinition", "string", ("annotations",))
 	@creates("AnnotationDescription", "string", ("annotations",))
@@ -68,11 +77,31 @@ class AutoAnnotate(Module):
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
 		"""
 		Compute auto-annotation for the workspace using the given definitions
+			
+		Remarks
+			Gamma-Poisson estimate of expression level
+			Assume that counts are Poisson distributed
+			Use a non-informative prior Gamma(0, 0)
+			Given n observations with total sum x, the posterior distribution is Gamma(x, n)
+			Instead of counting n = 1 for each cell, the count is adjusted relative to the cell size (total UMI count). 
+			The cumulative density function is used to find the posterior probability that expression exceeds a desired threshold λ:
+				p = 1 - (gammaincc(x, 0) - gammaincc(x, λ * n))
 		"""
 		genes = self.Gene[:]
 		n_clusters = ws.clusters.length
+		n_cells_per_cluster = self.NCells[:]
+		totals = self.TotalUMIs[:]
+		labels = self.Clusters[:]
 
-		pp = self.Trinaries[:]
+		# Calculate the posterior probabilities that expression exceeds the threshold
+		# Total molecules detected in each cluster
+		x = (self.MeanExpression[:].T * n_cells_per_cluster).T + 1  # Add one pseudocount to avoid nan
+		# Relative size of each cell
+		size_factors = totals / np.median(totals)
+		# Total adjusted size of each cluster (number of median-sized cells)
+		n = npg.aggregate(labels, size_factors, func="sum")
+		# Posterior probability that a gene is expressed above the threshold with high confidence
+		pp = 1 - (gammaincc(x, 0) - gammaincc(x, self.threshold * n[:, None]))
 		definitions: List[Annotation] = []
 	
 		fileext = [".yaml", ".md"]

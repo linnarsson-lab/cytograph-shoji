@@ -4,8 +4,12 @@ import numpy as np
 from cytograph import Module
 
 
+def indices_to_order_a_like_b(a, b):
+	return a.argsort()[b.argsort().argsort()]
+
+
 class Aggregate(Module):
-	def __init__(self, tensor: str, using: str, into: str, by: str = "Clusters", newdim: str = "clusters", **kwargs) -> None:
+	def __init__(self, tensor: str, using: str, into: str, by: str = "Clusters", orderby: str = "ClusterID", newdim: str = "clusters", **kwargs) -> None:
 		"""
 		Aggregate tensors by cluster ID (as given by the Clusters tensor)
 
@@ -26,6 +30,7 @@ class Aggregate(Module):
 		self.tensor = tensor
 		self.using = using
 		self.by = by
+		self.orderby = orderby
 		self.into = into
 		self.newdim = newdim
 
@@ -52,7 +57,12 @@ class Aggregate(Module):
 		else:
 			raise ValueError(f"Invalid aggregation function '{self.using}'")
 
-		result = result[1][np.argsort(result[0])]
+		# If the orderby tensor is not in the workspace, create it from the keys
+		if self.orderby not in ws:
+			ws[self.orderby] = shoji.Tensor(dtype="uint32", dims=(self.newdim,), inits=result[0].astype("uint32"))
+		# The groups are not in the same order as in the database, so we need to reorder the result
+		ordering = indices_to_order_a_like_b(result[0], ws[self.orderby][:])
+		result = result[1][ordering]
 		if save:
 			# Create the dimension if needed
 			if self.newdim not in ws:

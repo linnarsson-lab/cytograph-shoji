@@ -12,8 +12,8 @@ setup(
 		'numpy',
 		'scikit-learn',
 		'scipy',
-		'networkx',
-		'python-louvain',  # is imported as "community"
+		# 'networkx',
+		# 'python-louvain',  # is imported as "community"
 		'hdbscan',
 		'pyyaml',
 		'statsmodels',  # for multiple testing
@@ -29,7 +29,9 @@ setup(
 		'leidenalg',
 		'unidip',
 		'opentsne',
-		'fastcluster'
+		'fastcluster',
+		'pandas',
+		'openpyxl'
 	],
 	include_package_data=True,
 	entry_points='''

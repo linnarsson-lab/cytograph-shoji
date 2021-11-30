@@ -3,3 +3,4 @@ from .feature_selection_by_variance import FeatureSelectionByVariance
 from .feature_selection_by_pearson_residuals import FeatureSelectionByPearsonResiduals
 from .gsea import GSEA
 from .enrichment import Enrichment
+from .trinarize import Trinarize
