@@ -97,23 +97,26 @@ class AutoAnnotate(Module):
 						logging.error(file + ": " + str(e))
 						errors = True
 
+		def annotation_posterior(positives, negatives):
+			posteriors = np.ones(n_clusters)
+			for gene in positives:
+				posteriors *= pp[:, genes == gene].flatten()
+			for gene in negatives:
+				posteriors *= (1 - pp[:, genes == gene].flatten())
+			return posteriors
+
 		posteriors = np.empty((len(definitions), n_clusters))
 		for ix, tag in enumerate(definitions):
-			for cluster in range(n_clusters):
-				p = 1
-				for pos in tag.positives:
-					p = p * pp[cluster, np.where(pos == genes)[0][0]]
-				for neg in tag.negatives:
-					p = p * (1 - pp[cluster, np.where(pos == genes)[0][0]])
-				posteriors[ix, cluster] = p
+			posteriors[ix, :] = annotation_posterior(tag.positives, tag.negatives)
 
 		# Recreate the annotations dimension
-		if "annotations" in ws._dimensions():
-			del ws.AnnotationName
-			del ws.AnnotationDefinition
-			del ws.AnnotationDescription
-			del ws.AnnotationPosterior
-		ws.annotations = shoji.Dimension(shape=len(definitions))
+		if save:
+			if "annotations" in ws._dimensions():
+				del ws.AnnotationName
+				del ws.AnnotationDefinition
+				del ws.AnnotationDescription
+				del ws.AnnotationPosterior
+			ws.annotations = shoji.Dimension(shape=len(definitions))
 
 		names = np.array([ann.abbreviation for ann in definitions], dtype="object")
 		defs = np.array([ann.definition for ann in definitions], dtype="object")

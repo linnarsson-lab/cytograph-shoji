@@ -52,7 +52,7 @@ class CutDendrogram(Module):
 		if self.n_trees > 1 and n_clusters > self.split_when_over:
 			logging.info(f" CutDendrogram: Creating {self.n_trees} subtrees")
 			for ix in range(self.n_trees):
-				new_name = punchcard.name + str([ix])
+				new_name = punchcard.name + str(ix)
 				logging.info(f" CutDendrogram: Creating punchcard '{new_name}'")
 				recipe = self.split_with_settings.get("recipe", punchcard.recipe)
 				n_cpus = self.split_with_settings.get("n_cpus", punchcard.resources.n_cpus)
