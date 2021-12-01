@@ -107,6 +107,7 @@ class AutoAnnotate(Module):
 
 		posteriors = np.empty((len(definitions), n_clusters))
 		for ix, tag in enumerate(definitions):
+			logging.info(tag.name)
 			posteriors[ix, :] = annotation_posterior(tag.positives, tag.negatives)
 
 		# Recreate the annotations dimension
