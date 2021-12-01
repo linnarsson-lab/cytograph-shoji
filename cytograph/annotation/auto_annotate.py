@@ -74,40 +74,34 @@ class AutoAnnotate(Module):
 
 		pp = self.Trinaries[:]
 		definitions: List[Annotation] = []
-	
+
 		fileext = [".yaml", ".md"]
 		root_len = len(self.root)
 		for cur, _, files in os.walk(self.root):
 			for file in files:
-				errors = False
 				if os.path.splitext(file)[-1] in fileext and file[-9:] != "README.md":
-					try:
-						tag = Annotation(cur[root_len:], os.path.join(cur, file))
-						for pos in tag.positives:
-							if pos not in genes:
-								logging.error(file + ": gene '%s' not found in workspace", pos)
-								errors = True
-						for neg in tag.negatives:
-							if neg not in genes:
-								logging.error(file + ": gene '%s' not found in workspace", neg)
-								errors = True
-						if not errors:
-							definitions.append(tag)
-					except Exception as e:
-						logging.error(file + ": " + str(e))
-						errors = True
+					tag = Annotation(cur[root_len:], os.path.join(cur, file))
+					definitions.append(tag)
 
 		def annotation_posterior(positives, negatives):
 			posteriors = np.ones(n_clusters)
+			print(posteriors.shape)
 			for gene in positives:
-				posteriors *= pp[:, genes == gene].flatten()
+				posteriors *= pp[:, genes == gene].flatten()[:n_clusters]  # Take only the first n_clusters in case the gene name is duplicated
+				print(posteriors.shape)
 			for gene in negatives:
-				posteriors *= (1 - pp[:, genes == gene].flatten())
+				posteriors *= (1 - pp[:, genes == gene].flatten())[:n_clusters]
+				print(posteriors.shape)
 			return posteriors
 
 		posteriors = np.empty((len(definitions), n_clusters))
 		for ix, tag in enumerate(definitions):
-			logging.info(tag.name)
+			print(tag.name, tag.definition)
+			for gene in tag.positives + tag.negatives:
+				if gene not in genes:
+					logging.error(f"Gene '{gene}' for tag '{tag.name}' not found in the workspace and will omitted from the tag definition.")
+					tag.definition += f" (!missing '{gene}')"
+					continue
 			posteriors[ix, :] = annotation_posterior(tag.positives, tag.negatives)
 
 		# Recreate the annotations dimension
@@ -123,3 +117,4 @@ class AutoAnnotate(Module):
 		defs = np.array([ann.definition for ann in definitions], dtype="object")
 		descs = np.array([str(ann) for ann in definitions], dtype="object")
 		return names, defs, descs, posteriors.T
+
