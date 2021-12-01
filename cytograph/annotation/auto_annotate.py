@@ -85,18 +85,14 @@ class AutoAnnotate(Module):
 
 		def annotation_posterior(positives, negatives):
 			posteriors = np.ones(n_clusters)
-			print(posteriors.shape)
 			for gene in positives:
 				posteriors *= pp[:, genes == gene].flatten()[:n_clusters]  # Take only the first n_clusters in case the gene name is duplicated
-				print(posteriors.shape)
 			for gene in negatives:
 				posteriors *= (1 - pp[:, genes == gene].flatten())[:n_clusters]
-				print(posteriors.shape)
 			return posteriors
 
 		posteriors = np.empty((len(definitions), n_clusters))
 		for ix, tag in enumerate(definitions):
-			print(tag.name, tag.definition)
 			for gene in tag.positives + tag.negatives:
 				if gene not in genes:
 					logging.error(f"Gene '{gene}' for tag '{tag.name}' not found in the workspace and will omitted from the tag definition.")
