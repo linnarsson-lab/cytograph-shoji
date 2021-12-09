@@ -62,7 +62,14 @@ class CollectCells(Module):
 				logging.info(f" CollectCells: Collecting tensors from '{source}'")
 				view = source_ws[:]
 				indices = np.arange(source_ws.cells.length)
-
+			if punchcard.with_annotation is not None:
+				if "AnnotationPosterior" not in source_ws:
+					raise ValueError(f"Punchcard uses 'with_annotation' but source '{source}' lacks auto-annotation")
+				pp = source_ws.AnnotationPosterior[:, source_ws.AnnotationName == punchcard.with_annotation]
+				keep_clusters = ws.ClusterID[pp > 0.95]
+				labels = source_ws.Clusters[:]
+				for cluster in keep_clusters:
+					indices = np.union1d(indices, np.where(labels == cluster)[0][0])
 			batch_size = 5_000
 			for start in range(0, indices.shape[0], batch_size):
 				d = {}

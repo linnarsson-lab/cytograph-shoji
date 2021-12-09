@@ -19,6 +19,7 @@ class Punchcard:
 			sys.exit(1)
 		with open(path) as f:
 			spec: Dict[str, Any] = yaml.load(f, Loader=yaml.FullLoader)
+		self.with_annotation = spec.get("with_annotation")
 		self.onlyif = spec.get("onlyif", None)
 		sources_spec = spec.get("sources", [])
 		self.sources: List[str] = []
