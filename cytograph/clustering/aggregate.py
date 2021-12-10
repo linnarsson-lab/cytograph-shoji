@@ -58,16 +58,16 @@ class Aggregate(Module):
 			raise ValueError(f"Invalid aggregation function '{self.using}'")
 
 		# If the orderby tensor is not in the workspace, create it from the keys
+		# Create the dimension if needed
+		if self.newdim not in ws:
+			logging.info(f" Aggregate: Creating dimension '{self.newdim}'")
+			ws[self.newdim] = shoji.Dimension(shape=result.shape[0])
 		if self.orderby not in ws:
 			ws[self.orderby] = shoji.Tensor(dtype="uint32", dims=(self.newdim,), inits=result[0].astype("uint32"))
 		# The groups are not in the same order as in the database, so we need to reorder the result
 		ordering = indices_to_order_a_like_b(result[0], ws[self.orderby][:])
 		result = result[1][ordering]
 		if save:
-			# Create the dimension if needed
-			if self.newdim not in ws:
-				logging.info(f" Aggregate: Creating dimension '{self.newdim}'")
-				ws[self.newdim] = shoji.Dimension(shape=result.shape[0])
 			ws[self.into] = shoji.Tensor(result.dtype.name, (self.newdim,) + tensor.dims[1:], inits=result)
 
 		return result
