@@ -63,6 +63,7 @@ class CollectCells(Module):
 				view = source_ws[:]
 				indices = np.arange(source_ws.cells.length)
 			if punchcard.with_annotation is not None:
+				logging.info(f" CollectCells: Keeping only cells that have auto-annotation '{punchcard.with_annotation}'")
 				if "AnnotationPosterior" not in source_ws:
 					raise ValueError(f"Punchcard uses 'with_annotation' but source '{source}' lacks auto-annotation")
 				pp = source_ws.AnnotationPosterior[:, source_ws.AnnotationName == punchcard.with_annotation]
