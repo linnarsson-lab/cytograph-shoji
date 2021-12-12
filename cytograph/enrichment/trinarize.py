@@ -11,7 +11,7 @@ class Trinarize(Module):
 		self.f = f
 		self.p_half_vectorized = np.vectorize(self.p_half)
 
-	@requires("Nonzeros", "uint32", ("clusters", "genes"))
+	@requires("Nonzeros", "uint64", ("clusters", "genes"))
 	@requires("NCells", "uint64", ("clusters", "genes"))
 	@creates("Trinaries", "float32", ("clusters", "genes"))
 	def fit(self, ws: shoji.Workspace, save: bool = False) -> np.ndarray:
