@@ -61,7 +61,7 @@ class Aggregate(Module):
 		# Create the dimension if needed
 		if self.newdim not in ws:
 			logging.info(f" Aggregate: Creating dimension '{self.newdim}'")
-			ws[self.newdim] = shoji.Dimension(shape=result.shape[0])
+			ws[self.newdim] = shoji.Dimension(shape=result[1].shape[0])
 		if self.orderby not in ws:
 			ws[self.orderby] = shoji.Tensor(dtype="uint32", dims=(self.newdim,), inits=result[0].astype("uint32"))
 		# The groups are not in the same order as in the database, so we need to reorder the result
