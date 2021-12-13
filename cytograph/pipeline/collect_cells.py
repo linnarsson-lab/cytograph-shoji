@@ -67,7 +67,7 @@ class CollectCells(Module):
 				if "AnnotationPosterior" not in source_ws:
 					raise ValueError(f"Punchcard uses 'with_annotation' but source '{source}' lacks auto-annotation")
 				pp = source_ws.AnnotationPosterior[:, source_ws.AnnotationName == punchcard.with_annotation]
-				keep_clusters = ws.ClusterID[pp > 0.95]
+				keep_clusters = source_ws.ClusterID[pp > 0.95]
 				labels = source_ws.Clusters[:]
 				for cluster in keep_clusters:
 					indices = np.union1d(indices, np.where(labels == cluster)[0][0])
