@@ -72,7 +72,9 @@ class CollectCells(Module):
 				aa_indices = np.array([], dtype="uint32")
 				for cluster in keep_clusters:
 					aa_indices = np.union1d(aa_indices, np.where(labels == cluster)[0][0])
+					logging.info(aa_indices)
 				indices = np.intersect1d(indices, aa_indices)
+				logging.info(indices)
 			batch_size = 5_000
 			for start in range(0, indices.shape[0], batch_size):
 				d = {}
