@@ -69,8 +69,10 @@ class CollectCells(Module):
 				pp = source_ws.AnnotationPosterior[:, source_ws.AnnotationName == punchcard.with_annotation]
 				keep_clusters = source_ws.ClusterID[pp > 0.95]
 				labels = source_ws.Clusters[:]
+				aa_indices = np.array([], dtype="uint32")
 				for cluster in keep_clusters:
-					indices = np.union1d(indices, np.where(labels == cluster)[0][0])
+					aa_indices = np.union1d(aa_indices, np.where(labels == cluster)[0][0])
+				indices = np.intersect1d(indices, aa_indices)
 			batch_size = 5_000
 			for start in range(0, indices.shape[0], batch_size):
 				d = {}
