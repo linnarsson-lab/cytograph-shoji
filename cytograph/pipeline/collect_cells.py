@@ -73,7 +73,7 @@ class CollectCells(Module):
 				for cluster in keep_clusters:
 					aa_indices = np.union1d(aa_indices, np.where(labels == cluster)[0])
 				indices = np.intersect1d(indices, aa_indices)
-				logging.info(f" CollectCells: Keeping {indices.shape[0]} cells from {keep_clusters} clusters with '{punchcard.with_annotation}'")
+				logging.info(f" CollectCells: Keeping {indices.shape[0]} cells from {keep_clusters.shape[0]} clusters with '{punchcard.with_annotation}'")
 			batch_size = 5_000
 			for start in range(0, indices.shape[0], batch_size):
 				d = {}
