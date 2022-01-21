@@ -16,7 +16,6 @@ class Heatmap(Module):
 	@requires("Gene", "string", ("genes",))
 	@requires("Enrichment", "float32", ("clusters", "genes"))
 	@requires("Species", "string", ())
-	@requires("MeanAge", "float64", ("clusters",))
 	@requires("NCells", "uint64", ("clusters",))
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False):
 		# Load data

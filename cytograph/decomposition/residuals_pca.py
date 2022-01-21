@@ -33,8 +33,9 @@ class ResidualsPCA(Module):
 		n_cells = ws.cells.length
 		totals = self.TotalUMIs[:].astype("float32")
 		gene_totals = self.GeneTotalUMIs[ws.SelectedFeatures == True][:].astype("float32")
+		overall_totals = totals.sum()
 		data = ws[ws.SelectedFeatures == True][self.requires["Expression"]]  # self.requires["Expression"] ensures that the user can rename the input tensor if desired
-		expected = totals[:, None] @ (gene_totals[None, :] / self.OverallTotalUMIs[:])
+		expected = totals[:, None] @ (gene_totals[None, :] / overall_totals)
 		residuals = (data - expected) / np.sqrt(expected + np.power(expected, 2) / 100)
 		residuals = np.clip(residuals, -np.sqrt(n_cells), np.sqrt(n_cells))
 

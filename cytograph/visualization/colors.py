@@ -10,10 +10,12 @@ color_alphabet = np.array([
 colors75 = np.concatenate([color_alphabet, 1 - (1 - color_alphabet) / 2, color_alphabet / 2])
 
 
-def colorize(x: np.ndarray, *, bgval: Any = None) -> np.ndarray:
+def colorize(x: np.ndarray, *, bgval: Any = None, cmap: np.ndarray = None) -> np.ndarray:
 	le = LabelEncoder().fit(x)
 	xt = le.transform(x)
-	colors = colors75[np.mod(xt, 75), :]
+	if cmap is None:
+		cmap = colors75
+	colors = cmap[np.mod(xt, 75), :]
 	if bgval is not None:
 		colors[x == bgval, :] = np.array([0.8, 0.8, 0.8])
 	return colors

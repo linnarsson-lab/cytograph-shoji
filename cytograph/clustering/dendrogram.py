@@ -1,10 +1,15 @@
 import logging
+from numpy.core.numeric import indices
 import shoji
 import numpy as np
 from cytograph import creates, requires, Module
 import scipy.cluster.hierarchy as hc
 from scipy.spatial.distance import pdist
 import fastcluster
+
+
+def indices_to_order_a_like_b(a, b):
+	return a.argsort()[b.argsort().argsort()]
 
 
 class Dendrogram(Module):
@@ -20,6 +25,7 @@ class Dendrogram(Module):
 		"""
 		super().__init__(**kwargs)
 
+	@requires("ClusterID", "uint64", ("clusters",))
 	@requires("Clusters", "uint32", ("cells",))
 	@requires("SelectedFeatures", "bool", ("genes",))
 	@requires("MeanExpression", "float64", ("clusters", "genes"))
@@ -55,4 +61,12 @@ class Dendrogram(Module):
 			new_clusters[selection] = i
 			cluster_ids[ordering[i]] = i
 
-		return Z, cluster_ids, new_clusters
+		# # Reorder the aggregated tensors to match the numbering
+		# logging.info(" Dendrogram: Reordering aggregated tensors")
+		# ordering = np.argsort(cluster_ids)
+		# for tname in ws._tensors():
+		# 	tensor = ws[tname]
+		# 	if tensor.rank >= 1 and tensor.dims[0] == "clusters":
+		# 		ws[tname] = shoji.Tensor(tensor.dtype, tensor.dims, chunks=tensor.chunks, inits=tensor[:][ordering])
+
+		return Z, cluster_ids[ordering], new_clusters
