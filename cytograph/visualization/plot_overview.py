@@ -150,7 +150,7 @@ class PlotOverview(Module):
 	@requires("Age", "float32", ("cells",))
 	@requires("MeanExpression", "float64", ("clusters",))
 	@requires("ClusterID", "uint32", ("clusters",))
-	@requires("AnnotationName", "string", ("clusters",))
+	@requires("AnnotationName", "string", ("annotations",))
 	@requires("AnnotationPosterior", "float32", ("clusters", "annotations"))
 	@requires("NCells", "uint32", ("clusters",))
 	@requires("Linkage", "float32", None)
