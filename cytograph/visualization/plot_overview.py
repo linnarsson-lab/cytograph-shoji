@@ -152,7 +152,7 @@ class PlotOverview(Module):
 	@requires("ClusterID", "uint32", ("clusters",))
 	@requires("AnnotationName", "string", ("annotations",))
 	@requires("AnnotationPosterior", "float32", ("clusters", "annotations"))
-	@requires("NCells", "uint32", ("clusters",))
+	@requires("NCells", "uint64", ("clusters",))
 	@requires("Linkage", "float32", None)
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> None:
 		logging.info(" PlotOverview: Plotting the heatmap")
