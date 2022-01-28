@@ -7,3 +7,4 @@ from .pearson_residuals_variance import PearsonResidualsVariance
 from .quality_control import QualityControl
 from .pearson_residuals import PearsonResiduals
 from .classify_droplets import ClassifyDroplets
+from .compute_cell_hashes import ComputeCellHashes
