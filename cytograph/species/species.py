@@ -27,7 +27,7 @@ class Species:
 			}
 			self.markers = {
 				"CellCycle": ["PCNA", "CDK1", "TOP2A"],
-				"RadialGlia": ["HES1", "HES5", "HOPX"],
+				"RadialGlia": ["HES1", "HOPX"],
 				"Immune": ["PTPRC"],
 				"Macrophages": ["AIF1", "HEXB", "MRC1"],
 				"Fibroblasts": ["LUM", "DCN", "COL1A1"],
@@ -36,7 +36,7 @@ class Species:
 				"Ependymal": ["TMEM212", "FOXJ1"],
 				"Choroid": ["TTR"],
 				"Astrocytes": ["AQP4", "GJA1"],
-				"Neurons": ["RBFOX3"],
+				"Neurons": ["INA"],
 				"Neuroblasts": ["NHLH1", "NHLH2"],
 				"GABAergic": ["GAD1", "GAD2", "SLC32A1"],
 				"Glycinergic": ["SLC6A5", "SLC6A9"],
