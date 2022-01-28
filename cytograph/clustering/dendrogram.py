@@ -25,7 +25,7 @@ class Dendrogram(Module):
 		"""
 		super().__init__(**kwargs)
 
-	@requires("ClusterID", "uint64", ("clusters",))
+	@requires("ClusterID", "uint32", ("clusters",))
 	@requires("Clusters", "uint32", ("cells",))
 	@requires("SelectedFeatures", "bool", ("genes",))
 	@requires("MeanExpression", "float64", ("clusters", "genes"))
