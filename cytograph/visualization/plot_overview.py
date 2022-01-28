@@ -108,7 +108,7 @@ def plot_genes(ax, markers, mean_x, genes, labels, subtrees, enriched_genes):
 	ax.imshow(np.log10(x_norm + 0.001), vmin=-1, vmax=2, cmap="RdGy_r", interpolation="none", aspect="auto", extent=(0, n_clusters, n_genes, 0))
 	ax.set_yticks(np.arange(len(m_names)) + 0.5)
 	ax.set_yticklabels(m_names)
-	if n_clusters < 10:
+	if n_clusters < 200:
 		ax.set_xticks(np.arange(n_clusters) + 0.5)
 		ax.set_xticklabels(enriched_genes, rotation=60, rotation_mode='anchor', fontsize=min(12, 20 / n_clusters * 72 * 0.6), verticalalignment='top', horizontalalignment='right')
 	else:
