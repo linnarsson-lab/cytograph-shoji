@@ -11,7 +11,7 @@ class Punchcard:
 	def __init__(self, path: Path) -> None:
 		items = path.name.split(".")
 		if len(items) > 2:
-			logging.error("Punchcard name cannot contain dots (apart from .yaml suffix)")
+			logging.error(f"Punchcard name '{path.name}' cannot contain dots (apart from .yaml suffix)")
 			sys.exit(1)
 		self.name = items[0]
 		if not path.exists():

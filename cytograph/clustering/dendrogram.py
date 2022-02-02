@@ -32,7 +32,7 @@ class Dendrogram(Module):
 	@creates("Linkage", "float32", (None, 4))
 	@creates("ClusterID", "uint32", ("clusters",))
 	@creates("Clusters", "uint32", ("cells",))
-	def fit(self, ws: shoji.WorkspaceManager, save: bool) -> np.ndarray:
+	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> np.ndarray:
 		logging.info(" Dendrogram: Computing normalized expression of selected genes")
 		selected = self.SelectedFeatures[:]
 		x = self.MeanExpression[:]
