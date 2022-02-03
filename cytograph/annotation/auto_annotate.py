@@ -51,6 +51,9 @@ class Annotation:
 
 
 class AutoAnnotate(Module):
+	"""
+	Auto-annotate clusters based on marker genes
+	"""
 	def __init__(self, path: str, **kwargs) -> None:
 		"""
 		Args:

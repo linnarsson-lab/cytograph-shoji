@@ -17,7 +17,24 @@ def windowed_mean(x: np.ndarray, n: int):
 
 
 class Karyotyper(Module):
+	"""
+	Estimate the karyotype of tumor cells using immune cells as internal reference
+	"""
 	def __init__(self, max_rv = 3, min_umis = 1, window_size: int = 20, smoothing_bandwidth: int = 0):
+		"""
+		Estimate the karyotype
+
+		Args:
+			max_rv:              Max residual variance for selecting housekeeping genes
+			min_umis:            Minimum UMIs for selecting housekeeping genes
+			window_size:         Number of genes per window
+			smooting_bandwidth:  Optional bandwidth for smoothing
+
+		Remarks:
+			This algorithm first identifies immune cells using the M-IMMUNE auto-annotation
+			(e.g. PTPRC expression) and computes a reference normal karyotype. It then
+			estimates the karyotype of each cluster and calls each as aneuploid or euploid.
+		"""
 		self.max_rv = max_rv
 		self.min_umis = min_umis
 		self.window_size = window_size
@@ -88,6 +105,7 @@ class Karyotyper(Module):
 		self.y_sample_mean = self.y_sample.mean(axis=1)
 
 		# Load the immune cell clusters
+		assert "M-IMMUNE" in self.AnnotationName[:], "M-IMMUNE auto-annotation is required for Karyotyper"
 		self.immune = (self.AnnotationPosterior[:, self.AnnotationName[:] == "M-IMMUNE"] > 0.9)[:, 0]
 		y_ref = self.MeanExpression[self.immune, :]
 		totals = y_ref.sum(axis=1)

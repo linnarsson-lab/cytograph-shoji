@@ -1,3 +1,6 @@
+"""
+Algorithms for preprocessing samples
+"""
 from .log2_normalizer import Log2Normalizer
 from .doublet_finder import DoubletFinder
 from .cell_summary_statistics import CellSummaryStatistics
