@@ -48,6 +48,8 @@ class Punchcard:
 						logging.error(f"Skipping punchcard '{f.name}' because it contains an extra period (.) which is not allowed")
 					else:
 						result.append(Punchcard(path / f))
+		else:
+			logging.error(f"Failed to load punchcards because path '{path}' does not exist")
 		return result
 
 class PunchcardDeck:
