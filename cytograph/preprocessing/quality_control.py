@@ -6,6 +6,9 @@ import logging
 
 
 class QualityControl(Module):
+	"""
+	Compute QC metrics and mark valid cells (note: consider using ClassifyDroplets instead)
+	"""
 	def __init__(self, doublet_threshold: Union[float, str] = "auto", min_umis: int = 0, max_mt_fraction: float = 1, min_unspliced_fraction: float = 0, min_fraction_good_cells: float = 0, **kwargs) -> None:
 		"""
 		Args:

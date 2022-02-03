@@ -56,6 +56,8 @@ class AutoAnnotate(Module):
 	"""
 	def __init__(self, path: str, **kwargs) -> None:
 		"""
+		Compute auto-annotation for the workspace using the given definitions
+
 		Args:
 			path: 	Path to the auto-annotation database
 		"""
@@ -69,9 +71,6 @@ class AutoAnnotate(Module):
 	@creates("AnnotationDescription", "string", ("annotations",))
 	@creates("AnnotationPosterior", "float32", ("clusters", "annotations"))
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-		"""
-		Compute auto-annotation for the workspace using the given definitions
-		"""
 		genes = self.Gene[:]
 		n_clusters = ws.clusters.length
 

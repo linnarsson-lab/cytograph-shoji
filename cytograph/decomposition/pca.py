@@ -16,6 +16,10 @@ class PrincipalComponents(Module):
 		"""
 		Args:
 			n_factors:  	The number of retained components
+		
+		Remarks:
+			This algorithm loads all the data for selected features, which may require 
+			a large amount of memory
 		"""
 		super().__init__(**kwargs)
 		self.n_factors = n_factors

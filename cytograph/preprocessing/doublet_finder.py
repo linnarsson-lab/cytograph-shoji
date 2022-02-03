@@ -40,6 +40,19 @@ from unidip import UniDip
 
 class DoubletFinder(Module):
 	def __init__(self, proportion_artificial: float = 0.2, fixed_threshold: float = None, max_threshold: float = 1, k: int = None, **kwargs) -> None:
+		"""
+		Find doublets using the doublet-finder algorithm.
+
+		Args:
+			proportion_artifical:		How many artifical doublets to create
+			fixed_threshold:			Optional fixed threshold to use
+			max_threshold:				Max threshold to use
+			k:							Number of neighbors
+
+		Creates:
+			DoubletScore		A doublet score in the interval [0, 1]
+			DoubletFlag			0: singlet, 1: doublet, 2: neighbor of a doublet
+		"""
 		super().__init__(**kwargs)
 		self.proportion_artificial = proportion_artificial
 		self.fixed_threshold = fixed_threshold
@@ -50,17 +63,6 @@ class DoubletFinder(Module):
 	@creates("DoubletScore", "float32", ("cells",))
 	@creates("DoubletFlag", "bool", ("cells",))
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> Tuple[np.ndarray, np.ndarray]:
-		"""
-		Find doublets using the doublet-finder algorithm.
-
-		Args:
-			ws		Workspace
-			save	If true, save the result to the workspace
-
-		Returns:
-			DoubletScore		A doublet score in the interval [0, 1]
-			DoubletFlag			0: singlet, 1: doublet, 2: neighbor of a doublet
-		"""
 		# WARNING: for historical reasons, all the processing here is done with matrices oriented (genes, cells)
 		# Step 1: Generate artificial doublets from input
 		logging.info(" DoubletFinder: Creating artificial doublets")

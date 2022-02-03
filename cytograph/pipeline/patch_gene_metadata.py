@@ -10,6 +10,9 @@ import pandas as pd
 
 
 class PatchGeneMetadata(Module):
+	"""
+	Patch gene metadata from an Excel file into an existing workspace
+	"""
 	def __init__(self, table: str, patch_accession_from: str = None, **kwargs) -> None:
 		"""
 		Args:

@@ -7,17 +7,24 @@ import shoji
 
 
 class RnnManifold(Module):
-	def __init__(self, k: int, metric: str, mutual: bool = False, **kwargs) -> None:
+	"""
+	Compute a radius nearest-neighbor manifold graph
+	"""
+	def __init__(self, k: int, metric: str, mutual: bool = False, max_radius_percentile: int = 90, **kwargs) -> None:
 		"""
+		Compute a radius nearest-neighbor manifold graph
+	
 		Args:
-			k				The maximum number of neighbors to use
-			metric			The metric to use (e.g. "euclidean")
-			mutual			If true, use only mutual neighbors
+			k:                     The maximum number of neighbors to use
+			metric:                The metric to use (e.g. "euclidean")
+			mutual:                If true, use only mutual neighbors
+			max_radius_percentile: The radius to use, expressed as a percentile
 		"""
 		super().__init__(**kwargs)
 		self.k = k
 		self.metric = metric
 		self.mutual = mutual
+		self.max_radius_percentile = max_radius_percentile
 
 	@requires("Factors", "float32", ("cells", None))
 	@creates("ManifoldRadius", "float32", ())
@@ -38,8 +45,8 @@ class RnnManifold(Module):
 		max_d = knn.data.max()
 		knn.data = (max_d - knn.data) / max_d
 		logging.info(f" RnnManifold: Computing resolution")
-		radius = np.percentile(1 - knn.data, 90)
-		logging.info(f" RnnManifold: 90th percentile radius: {radius:.02}")
+		radius = np.percentile(1 - knn.data, self.max_radius_percentile)
+		logging.info(f" RnnManifold: {self.max_radius_percentile}th percentile radius: {radius:.02}")
 
 		if self.mutual:
 			logging.info(f" RnnManifold: Converting to mutual nearest neighbors")

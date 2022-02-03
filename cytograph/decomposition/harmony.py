@@ -10,6 +10,7 @@ import logging
 
 class Harmony(Module):
 	"""
+	Remove batch effects
 	"""
 	def __init__(self, batch_keys: List[str] = [], **kwargs) -> None:
 		"""

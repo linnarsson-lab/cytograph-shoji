@@ -43,8 +43,13 @@ import pandas as pd
 # Editat 2019-05-30 16:52:20 <class 'str'>
 
 class LoadSampleMetadata(Module):
+	"""
+	Load samples metadata from a sqlite database
+	"""
 	def __init__(self, db: str, tensors: List[str], convert_10x_sample_name: bool = True, **kwargs) -> None:
 		"""
+		Load samples metadata from a sqlite database
+	
 		Args:
 			db 				Full path to the metadata database file (a sqlite .db file)
 			tensors			List of tensors to be created (or overwritten) from metadata

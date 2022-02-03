@@ -8,12 +8,27 @@ from typing import Dict
 
 
 class CutDendrogram(Module):
+	"""
+	Cut the dendrogram and create punchcards for subtrees
+	"""
 	def __init__(self, n_trees: int = 2, min_cells: int = 500, split_when_over: int = 50, split_with_settings: Dict = None, **kwargs) -> None:
 		"""
-		Cut the dendrogram of clusters and return labels for subtrees. 
+		Cut the dendrogram of clusters and create punchcards for subtrees
+		
+		Args:
+			n_trees:             Number of subtrees to create
+			min_cells:           Minimum number of cells per subtree
+			split_when_over:     Minimum numbr of clusters per subtree
+			split_with_settings: Dictionary of settings to use for subtrees
+
+		Returns:
+			Subtree label for each cell
 
 		Remarks:
 			For any subtree with more than split_when_over clusters, a new punchcard is created
+			The new punchcard will inherit settings from its parent, but this can be
+			overridden using 'split_with_settings', e.g. to use a different recipe for
+			the subtree punchcards.
 		"""
 		super().__init__(**kwargs)
 		self.n_trees = n_trees

@@ -15,6 +15,9 @@ from sklearn.linear_model import SGDClassifier
 
 
 class MorePolishedLeiden(Module):
+	"""
+	Leiden clustering with some post-processing
+	"""
 	def __init__(self, resolution: float = 1.0, method: str = "modularity", max_size: int = 0, min_size: int = 10, **kwargs) -> None:
 		"""
 		Find clusters on the manifold using the Leiden algorithm, then polish clusters on the embedding.

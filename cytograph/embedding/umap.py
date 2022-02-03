@@ -7,6 +7,9 @@ import umap
 
 
 class UMAP(Module):
+	"""
+	Uniform Manifold Approximation and Projection for Dimension Reduction
+	"""
 	def __init__(self, metric: Union[str, Callable] = "euclidean", n_neighbors: int = 15, min_dist: float = 0.1, density_regularization: float = 0, **kwargs):
 		"""
 		Uniform Manifold Approximation and Projection for Dimension Reduction.

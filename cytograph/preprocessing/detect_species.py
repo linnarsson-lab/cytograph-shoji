@@ -6,6 +6,9 @@ import logging
 
 
 class DetectSpecies(Module):
+	"""
+	Use gene names to detect the species
+	"""
 	def __init__(self, **kwargs) -> None:
 		super().__init__(**kwargs)
 

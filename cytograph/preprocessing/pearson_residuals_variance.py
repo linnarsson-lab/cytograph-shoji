@@ -7,6 +7,15 @@ import logging
 
 class PearsonResidualsVariance(Module):
 	def __init__(self, **kwargs) -> None:
+		"""
+		Calculate the variance of the Pearson residuals for each gene
+
+		Creates:
+			PearsonResidualsVariance		Residuals variance per gene across cells
+
+		Remarks:
+			See equation 9 on p. 4 of https://doi.org/10.1101/2020.12.01.405886
+		"""
 		super().__init__(**kwargs)
 
 	@requires("Expression", "uint16", ("cells", "genes"))
@@ -15,19 +24,6 @@ class PearsonResidualsVariance(Module):
 	@requires("OverallTotalUMIs", "uint64", ())
 	@creates("PearsonResidualsVariance", "float32", ("genes",))
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> np.ndarray:
-		"""
-		Calculate the variance of the Pearson residuals for each gene
-
-		Args:
-			ws				shoji workspace
-			save			if true, save the result to the workspace
-
-		Returns:
-			PearsonResidualsVariance		Residuals variance per gene across cells
-
-		Remarks:
-			See equation 9 on p. 4 of https://doi.org/10.1101/2020.12.01.405886
-		"""
 		logging.info(" PearsonResidualsVariance: Computing the variance of Pearson residuals")
 		totals = self.TotalUMIs[:].astype("float32")
 		gene_totals = self.GeneTotalUMIs[:].astype("float32")

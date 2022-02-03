@@ -17,9 +17,15 @@ class Log2Normalizer(Module):
 		
 		Args:
 			level			The level to which each cell should be normalized (or 0 to use the median)
-		
+
+		Creates:
+			Log2Level:		The level to which all cells should be normalized
+			Log2Mean: 		The mean of the log2-transformed values
+
 		Remarks:
-			Requires the tensors TotalUMIs, MeanExpression and StdevExpression
+			The normalization is not saved to the workspace. Instead, Log2Level and Log2Mean
+			are saved, which can be used later to transform expression data. To transform
+			new data using an existing transform, use Log2Normalizer.load()
 		"""
 		super().__init__(**kwargs)
 		self.log2_mu = None  # type: np.ndarray
@@ -46,14 +52,15 @@ class Log2Normalizer(Module):
 			self.log2_mu[ix: ix + 1000] = np.mean(vals, axis=1)
 		return (self.level, self.log2_mu)
 
-	def load(self, ws: shoji.WorkspaceManager) -> "Log2Normalizer":
+	@classmethod
+	def load(ws: shoji.WorkspaceManager) -> "Log2Normalizer":
 		"""
 		Load a previoulsy stored normalization from the workspace
 		"""
-		self.level = ws[:].Log2Level
-		self.totals = ws[:].TotalUMIs
-		self.log2_mu = ws[:].Log2Mean
-		return self
+		nn = Log2Normalizer(ws.Log2Level[:])
+		nn.totals = ws.TotalUMIs[:]
+		nn.log2_mu = ws.Log2Mean[:]
+		return nn
 
 	def transform(self, vals: np.ndarray, cells: np.ndarray = None) -> np.ndarray:
 		"""

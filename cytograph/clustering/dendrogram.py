@@ -13,6 +13,9 @@ def indices_to_order_a_like_b(a, b):
 
 
 class Dendrogram(Module):
+	"""
+	Compute a dendrogram of clusters
+	"""
 	def __init__(self, **kwargs) -> None:
 		"""
 		Compute a dendrogram of clusters

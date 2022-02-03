@@ -11,6 +11,9 @@ from sklearn.preprocessing import LabelEncoder
 
 
 class CollectCells(Module):
+	"""
+	Collect tensors from the source workspaces (e.g. samples)
+	"""
 	def __init__(self, tensors: List[str], expand_scalars: bool = True, renumber_tensors: List[str] = None, **kwargs) -> None:
 		"""
 		Args:

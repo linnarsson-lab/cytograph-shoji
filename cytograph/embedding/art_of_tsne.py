@@ -7,6 +7,9 @@ import shoji
 
 
 class ArtOfTsne(Module):
+	"""
+	t-Stochastic Neighborhood Embedding (TSNE)
+	"""
 	def __init__(self, metric: Union[str, Callable] = "euclidean", exaggeration: float = -1, perplexity: int = 30, init_method: Union[str, Callable] = "pca", **kwargs):
 		"""
 		Implementation of Dmitry Kobak and Philipp Berens "The art of using t-SNE for single-cell transcriptomics" based on openTSNE.

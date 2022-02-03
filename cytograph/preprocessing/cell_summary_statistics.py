@@ -8,6 +8,20 @@ import logging
 
 class CellSummaryStatistics(Module):
 	def __init__(self, **kwargs) -> None:
+		"""
+		Calculate summary statistics for each cell
+
+		Returns:
+			NGenes				Number of non-zero genes per cell
+			TotalUMIs			Total UMIs per cell
+			MitoFraction		Fraction mitochondrial UMIs per cell
+			UnsplicedFraction	Fraction unspliced UMIs per cell
+			CellCycleFraction	Fraction cell cycle UMIs per cell
+		
+		Remarks:
+			The complete Expression and Unspliced tensors are loaded into memory
+			If species is None, cell cycle scores are set to 0
+		"""
 		super().__init__(**kwargs)
 
 	@requires("Expression", "uint16", ("cells", "genes"))
@@ -21,24 +35,6 @@ class CellSummaryStatistics(Module):
 	@creates("UnsplicedFraction", "float32", ("cells",))
 	@creates("CellCycleFraction", "float32", ("cells",))
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-		"""
-		Calculate summary statistics for each cell
-
-		Args:
-			ws				shoji workspace
-			save			if true, save the result to the workspace
-
-		Returns:
-			NGenes				Number of non-zero genes per cell
-			TotalUMIs			Total UMIs per cell
-			MitoFraction		Fraction mitochondrial UMIs per cell
-			UnsplicedFraction	Fraction unspliced UMIs per cell
-			CellCycleFraction	Fraction cell cycle UMIs per cell
-		
-		Remarks:
-			The complete Expression and Unspliced tensors are loaded into memory
-			If species is None, cell cycle scores are set to 0
-		"""
 		logging.info(" CellSummaryStatistics: Loading 'Expression' and 'Unspliced' tensors")
 		x = self.Expression[:]
 		u = self.Unspliced[:].astype("uint16")

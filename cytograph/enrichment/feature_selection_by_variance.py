@@ -8,11 +8,19 @@ import logging
 
 
 class FeatureSelectionByVariance(Module):
+	"""
+	Select features by excess variance
+	"""
 	def __init__(self, n_genes: int, mask: List[str] = None, **kwargs) -> None:
 		"""
+		Fit a noise model (CV vs mean) and select high-variance genes
+
 		Args:
 			n_genes		Number of genes to select
 			mask		Optional mask (numpy bool array) indicating genes that should not be selected
+
+		Remarks:
+			If the tensor "ValidGenes" exists, only ValidGenes == True genes will be selected
 		"""
 		super().__init__(**kwargs)
 		self.n_genes = n_genes
@@ -24,18 +32,6 @@ class FeatureSelectionByVariance(Module):
 	@requires("StdevExpression", "float32", ("genes",))
 	@creates("SelectedFeatures", "bool", ("genes",), indices=True)
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> np.ndarray:
-		"""
-		Fits a noise model (CV vs mean) and select high-variance genes
-
-		Args:
-			ws:	shoji.Workspace containing the data to be used
-
-		Returns:
-			ndarray of indices of selected genes
-		
-		Remarks:
-			If the tensor "ValidGenes" exists, only ValidGenes == True genes will be selected
-		"""
 		n_genes = ws.genes.length
 		species = cg.Species(self.Species[:])
 		mask_genes = species.mask(ws, self.mask)

@@ -10,10 +10,15 @@ import pandas as pd
 
 
 class PatchSampleMetadata(Module):
+	"""
+	Patch samples metadata from an Excel file into an existing workspace
+	"""
 	def __init__(self, table: str, tensors: Dict[str, str], **kwargs) -> None:
 		"""
+		Patch samples metadata from an Excel file into an existing workspace
+	
 		Args:
-			table 				Full path to the metadata database file (a sqlite .db file)
+			table 			Full path to the metadata database file (a sqlite .db file)
 			tensors			Dict of tensors to be loaded from metadata, and their types
 		"""
 		super().__init__(**kwargs)

@@ -8,11 +8,17 @@ import logging
 
 
 class FeatureSelectionByPearsonResiduals(Module):
+	"""
+	Select features by Pearson Residuals
+	"""
 	def __init__(self, n_genes: int, mask: List[str] = None, **kwargs) -> None:
 		"""
 		Args:
 			n_genes		Number of genes to select
 			mask		Optional list indicating categories of genes that should not be selected
+
+		Remarks:
+			If the tensor "ValidGenes" exists, only ValidGenes == True genes will be selected
 		"""
 		super().__init__(**kwargs)
 		self.n_genes = n_genes
@@ -23,18 +29,6 @@ class FeatureSelectionByPearsonResiduals(Module):
 	@requires("ValidGenes", "bool", ("genes",))
 	@creates("SelectedFeatures", "bool", ("genes",), indices=True)
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> np.ndarray:
-		"""
-		Selects genes that show high deviance using a binomial model
-
-		Args:
-			ws:	shoji.Workspace containing the data to be used
-
-		Returns:
-			ndarray of indices of selected genes
-		
-		Remarks:
-			If the tensor "ValidGenes" exists, only ValidGenes == True genes will be selected
-		"""
 		# Create symbolic names for the required tensors, which might be renamed by the user
 		species = cg.Species(self.Species[:])
 		mask_genes = species.mask(ws, self.mask)

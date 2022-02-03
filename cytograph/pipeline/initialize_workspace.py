@@ -6,6 +6,9 @@ from cytograph import Module
 
 
 class InitializeWorkspace(Module):
+	"""
+	Initialize a new workspace for the build
+	"""
 	def __init__(self, from_workspace: str, tensors: List[str], **kwargs) -> None:
 		"""
 		Args:

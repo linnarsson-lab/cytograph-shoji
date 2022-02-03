@@ -9,6 +9,14 @@ import shoji
 
 class Enrichment(Module):
 	def __init__(self, **kwargs) -> None:
+		"""
+		Compute gene enrichment in clusters
+
+		Remarks:
+			Gene enrichment is computed as the regularized fold-change between
+			each cluster and all other clusters. This is different from the
+			previous cytograph version, which also considered the fraction non-zeros.
+		"""
 		super().__init__(**kwargs)
 
 	def enrichment_by_clusters(self, ws: shoji.WorkspaceManager) -> np.ndarray:
@@ -34,16 +42,7 @@ class Enrichment(Module):
 	@requires("MeanExpression", None, ("clusters", "genes"))
 	@creates("Enrichment", "float32", ("clusters", "genes"))
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> Tuple[np.ndarray, np.ndarray]:
-		"""
-		Select genes enirched in clusters
 
-		Args:
-			ws				The shoji workspace containing aggregate data
-			save			If true, save the result as tensor SelectedFeatures (default: false)
-
-		Returns:
-			Enrichment			Enrichment scores
-		"""
 		logging.info(" Enrichment: Computing enrichment at cluster leaves")
 		enr = self.enrichment_by_clusters(ws)
 		return enr

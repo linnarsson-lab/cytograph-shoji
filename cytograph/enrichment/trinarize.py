@@ -6,7 +6,21 @@ import shoji
 
 
 class Trinarize(Module):
+	"""
+	Compute trinarization probability per cluster
+	"""
 	def __init__(self, f: float = 0.2, **kwargs) -> None:
+		"""
+		Compute trinarization probability per cluster
+
+		Args:
+			f:    The trinarization expression threshold
+		
+		Remarks:
+			Computes the probability that at least a fraction f of the
+			cells in a cluster express the gene, given the size of the cluster
+			and the observed number of non-zero values.
+		"""
 		super().__init__(**kwargs)
 		self.f = f
 		self.p_half_vectorized = np.vectorize(self.p_half)

@@ -16,6 +16,9 @@ class IncrementalResidualsPCA(Module):
 		"""
 		Args:
 			n_factors:  	The number of retained components
+
+		Remarks:
+			This algorithm loads data incrementally, in batches.
 		"""
 		super().__init__(**kwargs)
 		self.n_factors = n_factors
