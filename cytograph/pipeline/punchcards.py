@@ -1,5 +1,4 @@
 import logging
-import os
 import sys
 from typing import Any, Dict, List, Optional
 import yaml
@@ -39,14 +38,17 @@ class Punchcard:
 		self.resources = ResourceConfig(n_cpus, n_gpus, memory)
 
 	@staticmethod
-	def load_all(path: Path) -> List["Punchcard"]:
+	def load_all(path: Path):
+		path = Path(path)
 		result: List[Punchcard] = []
 		if path.exists():
-			for f in os.listdir(path):
-				if f.lower().endswith(".yaml"):
-					result.append(Punchcard(path / f))
+			for f in path.iterdir():
+				if f.name.endswith(".yaml"):
+					if len(f.name.split(".")) > 2:
+						logging.error(f"Skipping punchcard '{f.name}' because it contains an extra period (.) which is not allowed")
+					else:
+						result.append(Punchcard(path / f))
 		return result
-
 
 class PunchcardDeck:
 	def __init__(self, punchcard_dir: Path) -> None:
