@@ -3,7 +3,7 @@ import logging
 import leidenalg as la
 import igraph
 import numpy as np
-from cytograph import requires, creates, Module
+from cytograph import requires, creates, Algorithm
 import shoji
 from sklearn.neighbors import NearestNeighbors
 from sklearn.cluster import DBSCAN
@@ -11,7 +11,7 @@ from sklearn.decomposition import PCA
 from sklearn.preprocessing import LabelEncoder
 
 
-class PolishedLeiden(Module):
+class PolishedLeiden(Algorithm):
 	"""
 	Leiden clustering with polishing
 	"""

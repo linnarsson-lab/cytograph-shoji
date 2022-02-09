@@ -26,68 +26,94 @@
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">import os
+<pre><code class="python">from dataclasses import dataclass
 from pathlib import Path
-from types import SimpleNamespace
-from typing import Optional, Union, Any, Dict
+from typing import Any, Dict, List, Optional
 
 import yaml
-import sys
-from ..utils import available_cpu_count
-import logging
+import shoji
+
+from .resource_config import ResourceConfig
 from .punchcards import Punchcard
 
 
-# https://stackoverflow.com/questions/7204805/how-to-merge-dictionaries-of-dictionaries
-def merge_config(a, b, path=None):
-        &#34;Merge b into a, modifying a in place and returning it&#34;
-        if path is None: path = []
-        for key in b:
-                if key in a:
-                        if isinstance(a[key], dict) and isinstance(b[key], dict):
-                                merge_config(a[key], b[key], path + [str(key)])
-                        elif a[key] == b[key]:
-                                pass  # same leaf value
-                        else:
-                                a[key] = b[key]
-                else:
-                        a[key] = b[key]
-        return a
-
-
-def load_and_merge_config(config, fname):
-        &#34;&#34;&#34;
-        Load config from fname and merge it into config
-        &#34;&#34;&#34;
-        if os.path.exists(fname):
-                with open(fname) as f:
-                        merge_config(config, yaml.load(f, Loader=yaml.FullLoader))
+@dataclass
+class WorkspacesConfig:
+        samples_workspace_name: str
+        builds_root_workspace_name: str
+        build: Optional[shoji.WorkspaceManager]
 
 
 class Config:
-        _singleton: Optional[Dict[str, Any]] = None
-        
+        _singleton = None
+
+        def __init__(self) -&gt; None:
+                self.workspaces = WorkspacesConfig(&#34;&#34;, &#34;&#34;, None)
+                self.resources = ResourceConfig(1, 0, 8)
+                self.recipes: Dict[str, Any] = {}
+                self.sources: List[str] = []
+                self.onlyif: str = &#34;&#34;
+                self.punchcard: Optional[Punchcard] = None
+                self.path: Path = Path.cwd()
+
+        def __repr__(self) -&gt; str:
+                s = f&#34;workspaces:\n  builds_root: {self.workspaces.builds_root_workspace_name}\n  samples: {self.workspaces.samples_workspace_name}\n&#34;
+                s += f&#34;resources:\n  n_cpus: {self.resources.n_cpus}\n  n_gpus: {self.resources.n_gpus}\n  memory: {self.resources.memory}\n&#34;
+                s += &#34;recipes:\n  &#34; + &#34;\n  &#34;.join(self.recipes.keys()) + &#34;\n&#34;
+                s += &#34;sources: [&#34; + &#34;,&#34;.join(self.sources) + &#34;]\n&#34;
+                s += f&#39;onlyif: &#34;{self.onlyif}&#34;&#39;
+                return s
+
+        def _merge(self, cfg: Dict[str, Any]) -&gt; None:
+                if &#34;workspaces&#34; in cfg:
+                        assert &#34;builds_root&#34; in cfg[&#34;workspaces&#34;], &#34;&#39;workspaces&#39; config must contain key &#39;builds_root&#39; indicating the root workspace for builds in Shoji&#34;
+                        self.workspaces.builds_root_workspace_name = cfg[&#34;workspaces&#34;][&#34;builds_root&#34;]
+                        assert &#34;samples&#34; in cfg[&#34;workspaces&#34;], &#34;&#39;workspaces&#39; config must contain key &#39;samples&#39; indicating the workspace for samples in Shoji&#34;
+                        self.workspaces.samples_workspace_name = cfg[&#34;workspaces&#34;][&#34;samples&#34;]
+                        # Note the build workspace cannot be configured; it&#39;s inferred from the working directory
+                if &#34;resources&#34; in cfg:
+                        assert &#34;n_cpus&#34; in cfg[&#34;resources&#34;], &#34;&#39;resources&#39; config must contain key &#39;n_cpus&#39; indicating the number of CPUs to request&#34;
+                        assert &#34;n_gpus&#34; in cfg[&#34;resources&#34;], &#34;&#39;resources&#39; config must contain key &#39;n_gpus&#39; indicating the number of GPUs to request&#34;
+                        assert &#34;memory&#34; in cfg[&#34;resources&#34;], &#34;&#39;resources&#39; config must contain key &#39;memory&#39; indicating the amount (GB) of memory to request&#34;
+                        self.resources.n_cpus = int(cfg[&#34;resources&#34;][&#34;n_cpus&#34;])
+                        self.resources.n_gpus = int(cfg[&#34;resources&#34;][&#34;n_gpus&#34;])
+                        self.resources.memory = int(cfg[&#34;resources&#34;][&#34;memory&#34;])
+                if &#34;recipes&#34; in cfg:
+                        for name, recipe in cfg[&#34;recipes&#34;].items():
+                                self.recipes[name] = recipe
+                if &#34;sources&#34; in cfg:
+                        self.sources = cfg[&#34;sources&#34;]
+                if &#34;onlyif&#34; in cfg:
+                        self.onlyif = cfg[&#34;onlyif&#34;]
+
+        def _load_and_merge(self, fname: Path) -&gt; None:
+                with open(fname) as f:
+                        self._merge(yaml.load(f, Loader=yaml.FullLoader))
+
         @staticmethod
-        def load(punchcard: Punchcard = None) -&gt; Dict:
+        def load(punchcard: Punchcard = None) -&gt; &#34;Config&#34;:
                 if Config._singleton is None:
-                        config: Dict[str, Any] = {}
-
+                        config = Config()
                         # Load the default settings
-                        load_and_merge_config(config, Path(__file__).resolve().parent / &#34;default_config.yaml&#34;)
+                        config._load_and_merge(Path(__file__).resolve().parent / &#34;default_config.yaml&#34;)
                         # Home directory
-                        load_and_merge_config(config, Path.home() / &#34;.cytograph&#34;)
+                        config._load_and_merge(Path.home() / &#34;.cytograph&#34;)
                         # Load config from current folder
-                        load_and_merge_config(config, Path.cwd() / &#34;config.yaml&#34;)
-
+                        config._load_and_merge(Path.cwd() / &#34;config.yaml&#34;)
                 else:
                         config = Config._singleton
 
                 # Load config from current punchcard
                 if punchcard is not None:
-                        merge_config(config, {&#34;punchcards&#34;: punchcard.sources, &#34;onlyif&#34;: punchcard.onlyif})
+                        config._merge({
+                                &#34;punchcards&#34;: punchcard.sources,
+                                &#34;onlyif&#34;: punchcard.onlyif
+                        })
                         if punchcard.resources is not None:
-                                merge_config(config, {&#34;resources&#34;: punchcard.resources})
-                        config[&#34;punchcard&#34;] = punchcard
+                                config.resources.n_cpus = punchcard.resources.n_cpus
+                                config.resources.n_gpus = punchcard.resources.n_gpus
+                                config.resources.memory = punchcard.resources.memory
+                        config.punchcard = punchcard
 
                 Config._singleton = config
                 return config</code></pre>
@@ -98,52 +124,6 @@ class Config:
 <section>
 </section>
 <section>
-<h2 class="section-title" id="header-functions">Functions</h2>
-<dl>
-<dt id="cytograph.pipeline.config.load_and_merge_config"><code class="name flex">
-<span>def <span class="ident">load_and_merge_config</span></span>(<span>config, fname)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Load config from fname and merge it into config</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def load_and_merge_config(config, fname):
-        &#34;&#34;&#34;
-        Load config from fname and merge it into config
-        &#34;&#34;&#34;
-        if os.path.exists(fname):
-                with open(fname) as f:
-                        merge_config(config, yaml.load(f, Loader=yaml.FullLoader))</code></pre>
-</details>
-</dd>
-<dt id="cytograph.pipeline.config.merge_config"><code class="name flex">
-<span>def <span class="ident">merge_config</span></span>(<span>a, b, path=None)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Merge b into a, modifying a in place and returning it</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def merge_config(a, b, path=None):
-        &#34;Merge b into a, modifying a in place and returning it&#34;
-        if path is None: path = []
-        for key in b:
-                if key in a:
-                        if isinstance(a[key], dict) and isinstance(b[key], dict):
-                                merge_config(a[key], b[key], path + [str(key)])
-                        elif a[key] == b[key]:
-                                pass  # same leaf value
-                        else:
-                                a[key] = b[key]
-                else:
-                        a[key] = b[key]
-        return a</code></pre>
-</details>
-</dd>
-</dl>
 </section>
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
@@ -158,29 +138,75 @@ class Config:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Config:
-        _singleton: Optional[Dict[str, Any]] = None
-        
+        _singleton = None
+
+        def __init__(self) -&gt; None:
+                self.workspaces = WorkspacesConfig(&#34;&#34;, &#34;&#34;, None)
+                self.resources = ResourceConfig(1, 0, 8)
+                self.recipes: Dict[str, Any] = {}
+                self.sources: List[str] = []
+                self.onlyif: str = &#34;&#34;
+                self.punchcard: Optional[Punchcard] = None
+                self.path: Path = Path.cwd()
+
+        def __repr__(self) -&gt; str:
+                s = f&#34;workspaces:\n  builds_root: {self.workspaces.builds_root_workspace_name}\n  samples: {self.workspaces.samples_workspace_name}\n&#34;
+                s += f&#34;resources:\n  n_cpus: {self.resources.n_cpus}\n  n_gpus: {self.resources.n_gpus}\n  memory: {self.resources.memory}\n&#34;
+                s += &#34;recipes:\n  &#34; + &#34;\n  &#34;.join(self.recipes.keys()) + &#34;\n&#34;
+                s += &#34;sources: [&#34; + &#34;,&#34;.join(self.sources) + &#34;]\n&#34;
+                s += f&#39;onlyif: &#34;{self.onlyif}&#34;&#39;
+                return s
+
+        def _merge(self, cfg: Dict[str, Any]) -&gt; None:
+                if &#34;workspaces&#34; in cfg:
+                        assert &#34;builds_root&#34; in cfg[&#34;workspaces&#34;], &#34;&#39;workspaces&#39; config must contain key &#39;builds_root&#39; indicating the root workspace for builds in Shoji&#34;
+                        self.workspaces.builds_root_workspace_name = cfg[&#34;workspaces&#34;][&#34;builds_root&#34;]
+                        assert &#34;samples&#34; in cfg[&#34;workspaces&#34;], &#34;&#39;workspaces&#39; config must contain key &#39;samples&#39; indicating the workspace for samples in Shoji&#34;
+                        self.workspaces.samples_workspace_name = cfg[&#34;workspaces&#34;][&#34;samples&#34;]
+                        # Note the build workspace cannot be configured; it&#39;s inferred from the working directory
+                if &#34;resources&#34; in cfg:
+                        assert &#34;n_cpus&#34; in cfg[&#34;resources&#34;], &#34;&#39;resources&#39; config must contain key &#39;n_cpus&#39; indicating the number of CPUs to request&#34;
+                        assert &#34;n_gpus&#34; in cfg[&#34;resources&#34;], &#34;&#39;resources&#39; config must contain key &#39;n_gpus&#39; indicating the number of GPUs to request&#34;
+                        assert &#34;memory&#34; in cfg[&#34;resources&#34;], &#34;&#39;resources&#39; config must contain key &#39;memory&#39; indicating the amount (GB) of memory to request&#34;
+                        self.resources.n_cpus = int(cfg[&#34;resources&#34;][&#34;n_cpus&#34;])
+                        self.resources.n_gpus = int(cfg[&#34;resources&#34;][&#34;n_gpus&#34;])
+                        self.resources.memory = int(cfg[&#34;resources&#34;][&#34;memory&#34;])
+                if &#34;recipes&#34; in cfg:
+                        for name, recipe in cfg[&#34;recipes&#34;].items():
+                                self.recipes[name] = recipe
+                if &#34;sources&#34; in cfg:
+                        self.sources = cfg[&#34;sources&#34;]
+                if &#34;onlyif&#34; in cfg:
+                        self.onlyif = cfg[&#34;onlyif&#34;]
+
+        def _load_and_merge(self, fname: Path) -&gt; None:
+                with open(fname) as f:
+                        self._merge(yaml.load(f, Loader=yaml.FullLoader))
+
         @staticmethod
-        def load(punchcard: Punchcard = None) -&gt; Dict:
+        def load(punchcard: Punchcard = None) -&gt; &#34;Config&#34;:
                 if Config._singleton is None:
-                        config: Dict[str, Any] = {}
-
+                        config = Config()
                         # Load the default settings
-                        load_and_merge_config(config, Path(__file__).resolve().parent / &#34;default_config.yaml&#34;)
+                        config._load_and_merge(Path(__file__).resolve().parent / &#34;default_config.yaml&#34;)
                         # Home directory
-                        load_and_merge_config(config, Path.home() / &#34;.cytograph&#34;)
+                        config._load_and_merge(Path.home() / &#34;.cytograph&#34;)
                         # Load config from current folder
-                        load_and_merge_config(config, Path.cwd() / &#34;config.yaml&#34;)
-
+                        config._load_and_merge(Path.cwd() / &#34;config.yaml&#34;)
                 else:
                         config = Config._singleton
 
                 # Load config from current punchcard
                 if punchcard is not None:
-                        merge_config(config, {&#34;punchcards&#34;: punchcard.sources, &#34;onlyif&#34;: punchcard.onlyif})
+                        config._merge({
+                                &#34;punchcards&#34;: punchcard.sources,
+                                &#34;onlyif&#34;: punchcard.onlyif
+                        })
                         if punchcard.resources is not None:
-                                merge_config(config, {&#34;resources&#34;: punchcard.resources})
-                        config[&#34;punchcard&#34;] = punchcard
+                                config.resources.n_cpus = punchcard.resources.n_cpus
+                                config.resources.n_gpus = punchcard.resources.n_gpus
+                                config.resources.memory = punchcard.resources.memory
+                        config.punchcard = punchcard
 
                 Config._singleton = config
                 return config</code></pre>
@@ -188,7 +214,7 @@ class Config:
 <h3>Static methods</h3>
 <dl>
 <dt id="cytograph.pipeline.config.Config.load"><code class="name flex">
-<span>def <span class="ident">load</span></span>(<span>punchcard: <a title="cytograph.pipeline.punchcards.Punchcard" href="punchcards.html#cytograph.pipeline.punchcards.Punchcard">Punchcard</a> = None) ‑> Dict</span>
+<span>def <span class="ident">load</span></span>(<span>punchcard: <a title="cytograph.pipeline.punchcards.Punchcard" href="punchcards.html#cytograph.pipeline.punchcards.Punchcard">Punchcard</a> = None) ‑> <a title="cytograph.pipeline.config.Config" href="#cytograph.pipeline.config.Config">Config</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -197,32 +223,51 @@ class Config:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@staticmethod
-def load(punchcard: Punchcard = None) -&gt; Dict:
+def load(punchcard: Punchcard = None) -&gt; &#34;Config&#34;:
         if Config._singleton is None:
-                config: Dict[str, Any] = {}
-
+                config = Config()
                 # Load the default settings
-                load_and_merge_config(config, Path(__file__).resolve().parent / &#34;default_config.yaml&#34;)
+                config._load_and_merge(Path(__file__).resolve().parent / &#34;default_config.yaml&#34;)
                 # Home directory
-                load_and_merge_config(config, Path.home() / &#34;.cytograph&#34;)
+                config._load_and_merge(Path.home() / &#34;.cytograph&#34;)
                 # Load config from current folder
-                load_and_merge_config(config, Path.cwd() / &#34;config.yaml&#34;)
-
+                config._load_and_merge(Path.cwd() / &#34;config.yaml&#34;)
         else:
                 config = Config._singleton
 
         # Load config from current punchcard
         if punchcard is not None:
-                merge_config(config, {&#34;punchcards&#34;: punchcard.sources, &#34;onlyif&#34;: punchcard.onlyif})
+                config._merge({
+                        &#34;punchcards&#34;: punchcard.sources,
+                        &#34;onlyif&#34;: punchcard.onlyif
+                })
                 if punchcard.resources is not None:
-                        merge_config(config, {&#34;resources&#34;: punchcard.resources})
-                config[&#34;punchcard&#34;] = punchcard
+                        config.resources.n_cpus = punchcard.resources.n_cpus
+                        config.resources.n_gpus = punchcard.resources.n_gpus
+                        config.resources.memory = punchcard.resources.memory
+                config.punchcard = punchcard
 
         Config._singleton = config
         return config</code></pre>
 </details>
 </dd>
 </dl>
+</dd>
+<dt id="cytograph.pipeline.config.WorkspacesConfig"><code class="flex name class">
+<span>class <span class="ident">WorkspacesConfig</span></span>
+<span>(</span><span>samples_workspace_name: str, builds_root_workspace_name: str, build: Union[shoji.workspace.WorkspaceManager, NoneType])</span>
+</code></dt>
+<dd>
+<div class="desc"><p>WorkspacesConfig(samples_workspace_name: str, builds_root_workspace_name: str, build: Union[shoji.workspace.WorkspaceManager, NoneType])</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class WorkspacesConfig:
+        samples_workspace_name: str
+        builds_root_workspace_name: str
+        build: Optional[shoji.WorkspaceManager]</code></pre>
+</details>
 </dd>
 </dl>
 </section>
@@ -238,12 +283,6 @@ def load(punchcard: Punchcard = None) -&gt; Dict:
 <li><code><a title="cytograph.pipeline" href="index.html">cytograph.pipeline</a></code></li>
 </ul>
 </li>
-<li><h3><a href="#header-functions">Functions</a></h3>
-<ul class="">
-<li><code><a title="cytograph.pipeline.config.load_and_merge_config" href="#cytograph.pipeline.config.load_and_merge_config">load_and_merge_config</a></code></li>
-<li><code><a title="cytograph.pipeline.config.merge_config" href="#cytograph.pipeline.config.merge_config">merge_config</a></code></li>
-</ul>
-</li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
@@ -251,6 +290,9 @@ def load(punchcard: Punchcard = None) -&gt; Dict:
 <ul class="">
 <li><code><a title="cytograph.pipeline.config.Config.load" href="#cytograph.pipeline.config.Config.load">load</a></code></li>
 </ul>
+</li>
+<li>
+<h4><code><a title="cytograph.pipeline.config.WorkspacesConfig" href="#cytograph.pipeline.config.WorkspacesConfig">WorkspacesConfig</a></code></h4>
 </li>
 </ul>
 </li>

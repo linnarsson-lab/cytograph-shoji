@@ -3,12 +3,12 @@ from typing import List, Tuple
 import numpy as np
 import scipy.cluster.hierarchy as hc
 import logging
-from cytograph import requires, creates, Module
+from cytograph import requires, creates, Algorithm
 import cytograph as cg
 import shoji
 
 
-class FeatureSelectionAndMultilevelEnrichment(Module):
+class FeatureSelectionAndMultilevelEnrichment(Algorithm):
 	def __init__(self, n_genes_per_group: int = 1, mask: List[str] = None, **kwargs) -> None:
 		"""
 		Args:
@@ -92,7 +92,7 @@ class FeatureSelectionAndMultilevelEnrichment(Module):
 			cut at n = 2, 4, 8, ... (for n <= n_clusters // 2) clusters and the most enriched n_genes are selected for each cluster
 			(without replacement). Finally, the most enriched gene in each cluster is selected (without replacement) and added to the list.
 
-			Note that this module requires aggregate tensors (MeanExpression, NCells)
+			Note that this algorithm requires aggregate tensors (MeanExpression, NCells)
 		"""
 		# Create symbolic names for the required tensors, which might be renamed by the user
 		logging.info(" FeatureSelectionAndMultilevelEnrichment: Selecting features at 2, 4, 8, ... cluster levels")

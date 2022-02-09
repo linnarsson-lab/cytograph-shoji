@@ -6,7 +6,7 @@ import sys
 import sqlite3 as sqlite
 import os
 import numpy as np
-from cytograph import Module
+from cytograph import Algorithm
 import pandas as pd
 
 
@@ -42,7 +42,7 @@ import pandas as pd
 # Editby emelie <class 'str'>
 # Editat 2019-05-30 16:52:20 <class 'str'>
 
-class LoadSampleMetadata(Module):
+class LoadSampleMetadata(Algorithm):
 	"""
 	Load samples metadata from a sqlite database
 	"""

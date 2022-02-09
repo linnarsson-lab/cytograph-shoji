@@ -3,7 +3,7 @@ import os
 import re
 from typing import List, Tuple
 
-from cytograph import creates, requires, Module
+from cytograph import creates, requires, Algorithm
 
 import numpy as np
 import yaml
@@ -50,7 +50,7 @@ class Annotation:
 		return temp
 
 
-class AutoAnnotate(Module):
+class AutoAnnotate(Algorithm):
 	"""
 	Auto-annotate clusters based on marker genes
 	"""

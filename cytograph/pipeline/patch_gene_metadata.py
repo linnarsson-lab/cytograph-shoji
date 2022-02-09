@@ -1,15 +1,15 @@
-from cytograph.module import requires
+from cytograph.algorithm import requires
 from typing import Dict
 import shoji
 import logging
 import sys
 import os
 import numpy as np
-from cytograph import Module
+from cytograph import Algorithm
 import pandas as pd
 
 
-class PatchGeneMetadata(Module):
+class PatchGeneMetadata(Algorithm):
 	"""
 	Patch gene metadata from an Excel file into an existing workspace
 	"""

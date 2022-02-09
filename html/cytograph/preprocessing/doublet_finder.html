@@ -68,6 +68,19 @@ from unidip import UniDip
 
 class DoubletFinder(Module):
         def __init__(self, proportion_artificial: float = 0.2, fixed_threshold: float = None, max_threshold: float = 1, k: int = None, **kwargs) -&gt; None:
+                &#34;&#34;&#34;
+                Find doublets using the doublet-finder algorithm.
+
+                Args:
+                        proportion_artifical:           How many artifical doublets to create
+                        fixed_threshold:                        Optional fixed threshold to use
+                        max_threshold:                          Max threshold to use
+                        k:                                                      Number of neighbors
+
+                Creates:
+                        DoubletScore            A doublet score in the interval [0, 1]
+                        DoubletFlag                     0: singlet, 1: doublet, 2: neighbor of a doublet
+                &#34;&#34;&#34;
                 super().__init__(**kwargs)
                 self.proportion_artificial = proportion_artificial
                 self.fixed_threshold = fixed_threshold
@@ -78,17 +91,6 @@ class DoubletFinder(Module):
         @creates(&#34;DoubletScore&#34;, &#34;float32&#34;, (&#34;cells&#34;,))
         @creates(&#34;DoubletFlag&#34;, &#34;bool&#34;, (&#34;cells&#34;,))
         def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; Tuple[np.ndarray, np.ndarray]:
-                &#34;&#34;&#34;
-                Find doublets using the doublet-finder algorithm.
-
-                Args:
-                        ws              Workspace
-                        save    If true, save the result to the workspace
-
-                Returns:
-                        DoubletScore            A doublet score in the interval [0, 1]
-                        DoubletFlag                     0: singlet, 1: doublet, 2: neighbor of a doublet
-                &#34;&#34;&#34;
                 # WARNING: for historical reasons, all the processing here is done with matrices oriented (genes, cells)
                 # Step 1: Generate artificial doublets from input
                 logging.info(&#34; DoubletFinder: Creating artificial doublets&#34;)
@@ -103,11 +105,18 @@ class DoubletFinder(Module):
 
                 data_wdoublets = np.concatenate((expression.T, doublets), axis=1)  # Transpose the expression matrix to be (genes, cells)
                 logging.info(&#34; DoubletFinder: Feature selection and dimensionality reduction&#34;)
-                genes = FeatureSelectionByVariance(2000).fit(ws)
-                f = np.divide(data_wdoublets.sum(axis=0), 10e6)
+                genes = FeatureSelectionByVariance(500).fit(ws)
+                logging.info(&#34; DoubletFinder: Computing size factors&#34;)
+                f = np.divide(data_wdoublets.sum(axis=0), 10e4)
+                logging.info(&#34; DoubletFinder: Normalizing by size factors&#34;)
                 norm_data = np.divide(data_wdoublets, f)
+                logging.info(&#34; DoubletFinder: Log transforming&#34;)
                 norm_data = np.log(norm_data + 1)
-                pca = PCA(n_components=50).fit_transform(norm_data[genes, :].T)
+                logging.info(&#34; DoubletFinder: Extracting subset of selected genes&#34;)
+                subset = norm_data[genes, :].T
+                logging.info(f&#34; DoubletFinder: PCA to 50 components with data of shape {subset.shape}&#34;)
+                pca = PCA(n_components=50).fit_transform(subset)
+                logging.info(&#34; DoubletFinder: PCA to 50 components done&#34;)
                 
                 if self.k is None:
                         k = int(np.min([100, n_real_cells * 0.01]))
@@ -207,13 +216,54 @@ class DoubletFinder(Module):
 <span>(</span><span>proportion_artificial: float = 0.2, fixed_threshold: float = None, max_threshold: float = 1, k: int = None, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Find doublets using the doublet-finder algorithm.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>proportion_artifical</code></strong></dt>
+<dd>
+<pre><code>  How many artifical doublets to create
+</code></pre>
+</dd>
+<dt><strong><code>fixed_threshold</code></strong></dt>
+<dd>
+<pre><code>               Optional fixed threshold to use
+</code></pre>
+</dd>
+<dt><strong><code>max_threshold</code></strong></dt>
+<dd>
+<pre><code>                 Max threshold to use
+</code></pre>
+</dd>
+<dt><strong><code>k</code></strong></dt>
+<dd>
+<pre><code>                                             Number of neighbors
+</code></pre>
+</dd>
+</dl>
+<h2 id="creates">Creates</h2>
+<p>DoubletScore
+A doublet score in the interval [0, 1]
+DoubletFlag
+0: singlet, 1: doublet, 2: neighbor of a doublet</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class DoubletFinder(Module):
         def __init__(self, proportion_artificial: float = 0.2, fixed_threshold: float = None, max_threshold: float = 1, k: int = None, **kwargs) -&gt; None:
+                &#34;&#34;&#34;
+                Find doublets using the doublet-finder algorithm.
+
+                Args:
+                        proportion_artifical:           How many artifical doublets to create
+                        fixed_threshold:                        Optional fixed threshold to use
+                        max_threshold:                          Max threshold to use
+                        k:                                                      Number of neighbors
+
+                Creates:
+                        DoubletScore            A doublet score in the interval [0, 1]
+                        DoubletFlag                     0: singlet, 1: doublet, 2: neighbor of a doublet
+                &#34;&#34;&#34;
                 super().__init__(**kwargs)
                 self.proportion_artificial = proportion_artificial
                 self.fixed_threshold = fixed_threshold
@@ -224,17 +274,6 @@ class DoubletFinder(Module):
         @creates(&#34;DoubletScore&#34;, &#34;float32&#34;, (&#34;cells&#34;,))
         @creates(&#34;DoubletFlag&#34;, &#34;bool&#34;, (&#34;cells&#34;,))
         def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; Tuple[np.ndarray, np.ndarray]:
-                &#34;&#34;&#34;
-                Find doublets using the doublet-finder algorithm.
-
-                Args:
-                        ws              Workspace
-                        save    If true, save the result to the workspace
-
-                Returns:
-                        DoubletScore            A doublet score in the interval [0, 1]
-                        DoubletFlag                     0: singlet, 1: doublet, 2: neighbor of a doublet
-                &#34;&#34;&#34;
                 # WARNING: for historical reasons, all the processing here is done with matrices oriented (genes, cells)
                 # Step 1: Generate artificial doublets from input
                 logging.info(&#34; DoubletFinder: Creating artificial doublets&#34;)
@@ -249,11 +288,18 @@ class DoubletFinder(Module):
 
                 data_wdoublets = np.concatenate((expression.T, doublets), axis=1)  # Transpose the expression matrix to be (genes, cells)
                 logging.info(&#34; DoubletFinder: Feature selection and dimensionality reduction&#34;)
-                genes = FeatureSelectionByVariance(2000).fit(ws)
-                f = np.divide(data_wdoublets.sum(axis=0), 10e6)
+                genes = FeatureSelectionByVariance(500).fit(ws)
+                logging.info(&#34; DoubletFinder: Computing size factors&#34;)
+                f = np.divide(data_wdoublets.sum(axis=0), 10e4)
+                logging.info(&#34; DoubletFinder: Normalizing by size factors&#34;)
                 norm_data = np.divide(data_wdoublets, f)
+                logging.info(&#34; DoubletFinder: Log transforming&#34;)
                 norm_data = np.log(norm_data + 1)
-                pca = PCA(n_components=50).fit_transform(norm_data[genes, :].T)
+                logging.info(&#34; DoubletFinder: Extracting subset of selected genes&#34;)
+                subset = norm_data[genes, :].T
+                logging.info(f&#34; DoubletFinder: PCA to 50 components with data of shape {subset.shape}&#34;)
+                pca = PCA(n_components=50).fit_transform(subset)
+                logging.info(&#34; DoubletFinder: PCA to 50 components done&#34;)
                 
                 if self.k is None:
                         k = int(np.min([100, n_real_cells * 0.01]))
@@ -348,20 +394,7 @@ class DoubletFinder(Module):
 <span>def <span class="ident">fit</span></span>(<span>self, ws: shoji.workspace.WorkspaceManager, save: bool = False) ‑> Tuple[numpy.ndarray, numpy.ndarray]</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Find doublets using the doublet-finder algorithm.</p>
-<h2 id="args">Args</h2>
-<p>ws
-Workspace
-save
-If true, save the result to the workspace</p>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt>DoubletScore
-A doublet score in the interval [0, 1]</dt>
-<dt><code>DoubletFlag
-0</code></dt>
-<dd>singlet, 1: doublet, 2: neighbor of a doublet</dd>
-</dl></div>
+<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -370,17 +403,6 @@ A doublet score in the interval [0, 1]</dt>
 @creates(&#34;DoubletScore&#34;, &#34;float32&#34;, (&#34;cells&#34;,))
 @creates(&#34;DoubletFlag&#34;, &#34;bool&#34;, (&#34;cells&#34;,))
 def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; Tuple[np.ndarray, np.ndarray]:
-        &#34;&#34;&#34;
-        Find doublets using the doublet-finder algorithm.
-
-        Args:
-                ws              Workspace
-                save    If true, save the result to the workspace
-
-        Returns:
-                DoubletScore            A doublet score in the interval [0, 1]
-                DoubletFlag                     0: singlet, 1: doublet, 2: neighbor of a doublet
-        &#34;&#34;&#34;
         # WARNING: for historical reasons, all the processing here is done with matrices oriented (genes, cells)
         # Step 1: Generate artificial doublets from input
         logging.info(&#34; DoubletFinder: Creating artificial doublets&#34;)
@@ -395,11 +417,18 @@ def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; Tuple[np.nda
 
         data_wdoublets = np.concatenate((expression.T, doublets), axis=1)  # Transpose the expression matrix to be (genes, cells)
         logging.info(&#34; DoubletFinder: Feature selection and dimensionality reduction&#34;)
-        genes = FeatureSelectionByVariance(2000).fit(ws)
-        f = np.divide(data_wdoublets.sum(axis=0), 10e6)
+        genes = FeatureSelectionByVariance(500).fit(ws)
+        logging.info(&#34; DoubletFinder: Computing size factors&#34;)
+        f = np.divide(data_wdoublets.sum(axis=0), 10e4)
+        logging.info(&#34; DoubletFinder: Normalizing by size factors&#34;)
         norm_data = np.divide(data_wdoublets, f)
+        logging.info(&#34; DoubletFinder: Log transforming&#34;)
         norm_data = np.log(norm_data + 1)
-        pca = PCA(n_components=50).fit_transform(norm_data[genes, :].T)
+        logging.info(&#34; DoubletFinder: Extracting subset of selected genes&#34;)
+        subset = norm_data[genes, :].T
+        logging.info(f&#34; DoubletFinder: PCA to 50 components with data of shape {subset.shape}&#34;)
+        pca = PCA(n_components=50).fit_transform(subset)
+        logging.info(&#34; DoubletFinder: PCA to 50 components done&#34;)
         
         if self.k is None:
                 k = int(np.min([100, n_real_cells * 0.01]))

@@ -1,0 +1,572 @@
+
+        <!doctype html>
+        <html lang="en">
+            <head>
+                <meta charset="utf-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1">
+                <meta name="author" content="Sten Linnarsson">
+                <title>Cytograph algorithms</title>
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+                <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>                
+                <style>
+                    body {
+                        display: grid;
+                        gap: 1rem;
+                        grid-template-columns: 80% 20%;
+                        grid-template-rows: auto;
+                    }
+                    .bd-aside {
+                        padding-top: 4rem;
+                        grid-area: 1 / 2;
+                        scroll-margin-top: 4rem;
+                        min-height: 0;
+                        overflow-y: scroll; 
+                    }
+                </style>
+            </head>
+        </html>
+        <body class='bg-light'>
+    
+        <aside class="bd-aside text-muted align-self-start mb-3 mb-xl-5 px-2">
+            <h2 class="h6 pt-4 pb-3 mb-4 border-bottom">Algorithms</h2>
+            <nav class="small" id="toc">
+                <ul class="list-unstyled">
+    
+            <li class="my-2">
+                <button class="btn d-inline-flex align-items-center collapsed" data-bs-toggle="collapse" aria-expanded="false" data-bs-target="#contents-collapse" aria-controls="contents-collapse">cytograph.annotation +</button>
+                <ul class="list-unstyled ps-3 collapse" id="contents-collapse">
+        
+            <li><a class="d-inline-flex align-items-center rounded" href="#cytograph.annotation.AutoAnnotate">AutoAnnotate</a></li>
+            
+            <li><a class="d-inline-flex align-items-center rounded" href="#cytograph.annotation.Karyotyper">Karyotyper</a></li>
+            </ul></li>
+            <li class="my-2">
+                <button class="btn d-inline-flex align-items-center collapsed" data-bs-toggle="collapse" aria-expanded="false" data-bs-target="#contents-collapse" aria-controls="contents-collapse">cytograph.clustering +</button>
+                <ul class="list-unstyled ps-3 collapse" id="contents-collapse">
+        
+            <li><a class="d-inline-flex align-items-center rounded" href="#cytograph.clustering.Aggregate">Aggregate</a></li>
+            
+            <li><a class="d-inline-flex align-items-center rounded" href="#cytograph.clustering.Dendrogram">Dendrogram</a></li>
+            
+            <li><a class="d-inline-flex align-items-center rounded" href="#cytograph.clustering.PolishedLeiden">PolishedLeiden</a></li>
+            
+            <li><a class="d-inline-flex align-items-center rounded" href="#cytograph.clustering.MorePolishedLeiden">MorePolishedLeiden</a></li>
+            
+            <li><a class="d-inline-flex align-items-center rounded" href="#cytograph.clustering.CutDendrogram">CutDendrogram</a></li>
+            </ul></li>
+            <li class="my-2">
+                <button class="btn d-inline-flex align-items-center collapsed" data-bs-toggle="collapse" aria-expanded="false" data-bs-target="#contents-collapse" aria-controls="contents-collapse">cytograph.decomposition +</button>
+                <ul class="list-unstyled ps-3 collapse" id="contents-collapse">
+        
+            <li><a class="d-inline-flex align-items-center rounded" href="#cytograph.decomposition.GLMPCA">GLMPCA</a></li>
+            
+            <li><a class="d-inline-flex align-items-center rounded" href="#cytograph.decomposition.PrincipalComponents">PrincipalComponents</a></li>
+            
+            <li><a class="d-inline-flex align-items-center rounded" href="#cytograph.decomposition.Harmony">Harmony</a></li>
+            
+            <li><a class="d-inline-flex align-items-center rounded" href="#cytograph.decomposition.ResidualsPCA">ResidualsPCA</a></li>
+            
+            <li><a class="d-inline-flex align-items-center rounded" href="#cytograph.decomposition.IncrementalResidualsPCA">IncrementalResidualsPCA</a></li>
+            </ul></li>
+            <li class="my-2">
+                <button class="btn d-inline-flex align-items-center collapsed" data-bs-toggle="collapse" aria-expanded="false" data-bs-target="#contents-collapse" aria-controls="contents-collapse">cytograph.embedding +</button>
+                <ul class="list-unstyled ps-3 collapse" id="contents-collapse">
+        
+            <li><a class="d-inline-flex align-items-center rounded" href="#cytograph.embedding.ArtOfTsne">ArtOfTsne</a></li>
+            
+            <li><a class="d-inline-flex align-items-center rounded" href="#cytograph.embedding.UMAP">UMAP</a></li>
+            </ul></li>
+            <li class="my-2">
+                <button class="btn d-inline-flex align-items-center collapsed" data-bs-toggle="collapse" aria-expanded="false" data-bs-target="#contents-collapse" aria-controls="contents-collapse">cytograph.enrichment +</button>
+                <ul class="list-unstyled ps-3 collapse" id="contents-collapse">
+        
+            <li><a class="d-inline-flex align-items-center rounded" href="#cytograph.enrichment.FeatureSelectionAndMultilevelEnrichment">FeatureSelectionAndMultilevelEnrichment</a></li>
+            
+            <li><a class="d-inline-flex align-items-center rounded" href="#cytograph.enrichment.FeatureSelectionByVariance">FeatureSelectionByVariance</a></li>
+            
+            <li><a class="d-inline-flex align-items-center rounded" href="#cytograph.enrichment.FeatureSelectionByPearsonResiduals">FeatureSelectionByPearsonResiduals</a></li>
+            
+            <li><a class="d-inline-flex align-items-center rounded" href="#cytograph.enrichment.Enrichment">Enrichment</a></li>
+            
+            <li><a class="d-inline-flex align-items-center rounded" href="#cytograph.enrichment.Trinarize">Trinarize</a></li>
+            </ul></li>
+            <li class="my-2">
+                <button class="btn d-inline-flex align-items-center collapsed" data-bs-toggle="collapse" aria-expanded="false" data-bs-target="#contents-collapse" aria-controls="contents-collapse">cytograph.manifold +</button>
+                <ul class="list-unstyled ps-3 collapse" id="contents-collapse">
+        
+            <li><a class="d-inline-flex align-items-center rounded" href="#cytograph.manifold.RnnManifold">RnnManifold</a></li>
+            </ul></li>
+            <li class="my-2">
+                <button class="btn d-inline-flex align-items-center collapsed" data-bs-toggle="collapse" aria-expanded="false" data-bs-target="#contents-collapse" aria-controls="contents-collapse">cytograph.pipeline +</button>
+                <ul class="list-unstyled ps-3 collapse" id="contents-collapse">
+        
+            <li><a class="d-inline-flex align-items-center rounded" href="#cytograph.pipeline.InitializeWorkspace">InitializeWorkspace</a></li>
+            
+            <li><a class="d-inline-flex align-items-center rounded" href="#cytograph.pipeline.CollectCells">CollectCells</a></li>
+            
+            <li><a class="d-inline-flex align-items-center rounded" href="#cytograph.pipeline.LoadSampleMetadata">LoadSampleMetadata</a></li>
+            
+            <li><a class="d-inline-flex align-items-center rounded" href="#cytograph.pipeline.PatchSampleMetadata">PatchSampleMetadata</a></li>
+            
+            <li><a class="d-inline-flex align-items-center rounded" href="#cytograph.pipeline.PatchGeneMetadata">PatchGeneMetadata</a></li>
+            </ul></li>
+            <li class="my-2">
+                <button class="btn d-inline-flex align-items-center collapsed" data-bs-toggle="collapse" aria-expanded="false" data-bs-target="#contents-collapse" aria-controls="contents-collapse">cytograph.preprocessing +</button>
+                <ul class="list-unstyled ps-3 collapse" id="contents-collapse">
+        
+            <li><a class="d-inline-flex align-items-center rounded" href="#cytograph.preprocessing.Log2Normalizer">Log2Normalizer</a></li>
+            
+            <li><a class="d-inline-flex align-items-center rounded" href="#cytograph.preprocessing.DoubletFinder">DoubletFinder</a></li>
+            
+            <li><a class="d-inline-flex align-items-center rounded" href="#cytograph.preprocessing.CellSummaryStatistics">CellSummaryStatistics</a></li>
+            
+            <li><a class="d-inline-flex align-items-center rounded" href="#cytograph.preprocessing.GeneSummaryStatistics">GeneSummaryStatistics</a></li>
+            
+            <li><a class="d-inline-flex align-items-center rounded" href="#cytograph.preprocessing.DetectSpecies">DetectSpecies</a></li>
+            
+            <li><a class="d-inline-flex align-items-center rounded" href="#cytograph.preprocessing.PearsonResidualsVariance">PearsonResidualsVariance</a></li>
+            
+            <li><a class="d-inline-flex align-items-center rounded" href="#cytograph.preprocessing.QualityControl">QualityControl</a></li>
+            
+            <li><a class="d-inline-flex align-items-center rounded" href="#cytograph.preprocessing.PearsonResiduals">PearsonResiduals</a></li>
+            
+            <li><a class="d-inline-flex align-items-center rounded" href="#cytograph.preprocessing.ClassifyDroplets">ClassifyDroplets</a></li>
+            
+            <li><a class="d-inline-flex align-items-center rounded" href="#cytograph.preprocessing.ComputeCellHashes">ComputeCellHashes</a></li>
+            </ul></li>
+            <li class="my-2">
+                <button class="btn d-inline-flex align-items-center collapsed" data-bs-toggle="collapse" aria-expanded="false" data-bs-target="#contents-collapse" aria-controls="contents-collapse">cytograph.visualization +</button>
+                <ul class="list-unstyled ps-3 collapse" id="contents-collapse">
+        
+            <li><a class="d-inline-flex align-items-center rounded" href="#cytograph.visualization.Heatmap">Heatmap</a></li>
+            
+            <li><a class="d-inline-flex align-items-center rounded" href="#cytograph.visualization.PlotQC">PlotQC</a></li>
+            
+            <li><a class="d-inline-flex align-items-center rounded" href="#cytograph.visualization.PlotBatches">PlotBatches</a></li>
+            
+            <li><a class="d-inline-flex align-items-center rounded" href="#cytograph.visualization.PlotManifold">PlotManifold</a></li>
+            
+            <li><a class="d-inline-flex align-items-center rounded" href="#cytograph.visualization.NumericalScatterplot">NumericalScatterplot</a></li>
+            
+            <li><a class="d-inline-flex align-items-center rounded" href="#cytograph.visualization.CategoricalScatterplot">CategoricalScatterplot</a></li>
+            
+            <li><a class="d-inline-flex align-items-center rounded" href="#cytograph.visualization.PlotAge">PlotAge</a></li>
+            
+            <li><a class="d-inline-flex align-items-center rounded" href="#cytograph.visualization.PlotRegion">PlotRegion</a></li>
+            
+            <li><a class="d-inline-flex align-items-center rounded" href="#cytograph.visualization.PlotSubregion">PlotSubregion</a></li>
+            
+            <li><a class="d-inline-flex align-items-center rounded" href="#cytograph.visualization.PlotCellCycle">PlotCellCycle</a></li>
+            
+            <li><a class="d-inline-flex align-items-center rounded" href="#cytograph.visualization.PlotMarkers">PlotMarkers</a></li>
+            
+            <li><a class="d-inline-flex align-items-center rounded" href="#cytograph.visualization.PlotKaryotype">PlotKaryotype</a></li>
+            
+            <li><a class="d-inline-flex align-items-center rounded" href="#cytograph.visualization.PlotDropletClasses">PlotDropletClasses</a></li>
+            
+            <li><a class="d-inline-flex align-items-center rounded" href="#cytograph.visualization.PlotOverview">PlotOverview</a></li>
+            </ul></li></ul></nav></aside>
+        <div class="bd-cheatsheet container bg-body">
+        <section id="content">
+    <h2>Module 'cytograph.annotation'</h2><p>
+Algorithms for visualization
+</p><h3 style='color: rgb(25, 118, 210)'><a id='cytograph.annotation.AutoAnnotate'>AutoAnnotate</a></h3><p>
+Auto-annotate clusters based on marker genes
+</p><strong>Required tensors</strong><div class='table-responsive'><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>Gene</td><td>string</td><td>("genes",)</td><tr/><tr><td>Trinaries</td><td>float32</td><td>("clusters", "genes")</td><tr/></table></div><strong>Created tensors</strong><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>AnnotationName</td><td>string</td><td>("annotations",)</td><tr/><tr><td>AnnotationDefinition</td><td>string</td><td>("annotations",)</td><tr/><tr><td>AnnotationDescription</td><td>string</td><td>("annotations",)</td><tr/><tr><td>AnnotationPosterior</td><td>float32</td><td>("clusters", "annotations")</td><tr/></table>Recipe: <strong>AutoAnnotate</strong>: {<strong>path</strong>:  str}<br/><p>&nbsp;</p><pre>
+Compute auto-annotation for the workspace using the given definitions
+
+Args:
+	path: 	Path to the auto-annotation database
+</pre><p>&nbsp;</p><p>&nbsp;</p><h3 style='color: rgb(25, 118, 210)'><a id='cytograph.annotation.Karyotyper'>Karyotyper</a></h3><p>
+Estimate the karyotype of tumor cells using immune cells as internal reference
+</p><strong>Required tensors</strong><div class='table-responsive'><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>PearsonResidualsVariance</td><td>float32</td><td>("genes",)</td><tr/><tr><td>GeneTotalUMIs</td><td>uint32</td><td>("genes",)</td><tr/><tr><td>Chromosome</td><td>string</td><td>("genes",)</td><tr/><tr><td>Start</td><td>int64</td><td>("genes",)</td><tr/><tr><td>ClusterID</td><td>uint32</td><td>("clusters",)</td><tr/><tr><td>MeanExpression</td><td>float64</td><td>("clusters", "genes")</td><tr/><tr><td>AnnotationName</td><td>string</td><td>("annotations",)</td><tr/><tr><td>AnnotationPosterior</td><td>float32</td><td>("clusters", "annotations")</td><tr/></table></div><strong>Created tensors</strong><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>Aneuploid</td><td>bool</td><td>("clusters",)</td><tr/><tr><td>KaryotypePloidy</td><td>float32</td><td>("clusters", "karyotype",)</td><tr/><tr><td>KaryotypePosition</td><td>float32</td><td>("karyotype",)</td><tr/><tr><td>KaryotypeChromosome</td><td>string</td><td>("karyotype",)</td><tr/><tr><td>ChromosomeStart</td><td>uint32</td><td>("chromosomes",)</td><tr/><tr><td>ChromosomeLength</td><td>uint32</td><td>("chromosomes",)</td><tr/><tr><td>ChromosomeName</td><td>string</td><td>("chromosomes",)</td><tr/></table>Recipe: <strong>Karyotyper</strong>: {<strong>max_rv</strong>:  int = 3, <strong>min_umis</strong>:  int = 1, <strong>window_size</strong>:  int = 20, <strong>smoothing_bandwidth</strong>:  int = 0}<br/><p>&nbsp;</p><pre>
+Estimate the karyotype
+
+Args:
+	max_rv:              Max residual variance for selecting housekeeping genes
+	min_umis:            Minimum UMIs for selecting housekeeping genes
+	window_size:         Number of genes per window
+	smooting_bandwidth:  Optional bandwidth for smoothing
+
+Remarks:
+	This algorithm first identifies immune cells using the M-IMMUNE auto-annotation
+	(e.g. PTPRC expression) and computes a reference normal karyotype. It then
+	estimates the karyotype of each cluster and calls each as aneuploid or euploid.
+</pre><p>&nbsp;</p><p>&nbsp;</p><h2>Module 'cytograph.clustering'</h2><p>
+Algorithms for annotating clusters
+</p><h3 style='color: rgb(25, 118, 210)'><a id='cytograph.clustering.Aggregate'>Aggregate</a></h3>Recipe: <strong>Aggregate</strong>: {<strong>tensor</strong>:  str, <strong>using</strong>:  str, <strong>into</strong>:  str, <strong>by</strong>:  str = 'Clusters', <strong>orderby</strong>:  str = 'ClusterID', <strong>newdim</strong>:  str = 'clusters'}<br/><p>&nbsp;</p><pre>
+Aggregate tensors by cluster ID (as given by the Clusters tensor)
+
+Args:
+	tensor: The tensor to aggregate
+	using:  The aggregation function ("sum", "count", "first", "nnz", "mean", "variance", or "sd")
+	into:   The name of the newly created aggregate tensor
+	by:     Optionally, the name of the tensor to group by when aggregating (default: 'Clusters')
+	newdim: Optionally, the name of the newly created (or existing) dimension (default: 'clusters')
+
+Remarks:
+	Groups a tensor by the values of another tensor, while applying an aggregation function. For example,
+	to calculate the mean expression by cluster:
+
+		Aggregate: {tensor: Expression, using: mean, into: MeanExpression}
+</pre><p>&nbsp;</p><p>&nbsp;</p><h3 style='color: rgb(25, 118, 210)'><a id='cytograph.clustering.Dendrogram'>Dendrogram</a></h3><p>
+Compute a dendrogram of clusters
+</p><strong>Required tensors</strong><div class='table-responsive'><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>ClusterID</td><td>uint32</td><td>("clusters",)</td><tr/><tr><td>Clusters</td><td>uint32</td><td>("cells",)</td><tr/><tr><td>SelectedFeatures</td><td>bool</td><td>("genes",)</td><tr/><tr><td>MeanExpression</td><td>float64</td><td>("clusters", "genes")</td><tr/></table></div><strong>Created tensors</strong><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>Linkage</td><td>float32</td><td>(None, 4)</td><tr/><tr><td>ClusterID</td><td>uint32</td><td>("clusters",)</td><tr/><tr><td>Clusters</td><td>uint32</td><td>("cells",)</td><tr/></table>Recipe: <strong>Dendrogram</strong>: {}<br/><p>&nbsp;</p><pre>
+Compute a dendrogram of clusters
+
+Remarks:
+	Agglomeration using Ward's linkage on the normalized mean expression per cluster.
+	Mean expression values are normalized to the median total UMIs, and `log2(x + 1)` transformed.
+
+	The returned Clusters and ClusterID are renumbered and correspond to the linkage ordering.
+</pre><p>&nbsp;</p><p>&nbsp;</p><h3 style='color: rgb(25, 118, 210)'><a id='cytograph.clustering.PolishedLeiden'>PolishedLeiden</a></h3><p>
+Leiden clustering with polishing
+</p><strong>Required tensors</strong><div class='table-responsive'><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>Embedding</td><td>float32</td><td>("cells", 2)</td><tr/><tr><td>ManifoldIndices</td><td>uint32</td><td>(None, 2)</td><tr/><tr><td>ManifoldWeights</td><td>float32</td><td>(None)</td><tr/></table></div><strong>Created tensors</strong><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>Clusters</td><td>uint32</td><td>("cells",)</td><tr/></table>Recipe: <strong>PolishedLeiden</strong>: {<strong>resolution</strong>:  float = 1.0, <strong>method</strong>:  str = 'modularity', <strong>max_size</strong>:  int = 0, <strong>min_size</strong>:  int = 10}<br/><p>&nbsp;</p><pre>
+Find clusters on the manifold using the Leiden algorithm, then polish clusters on the embedding.
+
+Args:
+	resolution: The resolution parameter (typically 0.01 - 1; default: 1)
+	method:     The partitioning method ("modularity", "cpm", "surprise", "rb", "rber", or "significance"; default: "modularity")
+	max_size:   The maximum size of clusters (default: 0, i.e. no limit)
+	min_size:   The minimum size of clusters (default: 10)
+
+Remarks:
+	The default method, "modularity", is equivalent to Louvain clustering but the Leiden algorithm is faster
+	and can yield better clusters. The method "surprise" can yield clusters similar to Amos Tanay's Metacell
+	algorithm (i.e. a tiling of the manifold with clusters of similar size), especially if `max_size` is used
+	to cap the cluster size.
+
+	The polishing step consists of two phases. First, the shape of each cluster on the embedding (e.g. TSNE) is
+	considered using Iglewicz-Hoaglin outlier detection, and clusters with too many outliers are re-clustered
+	using DBSCAN on the embedding. Second, all cells in clusters smaller than `min_size` are reassigned
+	to the nearest not-too-small cluster on the embedding. Not that this can result in clusters larger than `max_size`.
+
+	The resolution parameter has no effect on the default method, "modularity".
+</pre><p>&nbsp;</p><p>&nbsp;</p><h3 style='color: rgb(25, 118, 210)'><a id='cytograph.clustering.MorePolishedLeiden'>MorePolishedLeiden</a></h3><p>
+Leiden clustering with some post-processing
+</p><strong>Required tensors</strong><div class='table-responsive'><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>Embedding</td><td>float32</td><td>("cells", 2)</td><tr/><tr><td>Factors</td><td>float32</td><td>("cells", None)</td><tr/><tr><td>ManifoldIndices</td><td>uint32</td><td>(None, 2)</td><tr/><tr><td>ManifoldWeights</td><td>float32</td><td>(None)</td><tr/></table></div><strong>Created tensors</strong><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>Clusters</td><td>uint32</td><td>("cells",)</td><tr/><tr><td>ClustersSecondary</td><td>uint32</td><td>("cells",)</td><tr/><tr><td>ClustersProbability</td><td>float32</td><td>("cells",)</td><tr/><tr><td>ClustersSecondaryProbability</td><td>float32</td><td>("cells",)</td><tr/></table>Recipe: <strong>MorePolishedLeiden</strong>: {<strong>resolution</strong>:  float = 1.0, <strong>method</strong>:  str = 'modularity', <strong>max_size</strong>:  int = 0, <strong>min_size</strong>:  int = 10}<br/><p>&nbsp;</p><pre>
+Find clusters on the manifold using the Leiden algorithm, then polish clusters on the embedding.
+
+Args:
+	resolution: The resolution parameter (typically 0.01 - 1; default: 1)
+	method:     The partitioning method ("modularity", "cpm", "surprise", "rb", "rber", or "significance"; default: "modularity")
+	max_size:   The maximum size of clusters (default: 0, i.e. no limit)
+	min_size:   The minimum size of clusters (default: 10)
+
+Remarks:
+	The default method, "modularity", is equivalent to Louvain clustering but the Leiden algorithm is faster
+	and can yield better clusters. The method "surprise" can yield clusters similar to Amos Tanay's Metacell
+	algorithm (i.e. a tiling of the manifold with clusters of similar size), especially if `max_size` is used
+	to cap the cluster size.
+
+	The polishing step consists of two phases. First, the shape of each cluster on the embedding (e.g. TSNE) is
+	considered using Iglewicz-Hoaglin outlier detection, and clusters with too many outliers are re-clustered
+	using DBSCAN on the embedding. This step is identical to standard PolishedLeiden. 
+	
+	Second, a classifier is trained on all clusters larger than `min_size`, and
+	all cells are reassigned to their maximum probability cluster. This removes all small clusters and outliers.
+	Note that this can result in clusters larger than `max_size`. The probability of the cluster label for
+	each cell is returned, and can be used to identify outliers or intermediate cell states.
+
+	The resolution parameter has no effect on the default method, "modularity".
+</pre><p>&nbsp;</p><p>&nbsp;</p><h3 style='color: rgb(25, 118, 210)'><a id='cytograph.clustering.CutDendrogram'>CutDendrogram</a></h3><p>
+Cut the dendrogram and create punchcards for subtrees
+</p><strong>Required tensors</strong><div class='table-responsive'><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>Linkage</td><td>float32</td><td>(None, 4)</td><tr/><tr><td>Clusters</td><td>uint32</td><td>("cells",)</td><tr/></table></div><strong>Created tensors</strong><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>Subtree</td><td>uint32</td><td>("cells",)</td><tr/></table>Recipe: <strong>CutDendrogram</strong>: {<strong>n_trees</strong>:  int = 2, <strong>min_cells</strong>:  int = 500, <strong>split_when_over</strong>:  int = 50, <strong>split_with_settings</strong>:  Dict = None}<br/><p>&nbsp;</p><pre>
+Cut the dendrogram of clusters and create punchcards for subtrees
+
+Args:
+	n_trees:             Number of subtrees to create
+	min_cells:           Minimum number of cells per subtree
+	split_when_over:     Minimum numbr of clusters per subtree
+	split_with_settings: Dictionary of settings to use for subtrees
+
+Returns:
+	Subtree label for each cell
+
+Remarks:
+	For any subtree with more than split_when_over clusters, a new punchcard is created
+	The new punchcard will inherit settings from its parent, but this can be
+	overridden using 'split_with_settings', e.g. to use a different recipe for
+	the subtree punchcards.
+</pre><p>&nbsp;</p><p>&nbsp;</p><h2>Module 'cytograph.decomposition'</h2><p>
+Algorithms for clustering, aggregation and metaclustering (agglomeration).
+</p><h3 style='color: rgb(25, 118, 210)'><a id='cytograph.decomposition.GLMPCA'>GLMPCA</a></h3><p>
+Project a dataset into a reduced feature space using GLM PCA.
+</p><strong>Required tensors</strong><div class='table-responsive'><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>Expression</td><td>uint16</td><td>("cells", "genes")</td><tr/><tr><td>SelectedFeatures</td><td>bool</td><td>("genes",)</td><tr/><tr><td>TotalUMIs</td><td>uint32</td><td>("cells",)</td><tr/></table></div><strong>Created tensors</strong><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>Factors</td><td>float32</td><td>("cells", None)</td><tr/><tr><td>Loadings</td><td>float32</td><td>("genes", None)</td><tr/></table>Recipe: <strong>GLMPCA</strong>: {<strong>n_factors</strong>:  int, <strong>family</strong>:  str = 'poi', <strong>epsilon</strong>:  float = 0.0001, <strong>penalty</strong>:  float = 1.0, <strong>batch_keys</strong>:  List[str] = None, <strong>covariate_keys</strong>:  List[str] = None}<br/><p>&nbsp;</p><pre>
+This class implements the GLM-PCA dimensionality reduction method for high-dimensional count data.
+
+Args:
+	n_factors: 		The number of factors
+	family: 		The shape of the likelihood ("poi" for Poisson, "nb" for Negative Binomial, "mult" for binomial approximation to multinomial, "bern" for Bernoulli)
+	epsilon: 		Maximum relative change in deviance allowed at convergence
+	penalty: 		The L2 penalty for the latent factors (covariates are not penalized)
+	batch_keys: 	Keys (tensor names) to use as batch keys for batch correction, or None to omit batch correction
+	covariate_keys: Keys (tensor names) to use as numerical covariates (for example, cell cycle scores)
+
+Remarks:
+	The basic model is R = AX'+ZG'+VU', where E[Y]=M=linkinv(R). Regression coefficients are A and G,
+	latent factors are U, and loadings are V. The objective function being optimized is the deviance between
+	Y and M, plus an L2 (ridge) penalty on U and V. Note that glmpca uses a random initialization, so
+	for fully reproducible results one should set the random seed.
+
+	batch_keys are converted to vectors of 1s and 0s indicating the presence of each unique value
+	covariate_keys are left as-is and interpreted as numerical covariates
+</pre><p>&nbsp;</p><p>&nbsp;</p><h3 style='color: rgb(25, 118, 210)'><a id='cytograph.decomposition.PrincipalComponents'>PrincipalComponents</a></h3><p>
+Project a dataset into a reduced feature space using PCA.
+</p><strong>Required tensors</strong><div class='table-responsive'><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>Expression</td><td>uint16</td><td>("cells", "genes")</td><tr/><tr><td>SelectedFeatures</td><td>bool</td><td>("genes",)</td><tr/><tr><td>TotalUMIs</td><td>uint32</td><td>("cells",)</td><tr/></table></div><strong>Created tensors</strong><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>Factors</td><td>float32</td><td>("cells", None)</td><tr/><tr><td>Loadings</td><td>float32</td><td>("genes", None)</td><tr/></table>Recipe: <strong>PrincipalComponents</strong>: {<strong>n_factors</strong>:  int = 50}<br/><p>&nbsp;</p><pre>
+Args:
+	n_factors:  	The number of retained components
+
+Remarks:
+	This algorithm loads all the data for selected features, which may require 
+	a large amount of memory
+</pre><p>&nbsp;</p><p>&nbsp;</p><h3 style='color: rgb(25, 118, 210)'><a id='cytograph.decomposition.Harmony'>Harmony</a></h3><p>
+Remove batch effects
+</p><strong>Required tensors</strong><div class='table-responsive'><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>Factors</td><td>float32</td><td>("cells", None)</td><tr/></table></div><strong>Created tensors</strong><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>Factors</td><td>float32</td><td>("cells", None)</td><tr/></table>Recipe: <strong>Harmony</strong>: {<strong>batch_keys</strong>:  List[str] = []}<br/><p>&nbsp;</p><pre>
+Remove batch effects using Harmony
+
+Args:
+	batch_keys: List of names of tensors that indicate batches (e.g. `["Chemistry"]`)
+
+Remarks:
+	Uses harmony-pytorch (https://github.com/lilab-bcb/harmony-pytorch)
+
+	By default, this algorithm will overwrite the existing Factors tensor. If you
+	want to keep the original factors, use `creates: {Factors: MyFactors}` in the
+	recipe to rename the output.
+</pre><p>&nbsp;</p><p>&nbsp;</p><h3 style='color: rgb(25, 118, 210)'><a id='cytograph.decomposition.ResidualsPCA'>ResidualsPCA</a></h3><p>
+Project a dataset into a reduced feature space using PCA on Pearson residuals.
+See https://www.biorxiv.org/content/10.1101/2020.12.01.405886v1.full.pdf
+</p><strong>Required tensors</strong><div class='table-responsive'><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>Expression</td><td>uint16</td><td>("cells", "genes")</td><tr/><tr><td>SelectedFeatures</td><td>bool</td><td>("genes",)</td><tr/><tr><td>TotalUMIs</td><td>uint32</td><td>("cells",)</td><tr/><tr><td>GeneTotalUMIs</td><td>uint32</td><td>("genes",)</td><tr/><tr><td>OverallTotalUMIs</td><td>uint64</td><td>()</td><tr/></table></div><strong>Created tensors</strong><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>Factors</td><td>float32</td><td>("cells", None)</td><tr/><tr><td>Loadings</td><td>float32</td><td>("genes", None)</td><tr/></table>Recipe: <strong>ResidualsPCA</strong>: {<strong>n_factors</strong>:  int = 50}<br/><p>&nbsp;</p><pre>
+Args:
+	n_factors:  	The number of retained components
+
+Remarks:
+	This algorithm loads all the data for selected features, which may require 
+	a large amount of memory
+</pre><p>&nbsp;</p><p>&nbsp;</p><h3 style='color: rgb(25, 118, 210)'><a id='cytograph.decomposition.IncrementalResidualsPCA'>IncrementalResidualsPCA</a></h3><p>
+Project a dataset into a reduced feature space using PCA on Pearson residuals.
+See https://www.biorxiv.org/content/10.1101/2020.12.01.405886v1.full.pdf
+</p><strong>Required tensors</strong><div class='table-responsive'><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>Expression</td><td>uint16</td><td>("cells", "genes")</td><tr/><tr><td>SelectedFeatures</td><td>bool</td><td>("genes",)</td><tr/><tr><td>TotalUMIs</td><td>uint32</td><td>("cells",)</td><tr/><tr><td>GeneTotalUMIs</td><td>uint32</td><td>("genes",)</td><tr/><tr><td>OverallTotalUMIs</td><td>uint64</td><td>()</td><tr/></table></div><strong>Created tensors</strong><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>Factors</td><td>float32</td><td>("cells", None)</td><tr/><tr><td>Loadings</td><td>float32</td><td>("genes", None)</td><tr/></table>Recipe: <strong>IncrementalResidualsPCA</strong>: {<strong>n_factors</strong>:  int = 50}<br/><p>&nbsp;</p><pre>
+Args:
+	n_factors:  	The number of retained components
+
+Remarks:
+	This algorithm loads data incrementally, in batches.
+</pre><p>&nbsp;</p><p>&nbsp;</p><h2>Module 'cytograph.embedding'</h2><p>
+Algorithms for decomposition of an expression matrix into components
+</p><h3 style='color: rgb(25, 118, 210)'><a id='cytograph.embedding.ArtOfTsne'>ArtOfTsne</a></h3><p>
+t-Stochastic Neighborhood Embedding (TSNE)
+</p><strong>Required tensors</strong><div class='table-responsive'><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>Factors</td><td>float32</td><td>("cells", None)</td><tr/></table></div><strong>Created tensors</strong><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>Embedding</td><td>float32</td><td>("cells", 2)</td><tr/></table>Recipe: <strong>ArtOfTsne</strong>: {<strong>metric</strong>:  Union[str, Callable] = 'euclidean', <strong>exaggeration</strong>:  float = -1, <strong>perplexity</strong>:  int = 30, <strong>init_method</strong>:  Union[str, Callable] = 'pca'}<br/><p>&nbsp;</p><pre>
+Implementation of Dmitry Kobak and Philipp Berens "The art of using t-SNE for single-cell transcriptomics" based on openTSNE.
+See https://doi.org/10.1038/s41467-019-13056-x | www.nature.com/naturecommunications
+
+Args:
+	metric			Any metric allowed by Annoy (default: 'euclidean')
+	exaggeration	The exaggeration to use for the embedding or -1 to use automatic heuristic (default: -1)
+	perplexity		The perplexity to use for the embedding
+	init_method		Either 'pca', 'random', or a custom method with the same signature as initialization.pca.
+</pre><p>&nbsp;</p><p>&nbsp;</p><h3 style='color: rgb(25, 118, 210)'><a id='cytograph.embedding.UMAP'>UMAP</a></h3><p>
+Uniform Manifold Approximation and Projection for Dimension Reduction
+</p><strong>Required tensors</strong><div class='table-responsive'><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>Factors</td><td>float32</td><td>("cells", None)</td><tr/></table></div><strong>Created tensors</strong><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>Embedding</td><td>float32</td><td>("cells", 2)</td><tr/></table>Recipe: <strong>UMAP</strong>: {<strong>metric</strong>:  Union[str, Callable] = 'euclidean', <strong>n_neighbors</strong>:  int = 15, <strong>min_dist</strong>:  float = 0.1, <strong>density_regularization</strong>:  float = 0}<br/><p>&nbsp;</p><pre>
+Uniform Manifold Approximation and Projection for Dimension Reduction.
+See https://umap-learn.readthedocs.io/en/latest/index.html
+
+Args:
+	metric						Any metric allowed by Annoy (default: 'euclidean')
+	density_regularization		Use DensMAP (https://www.biorxiv.org/content/10.1101/2020.05.12.077776v1) to regularize local density (default: 0)
+</pre><p>&nbsp;</p><p>&nbsp;</p><h2>Module 'cytograph.enrichment'</h2><p>
+Algorithms for embedding into a low-dimensional space
+</p><h3 style='color: rgb(25, 118, 210)'><a id='cytograph.enrichment.FeatureSelectionAndMultilevelEnrichment'>FeatureSelectionAndMultilevelEnrichment</a></h3><strong>Required tensors</strong><div class='table-responsive'><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>Species</td><td>string</td><td>()</td><tr/><tr><td>Linkage</td><td>float32</td><td>None</td><tr/><tr><td>MeanExpression</td><td>None</td><td>("clusters", "genes")</td><tr/><tr><td>NCells</td><td>uint64</td><td>("clusters",)</td><tr/><tr><td>Gene</td><td>string</td><td>("genes",)</td><tr/></table></div><strong>Created tensors</strong><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>Enrichment</td><td>float32</td><td>("clusters", "genes")</td><tr/></table>Recipe: <strong>FeatureSelectionAndMultilevelEnrichment</strong>: {<strong>n_genes_per_group</strong>:  int = 1, <strong>mask</strong>:  List[str] = None}<br/><p>&nbsp;</p><pre>
+Args:
+	n_genes			Number of genes to select for each cluster group
+	mask			Optional list indicating categories of genes that should not be selected
+</pre><p>&nbsp;</p><p>&nbsp;</p><h3 style='color: rgb(25, 118, 210)'><a id='cytograph.enrichment.FeatureSelectionByVariance'>FeatureSelectionByVariance</a></h3><p>
+Select features by excess variance
+</p><strong>Required tensors</strong><div class='table-responsive'><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>Species</td><td>string</td><td>()</td><tr/><tr><td>Expression</td><td>None</td><td>("cells", "genes")</td><tr/><tr><td>MeanExpression</td><td>float32</td><td>("genes",)</td><tr/><tr><td>StdevExpression</td><td>float32</td><td>("genes",)</td><tr/></table></div><strong>Created tensors</strong><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>SelectedFeatures</td><td>bool</td><td>("genes</td><tr/></table>Recipe: <strong>FeatureSelectionByVariance</strong>: {<strong>n_genes</strong>:  int, <strong>mask</strong>:  List[str] = None}<br/><p>&nbsp;</p><pre>
+Fit a noise model (CV vs mean) and select high-variance genes
+
+Args:
+	n_genes		Number of genes to select
+	mask		Optional mask (numpy bool array) indicating genes that should not be selected
+
+Remarks:
+	If the tensor "ValidGenes" exists, only ValidGenes == True genes will be selected
+</pre><p>&nbsp;</p><p>&nbsp;</p><h3 style='color: rgb(25, 118, 210)'><a id='cytograph.enrichment.FeatureSelectionByPearsonResiduals'>FeatureSelectionByPearsonResiduals</a></h3><p>
+Select features by Pearson Residuals
+</p><strong>Required tensors</strong><div class='table-responsive'><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>Species</td><td>string</td><td>()</td><tr/><tr><td>PearsonResidualsVariance</td><td>float32</td><td>("genes",)</td><tr/><tr><td>ValidGenes</td><td>bool</td><td>("genes",)</td><tr/></table></div><strong>Created tensors</strong><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>SelectedFeatures</td><td>bool</td><td>("genes</td><tr/></table>Recipe: <strong>FeatureSelectionByPearsonResiduals</strong>: {<strong>n_genes</strong>:  int, <strong>mask</strong>:  List[str] = None}<br/><p>&nbsp;</p><pre>
+Args:
+	n_genes		Number of genes to select
+	mask		Optional list indicating categories of genes that should not be selected
+
+Remarks:
+	If the tensor "ValidGenes" exists, only ValidGenes == True genes will be selected
+</pre><p>&nbsp;</p><p>&nbsp;</p><h3 style='color: rgb(25, 118, 210)'><a id='cytograph.enrichment.Enrichment'>Enrichment</a></h3><strong>Required tensors</strong><div class='table-responsive'><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>MeanExpression</td><td>None</td><td>("clusters", "genes")</td><tr/></table></div><strong>Created tensors</strong><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>Enrichment</td><td>float32</td><td>("clusters", "genes")</td><tr/></table>Recipe: <strong>Enrichment</strong>: {}<br/><p>&nbsp;</p><pre>
+Compute gene enrichment in clusters
+
+Remarks:
+	Gene enrichment is computed as the regularized fold-change between
+	each cluster and all other clusters. This is different from the
+	previous cytograph version, which also considered the fraction non-zeros.
+</pre><p>&nbsp;</p><p>&nbsp;</p><h3 style='color: rgb(25, 118, 210)'><a id='cytograph.enrichment.Trinarize'>Trinarize</a></h3><p>
+Compute trinarization probability per cluster
+</p><strong>Required tensors</strong><div class='table-responsive'><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>Nonzeros</td><td>uint64</td><td>("clusters", "genes")</td><tr/><tr><td>NCells</td><td>uint64</td><td>("clusters",)</td><tr/></table></div><strong>Created tensors</strong><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>Trinaries</td><td>float32</td><td>("clusters", "genes")</td><tr/></table>Recipe: <strong>Trinarize</strong>: {<strong>f</strong>:  float = 0.2}<br/><p>&nbsp;</p><pre>
+Compute trinarization probability per cluster
+
+Args:
+	f:    The trinarization expression threshold
+
+Remarks:
+	Computes the probability that at least a fraction f of the
+	cells in a cluster express the gene, given the size of the cluster
+	and the observed number of non-zero values.
+</pre><p>&nbsp;</p><p>&nbsp;</p><h2>Module 'cytograph.manifold'</h2><p>
+Algorithms for feature selection and for computing enrichments
+</p><h3 style='color: rgb(25, 118, 210)'><a id='cytograph.manifold.RnnManifold'>RnnManifold</a></h3><p>
+Compute a radius nearest-neighbor manifold graph
+</p><strong>Required tensors</strong><div class='table-responsive'><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>Factors</td><td>float32</td><td>("cells", None)</td><tr/></table></div><strong>Created tensors</strong><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>ManifoldRadius</td><td>float32</td><td>()</td><tr/><tr><td>ManifoldIndices</td><td>uint32</td><td>(None, 2)</td><tr/><tr><td>ManifoldWeights</td><td>float32</td><td>(None, )</td><tr/></table>Recipe: <strong>RnnManifold</strong>: {<strong>k</strong>:  int, <strong>metric</strong>:  str, <strong>mutual</strong>:  bool = False, <strong>max_radius_percentile</strong>:  int = 90}<br/><p>&nbsp;</p><pre>
+Compute a radius nearest-neighbor manifold graph
+
+Args:
+	k:                     The maximum number of neighbors to use
+	metric:                The metric to use (e.g. "euclidean")
+	mutual:                If true, use only mutual neighbors
+	max_radius_percentile: The radius to use, expressed as a percentile
+</pre><p>&nbsp;</p><p>&nbsp;</p><h2>Module 'cytograph.pipeline'</h2><p>
+Algorithms for computing a manifold
+</p><h3 style='color: rgb(25, 118, 210)'><a id='cytograph.pipeline.InitializeWorkspace'>InitializeWorkspace</a></h3><p>
+Initialize a new workspace for the build
+</p>Recipe: <strong>InitializeWorkspace</strong>: {<strong>from_workspace</strong>:  str, <strong>tensors</strong>:  List[str]}<br/><p>&nbsp;</p><pre>
+Args:
+	from_workspace	Full shoji path of the workspace to use as template
+	tensors			List of names of tensors to import from the template workspace
+
+Remarks:
+	The new workspace will be initialized by creating
+	cells and genes dimensions, and importing all the tensors listed (supports only scalars and gene tensors)
+</pre><p>&nbsp;</p><p>&nbsp;</p><h3 style='color: rgb(25, 118, 210)'><a id='cytograph.pipeline.CollectCells'>CollectCells</a></h3><p>
+Collect tensors from the source workspaces (e.g. samples)
+</p>Recipe: <strong>CollectCells</strong>: {<strong>tensors</strong>:  List[str], <strong>expand_scalars</strong>:  bool = True, <strong>renumber_tensors</strong>:  List[str] = None}<br/><p>&nbsp;</p><pre>
+Args:
+	tensors				List of tensors to be collected (must exist and have same dims and dtype in all samples)
+	expand_scalars		If true, scalars are converted to vectors (repeating the scalar value)
+	renumber_tensors	List of tensors that should be renumbered to stay unique while combining sources (e.g. "Clusters")
+
+Remarks:
+	Tensors can be renamed on the fly using the A->B syntax, e.g. "SampleName->SampleID"
+</pre><p>&nbsp;</p><p>&nbsp;</p><h3 style='color: rgb(25, 118, 210)'><a id='cytograph.pipeline.LoadSampleMetadata'>LoadSampleMetadata</a></h3><p>
+Load samples metadata from a sqlite database
+</p>Recipe: <strong>LoadSampleMetadata</strong>: {<strong>db</strong>:  str, <strong>tensors</strong>:  List[str], <strong>convert_10x_sample_name</strong>:  bool = True}<br/><p>&nbsp;</p><pre>
+Load samples metadata from a sqlite database
+
+Args:
+	db 				Full path to the metadata database file (a sqlite .db file)
+	tensors			List of tensors to be created (or overwritten) from metadata
+	convert_10x_sample_name		If true, convert "10X101_2" to "TenX101_2"
+</pre><p>&nbsp;</p><p>&nbsp;</p><h3 style='color: rgb(25, 118, 210)'><a id='cytograph.pipeline.PatchSampleMetadata'>PatchSampleMetadata</a></h3><p>
+Patch samples metadata from an Excel file into an existing workspace
+</p><strong>Required tensors</strong><div class='table-responsive'><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>SampleID</td><td>string</td><td>("cells",)</td><tr/></table></div>Recipe: <strong>PatchSampleMetadata</strong>: {<strong>table</strong>:  str, <strong>tensors</strong>:  Dict[str, str]}<br/><p>&nbsp;</p><pre>
+Patch samples metadata from an Excel file into an existing workspace
+
+Args:
+	table 			Full path to the metadata database file (a sqlite .db file)
+	tensors			Dict of tensors to be loaded from metadata, and their types
+</pre><p>&nbsp;</p><p>&nbsp;</p><h3 style='color: rgb(25, 118, 210)'><a id='cytograph.pipeline.PatchGeneMetadata'>PatchGeneMetadata</a></h3><p>
+Patch gene metadata from an Excel file into an existing workspace
+</p><strong>Required tensors</strong><div class='table-responsive'><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>Accession</td><td>string</td><td>("genes",)</td><tr/></table></div>Recipe: <strong>PatchGeneMetadata</strong>: {<strong>table</strong>:  str, <strong>patch_accession_from</strong>:  str = None}<br/><p>&nbsp;</p><pre>
+Args:
+	table 			Full path to the metadata database file (a sqlite .db file)
+</pre><p>&nbsp;</p><p>&nbsp;</p><h2>Module 'cytograph.preprocessing'</h2><p>
+Algorithms and utilities for collecting cells, metadata and running the pipeline
+</p><h3 style='color: rgb(25, 118, 210)'><a id='cytograph.preprocessing.Log2Normalizer'>Log2Normalizer</a></h3><p>
+Normalize and log2-transform a dataset, dealing properly
+with edge cases such as division by zero.
+</p><strong>Required tensors</strong><div class='table-responsive'><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>Expression</td><td>None</td><td>("cells", "genes")</td><tr/><tr><td>TotalUMIs</td><td>uint32</td><td>("cells",)</td><tr/></table></div><strong>Created tensors</strong><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>Log2Level</td><td>uint16</td><td>()</td><tr/><tr><td>Log2Mean</td><td>float32</td><td>("cells",)</td><tr/></table>Recipe: <strong>Log2Normalizer</strong>: {<strong>level</strong>:  int = 0}<br/><p>&nbsp;</p><pre>
+Normalize and log2-transform a dataset.
+
+Args:
+	level			The level to which each cell should be normalized (or 0 to use the median)
+
+Creates:
+	Log2Level:		The level to which all cells should be normalized
+	Log2Mean: 		The mean of the log2-transformed values
+
+Remarks:
+	The normalization is not saved to the workspace. Instead, Log2Level and Log2Mean
+	are saved, which can be used later to transform expression data. To transform
+	new data using an existing transform, use Log2Normalizer.load()
+</pre><p>&nbsp;</p><p>&nbsp;</p><h3 style='color: rgb(25, 118, 210)'><a id='cytograph.preprocessing.DoubletFinder'>DoubletFinder</a></h3><strong>Required tensors</strong><div class='table-responsive'><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>Expression</td><td>None</td><td>("cells", "genes")</td><tr/></table></div><strong>Created tensors</strong><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>DoubletScore</td><td>float32</td><td>("cells",)</td><tr/><tr><td>DoubletFlag</td><td>bool</td><td>("cells",)</td><tr/></table>Recipe: <strong>DoubletFinder</strong>: {<strong>proportion_artificial</strong>:  float = 0.2, <strong>fixed_threshold</strong>:  float = None, <strong>max_threshold</strong>:  float = 1, <strong>k</strong>:  int = None}<br/><p>&nbsp;</p><pre>
+Find doublets using the doublet-finder algorithm.
+
+Args:
+	proportion_artifical:		How many artifical doublets to create
+	fixed_threshold:			Optional fixed threshold to use
+	max_threshold:				Max threshold to use
+	k:							Number of neighbors
+
+Creates:
+	DoubletScore		A doublet score in the interval [0, 1]
+	DoubletFlag			0: singlet, 1: doublet, 2: neighbor of a doublet
+</pre><p>&nbsp;</p><p>&nbsp;</p><h3 style='color: rgb(25, 118, 210)'><a id='cytograph.preprocessing.CellSummaryStatistics'>CellSummaryStatistics</a></h3><strong>Required tensors</strong><div class='table-responsive'><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>Expression</td><td>uint16</td><td>("cells", "genes")</td><tr/><tr><td>Chromosome</td><td>string</td><td>("genes",)</td><tr/><tr><td>Gene</td><td>string</td><td>("genes",)</td><tr/><tr><td>Unspliced</td><td>None</td><td>("cells", "genes")</td><tr/><tr><td>Species</td><td>string</td><td>()</td><tr/></table></div><strong>Created tensors</strong><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>NGenes</td><td>uint32</td><td>("cells",)</td><tr/><tr><td>TotalUMIs</td><td>uint32</td><td>("cells",)</td><tr/><tr><td>MitoFraction</td><td>float32</td><td>("cells",)</td><tr/><tr><td>UnsplicedFraction</td><td>float32</td><td>("cells",)</td><tr/><tr><td>CellCycleFraction</td><td>float32</td><td>("cells",)</td><tr/></table>Recipe: <strong>CellSummaryStatistics</strong>: {}<br/><p>&nbsp;</p><pre>
+Calculate summary statistics for each cell
+
+Returns:
+	NGenes				Number of non-zero genes per cell
+	TotalUMIs			Total UMIs per cell
+	MitoFraction		Fraction mitochondrial UMIs per cell
+	UnsplicedFraction	Fraction unspliced UMIs per cell
+	CellCycleFraction	Fraction cell cycle UMIs per cell
+
+Remarks:
+	The complete Expression and Unspliced tensors are loaded into memory
+	If species is None, cell cycle scores are set to 0
+</pre><p>&nbsp;</p><p>&nbsp;</p><h3 style='color: rgb(25, 118, 210)'><a id='cytograph.preprocessing.GeneSummaryStatistics'>GeneSummaryStatistics</a></h3><strong>Required tensors</strong><div class='table-responsive'><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>Expression</td><td>uint16</td><td>("cells", "genes")</td><tr/><tr><td>TotalUMIs</td><td>uint32</td><td>("cells",)</td><tr/></table></div><strong>Created tensors</strong><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>MeanExpression</td><td>float32</td><td>("genes",)</td><tr/><tr><td>StdevExpression</td><td>float32</td><td>("genes",)</td><tr/><tr><td>Nonzeros</td><td>uint32</td><td>("genes",)</td><tr/><tr><td>GeneTotalUMIs</td><td>uint32</td><td>("genes",)</td><tr/><tr><td>ValidGenes</td><td>bool</td><td>("genes",)</td><tr/><tr><td>OverallTotalUMIs</td><td>uint64</td><td>()</td><tr/></table>Recipe: <strong>GeneSummaryStatistics</strong>: {}<br/><p>&nbsp;</p><pre>
+Calculate summary statistics for each gene
+
+Creates:
+	MeanExpression		Mean expression per gene
+	StdevExpression		Standard deviation of expression per gene
+	Nonzeros			Nonzero count per gene
+	GeneTotalUMIs		Total UMIs per gene
+	ValidGenes			Bool array indicating genes with nnz > 10
+</pre><p>&nbsp;</p><p>&nbsp;</p><h3 style='color: rgb(25, 118, 210)'><a id='cytograph.preprocessing.DetectSpecies'>DetectSpecies</a></h3><p>
+Use gene names to detect the species
+</p><strong>Required tensors</strong><div class='table-responsive'><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>Gene</td><td>string</td><td>("genes",)</td><tr/></table></div><strong>Created tensors</strong><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>Species</td><td>string</td><td>()</td><tr/></table>Recipe: <strong>DetectSpecies</strong>: {}<br/><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><h3 style='color: rgb(25, 118, 210)'><a id='cytograph.preprocessing.PearsonResidualsVariance'>PearsonResidualsVariance</a></h3><strong>Required tensors</strong><div class='table-responsive'><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>Expression</td><td>uint16</td><td>("cells", "genes")</td><tr/><tr><td>TotalUMIs</td><td>uint32</td><td>("cells",)</td><tr/><tr><td>GeneTotalUMIs</td><td>uint32</td><td>("genes",)</td><tr/><tr><td>OverallTotalUMIs</td><td>uint64</td><td>()</td><tr/></table></div><strong>Created tensors</strong><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>PearsonResidualsVariance</td><td>float32</td><td>("genes",)</td><tr/></table>Recipe: <strong>PearsonResidualsVariance</strong>: {}<br/><p>&nbsp;</p><pre>
+Calculate the variance of the Pearson residuals for each gene
+
+Creates:
+	PearsonResidualsVariance		Residuals variance per gene across cells
+
+Remarks:
+	See equation 9 on p. 4 of https://doi.org/10.1101/2020.12.01.405886
+</pre><p>&nbsp;</p><p>&nbsp;</p><h3 style='color: rgb(25, 118, 210)'><a id='cytograph.preprocessing.QualityControl'>QualityControl</a></h3><p>
+Compute QC metrics and mark valid cells (note: consider using ClassifyDroplets instead)
+</p><strong>Required tensors</strong><div class='table-responsive'><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>MitoFraction</td><td>float32</td><td>("cells",)</td><tr/><tr><td>UnsplicedFraction</td><td>float32</td><td>("cells",)</td><tr/><tr><td>TotalUMIs</td><td>uint32</td><td>("cells",)</td><tr/><tr><td>DoubletScore</td><td>float32</td><td>("cells",)</td><tr/><tr><td>DoubletFlag</td><td>bool</td><td>("cells",)</td><tr/></table></div><strong>Created tensors</strong><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>ValidCells</td><td>bool</td><td>("cells",)</td><tr/><tr><td>PassedQC</td><td>bool</td><td>()</td><tr/></table>Recipe: <strong>QualityControl</strong>: {<strong>doublet_threshold</strong>:  Union[float, str] = 'auto', <strong>min_umis</strong>:  int = 0, <strong>max_mt_fraction</strong>:  float = 1, <strong>min_unspliced_fraction</strong>:  float = 0, <strong>min_fraction_good_cells</strong>:  float = 0}<br/><p>&nbsp;</p><pre>
+Args:
+	doublet_threshold		Threshold to call doublets, or "auto" to use automatic threshold (default: "auto")
+	min_umis				Minimum number of UMIs (default: 0)
+	max_mt_fraction			Maximum fraction mitochondrial UMIs (default: 1)
+	min_unspliced_fraction	Minimum fraction unspliced UMIs (default: 0)
+	min_fraction_good_cells	Minimum fraction of cells that must pass QC for the sample to pass as a whole (default: 0)
+</pre><p>&nbsp;</p><p>&nbsp;</p><h3 style='color: rgb(25, 118, 210)'><a id='cytograph.preprocessing.PearsonResiduals'>PearsonResiduals</a></h3><p>
+Compute the clipped Pearson residuals.
+See https://www.biorxiv.org/content/10.1101/2020.12.01.405886v1.full.pdf
+</p><strong>Required tensors</strong><div class='table-responsive'><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>Expression</td><td>uint16</td><td>("cells", "genes")</td><tr/><tr><td>TotalUMIs</td><td>uint32</td><td>("cells",)</td><tr/><tr><td>GeneTotalUMIs</td><td>uint32</td><td>("genes",)</td><tr/><tr><td>OverallTotalUMIs</td><td>uint64</td><td>()</td><tr/></table></div><strong>Created tensors</strong><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>PearsonResiduals</td><td>float32</td><td>("cells", "genes")</td><tr/></table>Recipe: <strong>PearsonResiduals</strong>: {}<br/><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><h3 style='color: rgb(25, 118, 210)'><a id='cytograph.preprocessing.ClassifyDroplets'>ClassifyDroplets</a></h3><p>
+Classify droplets based on total UMI count and unspliced fraction
+</p><strong>Required tensors</strong><div class='table-responsive'><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>UnsplicedFraction</td><td>float32</td><td>("cells",)</td><tr/><tr><td>TotalUMIs</td><td>uint32</td><td>("cells",)</td><tr/><tr><td>DoubletScore</td><td>float32</td><td>("cells",)</td><tr/><tr><td>Expression</td><td>uint16</td><td>("cells", "genes")</td><tr/><tr><td>Chromosome</td><td>string</td><td>("genes",)</td><tr/></table></div><strong>Created tensors</strong><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>DropletClass</td><td>uint8</td><td>("cells",)</td><tr/><tr><td>ValidCells</td><td>bool</td><td>("cells",)</td><tr/><tr><td>PassedQC</td><td>bool</td><td>()</td><tr/></table>Recipe: <strong>ClassifyDroplets</strong>: {<strong>min_umis</strong>:  int = 1500, <strong>min_unspliced_fraction</strong>:  float = 0.1, <strong>m</strong>:  int = 200, <strong>k</strong>:  int = 1000, <strong>min_pdf</strong>:  float = 0.1, <strong>max_doublet_score</strong>:  float = 0.4, <strong>max_mito_fraction</strong>:  float = 0.25}<br/><p>&nbsp;</p><pre>
+Args:
+	min_umis                 Minimum UMIs for valid cells
+	min_unspliced_fraction   Minimum unspliced fraction for valid cells
+	m                        UMI intercept for valid cells
+	k                        UMI per unspliced fraction slope for valid cells
+	min_pdf                  Minimum gaussian pdf for valid cells
+	max_doublet_score        Max allowed doublet score for valid cells
+	max_mito_fraction        Max allowed mitochondrial UMI fraction for valid cells
+</pre><p>&nbsp;</p><p>&nbsp;</p><h3 style='color: rgb(25, 118, 210)'><a id='cytograph.preprocessing.ComputeCellHashes'>ComputeCellHashes</a></h3><p>
+Compute invariant cell hashes based on the expression matrix. Cell hashes can be used to
+identify cells from different analysis runs.
+</p><strong>Required tensors</strong><div class='table-responsive'><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>Expression</td><td>uint16</td><td>("cells", "genes")</td><tr/></table></div><strong>Created tensors</strong><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>Hashes</td><td>uint64</td><td>("cells",)</td><tr/></table>Recipe: <strong>ComputeCellHashes</strong>: {}<br/><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><h2>Module 'cytograph.visualization'</h2><p>
+Algorithms for preprocessing samples
+</p><h3 style='color: rgb(25, 118, 210)'><a id='cytograph.visualization.Heatmap'>Heatmap</a></h3><strong>Required tensors</strong><div class='table-responsive'><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>MeanExpression</td><td>float64</td><td>("clusters", "genes")</td><tr/><tr><td>Gene</td><td>string</td><td>("genes",)</td><tr/><tr><td>Enrichment</td><td>float32</td><td>("clusters", "genes")</td><tr/><tr><td>Species</td><td>string</td><td>()</td><tr/><tr><td>NCells</td><td>uint64</td><td>("clusters",)</td><tr/></table></div>Recipe: <strong>Heatmap</strong>: {<strong>filename</strong>:  str = 'heatmap.png', <strong>genes_per_cluster</strong>:  int = 2}<br/><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><h3 style='color: rgb(25, 118, 210)'><a id='cytograph.visualization.PlotQC'>PlotQC</a></h3><strong>Required tensors</strong><div class='table-responsive'><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>Embedding</td><td>float32</td><td>("cells", 2)</td><tr/><tr><td>ValidCells</td><td>bool</td><td>("cells",)</td><tr/><tr><td>DoubletFlag</td><td>bool</td><td>("cells",)</td><tr/><tr><td>DoubletScore</td><td>float32</td><td>("cells",)</td><tr/><tr><td>TotalUMIs</td><td>uint32</td><td>("cells",)</td><tr/><tr><td>NGenes</td><td>uint32</td><td>("cells",)</td><tr/><tr><td>UnsplicedFraction</td><td>float32</td><td>("cells",)</td><tr/><tr><td>MitoFraction</td><td>float32</td><td>("cells",)</td><tr/></table></div>Recipe: <strong>PlotQC</strong>: {<strong>filename</strong>:  str = 'qc.png'}<br/><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><h3 style='color: rgb(25, 118, 210)'><a id='cytograph.visualization.PlotBatches'>PlotBatches</a></h3><strong>Required tensors</strong><div class='table-responsive'><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>Embedding</td><td>float32</td><td>("cells", 2)</td><tr/></table></div>Recipe: <strong>PlotBatches</strong>: {<strong>filename</strong>:  str = 'batches.png'}<br/><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><h3 style='color: rgb(25, 118, 210)'><a id='cytograph.visualization.PlotManifold'>PlotManifold</a></h3><strong>Required tensors</strong><div class='table-responsive'><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>Gene</td><td>string</td><td>("genes",)</td><tr/><tr><td>Clusters</td><td>uint32</td><td>("cells",)</td><tr/><tr><td>Embedding</td><td>float32</td><td>("cells", 2)</td><tr/><tr><td>ManifoldIndices</td><td>uint32</td><td>(None, 2)</td><tr/><tr><td>NCells</td><td>uint64</td><td>("clusters",)</td><tr/><tr><td>ClusterID</td><td>uint32</td><td>("clusters",)</td><tr/><tr><td>Enrichment</td><td>float32</td><td>("clusters", "genes")</td><tr/></table></div>Recipe: <strong>PlotManifold</strong>: {<strong>filename</strong>:  str = 'manifold.png'}<br/><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><h3 style='color: rgb(25, 118, 210)'><a id='cytograph.visualization.NumericalScatterplot'>NumericalScatterplot</a></h3><strong>Required tensors</strong><div class='table-responsive'><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>Embedding</td><td>float32</td><td>("cells", 2)</td><tr/></table></div>Recipe: <strong>NumericalScatterplot</strong>: {<strong>tensor</strong>:  str, <strong>width</strong>:  float = 8, <strong>height</strong>:  float = 8, <strong>cmap</strong>:  str = 'viridis', <strong>vmin</strong>:  float = None, <strong>vmax</strong>:  float = None, <strong>vcenter</strong>:  float = None, <strong>filename</strong>:  str = 'scatter.png'}<br/><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><h3 style='color: rgb(25, 118, 210)'><a id='cytograph.visualization.CategoricalScatterplot'>CategoricalScatterplot</a></h3><strong>Required tensors</strong><div class='table-responsive'><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>Embedding</td><td>float32</td><td>("cells", 2)</td><tr/></table></div>Recipe: <strong>CategoricalScatterplot</strong>: {<strong>tensor</strong>:  str, <strong>width</strong>:  float = 8, <strong>height</strong>:  float = 8, <strong>legend</strong>:  str = 'outside', <strong>filename</strong>:  str = 'scatter.png'}<br/><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><h3 style='color: rgb(25, 118, 210)'><a id='cytograph.visualization.PlotAge'>PlotAge</a></h3><strong>Required tensors</strong><div class='table-responsive'><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>Age</td><td>float32</td><td>("cells",)</td><tr/><tr><td>Clusters</td><td>uint32</td><td>("cells",)</td><tr/><tr><td>Embedding</td><td>float32</td><td>("cells", 2)</td><tr/></table></div>Recipe: <strong>PlotAge</strong>: {<strong>filename</strong>:  str = 'age.png'}<br/><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><h3 style='color: rgb(25, 118, 210)'><a id='cytograph.visualization.PlotRegion'>PlotRegion</a></h3><strong>Required tensors</strong><div class='table-responsive'><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>Region</td><td>string</td><td>("cells",)</td><tr/><tr><td>Clusters</td><td>uint32</td><td>("cells",)</td><tr/><tr><td>Embedding</td><td>float32</td><td>("cells", 2)</td><tr/></table></div>Recipe: <strong>PlotRegion</strong>: {<strong>filename</strong>:  str = 'region.png'}<br/><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><h3 style='color: rgb(25, 118, 210)'><a id='cytograph.visualization.PlotSubregion'>PlotSubregion</a></h3><strong>Required tensors</strong><div class='table-responsive'><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>Subregion</td><td>string</td><td>("cells",)</td><tr/><tr><td>Clusters</td><td>uint32</td><td>("cells",)</td><tr/><tr><td>Embedding</td><td>float32</td><td>("cells", 2)</td><tr/></table></div>Recipe: <strong>PlotSubregion</strong>: {<strong>filename</strong>:  str = 'subregion.png'}<br/><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><h3 style='color: rgb(25, 118, 210)'><a id='cytograph.visualization.PlotCellCycle'>PlotCellCycle</a></h3><strong>Required tensors</strong><div class='table-responsive'><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>CellCycleFraction</td><td>float32</td><td>("cells",)</td><tr/><tr><td>Clusters</td><td>uint32</td><td>("cells",)</td><tr/><tr><td>Embedding</td><td>float32</td><td>("cells", 2)</td><tr/></table></div>Recipe: <strong>PlotCellCycle</strong>: {<strong>filename</strong>:  str = 'cellcycle.png'}<br/><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><h3 style='color: rgb(25, 118, 210)'><a id='cytograph.visualization.PlotMarkers'>PlotMarkers</a></h3><strong>Required tensors</strong><div class='table-responsive'><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>Gene</td><td>string</td><td>("genes",)</td><tr/><tr><td>ClusterID</td><td>uint32</td><td>("clusters",)</td><tr/><tr><td>MeanExpression</td><td>float64</td><td>("clusters", "genes")</td><tr/><tr><td>Embedding</td><td>float32</td><td>("cells", 2)</td><tr/></table></div>Recipe: <strong>PlotMarkers</strong>: {<strong>markers</strong>:  str = 'immune', <strong>filename</strong>:  str = None}<br/><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><h3 style='color: rgb(25, 118, 210)'><a id='cytograph.visualization.PlotKaryotype'>PlotKaryotype</a></h3><strong>Required tensors</strong><div class='table-responsive'><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>Expression</td><td>uint16</td><td>("cells", "genes")</td><tr/><tr><td>Clusters</td><td>uint32</td><td>("cells",)</td><tr/><tr><td>ClusterID</td><td>uint32</td><td>("clusters",)</td><tr/><tr><td>Embedding</td><td>float32</td><td>("cells", 2)</td><tr/><tr><td>Gene</td><td>string</td><td>("genes",)</td><tr/><tr><td>Aneuploid</td><td>bool</td><td>("clusters",)</td><tr/><tr><td>KaryotypePloidy</td><td>float32</td><td>("clusters", "karyotype",)</td><tr/><tr><td>KaryotypePosition</td><td>float32</td><td>("karyotype",)</td><tr/><tr><td>KaryotypeChromosome</td><td>string</td><td>("karyotype",)</td><tr/><tr><td>ChromosomeStart</td><td>uint32</td><td>("chromosomes",)</td><tr/><tr><td>ChromosomeLength</td><td>uint32</td><td>("chromosomes",)</td><tr/><tr><td>ChromosomeName</td><td>string</td><td>("chromosomes",)</td><tr/></table></div>Recipe: <strong>PlotKaryotype</strong>: {<strong>filename</strong>:  str = 'karyotype.png'}<br/><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><h3 style='color: rgb(25, 118, 210)'><a id='cytograph.visualization.PlotDropletClasses'>PlotDropletClasses</a></h3><strong>Required tensors</strong><div class='table-responsive'><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>Embedding</td><td>float32</td><td>("cells", 2)</td><tr/><tr><td>UnsplicedFraction</td><td>float32</td><td>("cells",)</td><tr/><tr><td>TotalUMIs</td><td>uint32</td><td>("cells",)</td><tr/><tr><td>MitoFraction</td><td>float32</td><td>("cells",)</td><tr/><tr><td>DropletClass</td><td>uint8</td><td>("cells",)</td><tr/></table></div>Recipe: <strong>PlotDropletClasses</strong>: {<strong>filename</strong>:  str = 'droplets.png'}<br/><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><h3 style='color: rgb(25, 118, 210)'><a id='cytograph.visualization.PlotOverview'>PlotOverview</a></h3><strong>Required tensors</strong><div class='table-responsive'><table class='table table-striped'><tr><th></th><th>dtype</th><th>dims</th></tr><tr><td>Species</td><td>string</td><td>()</td><tr/><tr><td>Gene</td><td>string</td><td>("genes",)</td><tr/><tr><td>Clusters</td><td>uint32</td><td>("cells",)</td><tr/><tr><td>TotalUMIs</td><td>uint32</td><td>("cells",)</td><tr/><tr><td>CellCycleFraction</td><td>float32</td><td>("cells",)</td><tr/><tr><td>DoubletScore</td><td>float32</td><td>("cells",)</td><tr/><tr><td>Region</td><td>string</td><td>("cells",)</td><tr/><tr><td>Subregion</td><td>string</td><td>("cells",)</td><tr/><tr><td>Age</td><td>float32</td><td>("cells",)</td><tr/><tr><td>MeanExpression</td><td>float64</td><td>("clusters",)</td><tr/><tr><td>ClusterID</td><td>uint32</td><td>("clusters",)</td><tr/><tr><td>AnnotationName</td><td>string</td><td>("annotations",)</td><tr/><tr><td>AnnotationPosterior</td><td>float32</td><td>("clusters", "annotations")</td><tr/><tr><td>NCells</td><td>uint64</td><td>("clusters",)</td><tr/><tr><td>Linkage</td><td>float32</td><td>None</td><tr/><tr><td>Enrichment</td><td>float32</td><td>("clusters", "genes")</td><tr/></table></div>Recipe: <strong>PlotOverview</strong>: {<strong>filename</strong>:  str = None}<br/><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p></section></div>
+        </body></html>
+    

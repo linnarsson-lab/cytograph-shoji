@@ -2,12 +2,12 @@ from typing import List, Tuple
 
 import numpy as np
 import logging
-from cytograph import requires, creates, Module
+from cytograph import requires, creates, Algorithm
 import cytograph as cg
 import shoji
 
 
-class Enrichment(Module):
+class Enrichment(Algorithm):
 	def __init__(self, **kwargs) -> None:
 		"""
 		Compute gene enrichment in clusters

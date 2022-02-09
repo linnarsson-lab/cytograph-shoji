@@ -2,11 +2,11 @@ from typing import Tuple
 import shoji
 import numpy as np
 import cytograph as cg
-from cytograph import requires, creates, Module
+from cytograph import requires, creates, Algorithm
 import logging
 
 
-class GeneSummaryStatistics(Module):
+class GeneSummaryStatistics(Algorithm):
 	def __init__(self, **kwargs) -> None:
 		"""
 		Calculate summary statistics for each gene

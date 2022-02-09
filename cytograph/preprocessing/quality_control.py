@@ -1,11 +1,11 @@
 from typing import Tuple, Union
 import shoji
 import numpy as np
-from cytograph import requires, creates, Module
+from cytograph import requires, creates, Algorithm
 import logging
 
 
-class QualityControl(Module):
+class QualityControl(Algorithm):
 	"""
 	Compute QC metrics and mark valid cells (note: consider using ClassifyDroplets instead)
 	"""

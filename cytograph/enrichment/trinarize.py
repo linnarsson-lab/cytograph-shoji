@@ -1,11 +1,11 @@
 from math import exp, lgamma, log
 from scipy.special import betainc, betaln
-from cytograph import requires, creates, Module
+from cytograph import requires, creates, Algorithm
 import numpy as np
 import shoji
 
 
-class Trinarize(Module):
+class Trinarize(Algorithm):
 	"""
 	Compute trinarization probability per cluster
 	"""

@@ -1,12 +1,12 @@
 import cytograph as cg
-from cytograph import creates, requires, Module
+from cytograph import creates, requires, Algorithm
 import logging
 import numpy as np
 import scipy.sparse as sparse
 import shoji
 
 
-class RnnManifold(Module):
+class RnnManifold(Algorithm):
 	"""
 	Compute a radius nearest-neighbor manifold graph
 	"""

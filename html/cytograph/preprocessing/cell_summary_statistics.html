@@ -36,25 +36,8 @@ import logging
 
 class CellSummaryStatistics(Module):
         def __init__(self, **kwargs) -&gt; None:
-                super().__init__(**kwargs)
-
-        @requires(&#34;Expression&#34;, &#34;uint16&#34;, (&#34;cells&#34;, &#34;genes&#34;))
-        @requires(&#34;Chromosome&#34;, &#34;string&#34;, (&#34;genes&#34;,))
-        @requires(&#34;Gene&#34;, &#34;string&#34;, (&#34;genes&#34;,))
-        @requires(&#34;Unspliced&#34;, &#34;uint16&#34;, (&#34;cells&#34;, &#34;genes&#34;))
-        @requires(&#34;Species&#34;, &#34;string&#34;, ())
-        @creates(&#34;NGenes&#34;, &#34;uint32&#34;, (&#34;cells&#34;,))
-        @creates(&#34;TotalUMIs&#34;, &#34;uint32&#34;, (&#34;cells&#34;,))
-        @creates(&#34;MitoFraction&#34;, &#34;float32&#34;, (&#34;cells&#34;,))
-        @creates(&#34;UnsplicedFraction&#34;, &#34;float32&#34;, (&#34;cells&#34;,))
-        @creates(&#34;CellCycleFraction&#34;, &#34;float32&#34;, (&#34;cells&#34;,))
-        def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
                 &#34;&#34;&#34;
                 Calculate summary statistics for each cell
-
-                Args:
-                        ws                              shoji workspace
-                        save                    if true, save the result to the workspace
 
                 Returns:
                         NGenes                          Number of non-zero genes per cell
@@ -67,11 +50,26 @@ class CellSummaryStatistics(Module):
                         The complete Expression and Unspliced tensors are loaded into memory
                         If species is None, cell cycle scores are set to 0
                 &#34;&#34;&#34;
+                super().__init__(**kwargs)
+
+        @requires(&#34;Expression&#34;, &#34;uint16&#34;, (&#34;cells&#34;, &#34;genes&#34;))
+        @requires(&#34;Chromosome&#34;, &#34;string&#34;, (&#34;genes&#34;,))
+        @requires(&#34;Gene&#34;, &#34;string&#34;, (&#34;genes&#34;,))
+        @requires(&#34;Unspliced&#34;, None, (&#34;cells&#34;, &#34;genes&#34;))
+        @requires(&#34;Species&#34;, &#34;string&#34;, ())
+        @creates(&#34;NGenes&#34;, &#34;uint32&#34;, (&#34;cells&#34;,))
+        @creates(&#34;TotalUMIs&#34;, &#34;uint32&#34;, (&#34;cells&#34;,))
+        @creates(&#34;MitoFraction&#34;, &#34;float32&#34;, (&#34;cells&#34;,))
+        @creates(&#34;UnsplicedFraction&#34;, &#34;float32&#34;, (&#34;cells&#34;,))
+        @creates(&#34;CellCycleFraction&#34;, &#34;float32&#34;, (&#34;cells&#34;,))
+        def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
                 logging.info(&#34; CellSummaryStatistics: Loading &#39;Expression&#39; and &#39;Unspliced&#39; tensors&#34;)
                 x = self.Expression[:]
-                u = self.Unspliced[:]
+                u = self.Unspliced[:].astype(&#34;uint16&#34;)
 
                 mito_genes = self.Chromosome[:] == &#34;MT&#34;
+                if mito_genes.sum() == 0:
+                        mito_genes = self.Chromosome[:] == &#34;chrM&#34;
 
                 logging.info(f&#34; CellSummaryStatistics: Computing summary statistics for {ws.cells.length} cells&#34;)
                 nnz = np.count_nonzero(x, axis=1)
@@ -118,32 +116,29 @@ class CellSummaryStatistics(Module):
 <span>(</span><span>**kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Calculate summary statistics for each cell</p>
+<h2 id="returns">Returns</h2>
+<p>NGenes
+Number of non-zero genes per cell
+TotalUMIs
+Total UMIs per cell
+MitoFraction
+Fraction mitochondrial UMIs per cell
+UnsplicedFraction
+Fraction unspliced UMIs per cell
+CellCycleFraction
+Fraction cell cycle UMIs per cell</p>
+<h2 id="remarks">Remarks</h2>
+<p>The complete Expression and Unspliced tensors are loaded into memory
+If species is None, cell cycle scores are set to 0</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class CellSummaryStatistics(Module):
         def __init__(self, **kwargs) -&gt; None:
-                super().__init__(**kwargs)
-
-        @requires(&#34;Expression&#34;, &#34;uint16&#34;, (&#34;cells&#34;, &#34;genes&#34;))
-        @requires(&#34;Chromosome&#34;, &#34;string&#34;, (&#34;genes&#34;,))
-        @requires(&#34;Gene&#34;, &#34;string&#34;, (&#34;genes&#34;,))
-        @requires(&#34;Unspliced&#34;, &#34;uint16&#34;, (&#34;cells&#34;, &#34;genes&#34;))
-        @requires(&#34;Species&#34;, &#34;string&#34;, ())
-        @creates(&#34;NGenes&#34;, &#34;uint32&#34;, (&#34;cells&#34;,))
-        @creates(&#34;TotalUMIs&#34;, &#34;uint32&#34;, (&#34;cells&#34;,))
-        @creates(&#34;MitoFraction&#34;, &#34;float32&#34;, (&#34;cells&#34;,))
-        @creates(&#34;UnsplicedFraction&#34;, &#34;float32&#34;, (&#34;cells&#34;,))
-        @creates(&#34;CellCycleFraction&#34;, &#34;float32&#34;, (&#34;cells&#34;,))
-        def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
                 &#34;&#34;&#34;
                 Calculate summary statistics for each cell
-
-                Args:
-                        ws                              shoji workspace
-                        save                    if true, save the result to the workspace
 
                 Returns:
                         NGenes                          Number of non-zero genes per cell
@@ -156,11 +151,26 @@ class CellSummaryStatistics(Module):
                         The complete Expression and Unspliced tensors are loaded into memory
                         If species is None, cell cycle scores are set to 0
                 &#34;&#34;&#34;
+                super().__init__(**kwargs)
+
+        @requires(&#34;Expression&#34;, &#34;uint16&#34;, (&#34;cells&#34;, &#34;genes&#34;))
+        @requires(&#34;Chromosome&#34;, &#34;string&#34;, (&#34;genes&#34;,))
+        @requires(&#34;Gene&#34;, &#34;string&#34;, (&#34;genes&#34;,))
+        @requires(&#34;Unspliced&#34;, None, (&#34;cells&#34;, &#34;genes&#34;))
+        @requires(&#34;Species&#34;, &#34;string&#34;, ())
+        @creates(&#34;NGenes&#34;, &#34;uint32&#34;, (&#34;cells&#34;,))
+        @creates(&#34;TotalUMIs&#34;, &#34;uint32&#34;, (&#34;cells&#34;,))
+        @creates(&#34;MitoFraction&#34;, &#34;float32&#34;, (&#34;cells&#34;,))
+        @creates(&#34;UnsplicedFraction&#34;, &#34;float32&#34;, (&#34;cells&#34;,))
+        @creates(&#34;CellCycleFraction&#34;, &#34;float32&#34;, (&#34;cells&#34;,))
+        def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
                 logging.info(&#34; CellSummaryStatistics: Loading &#39;Expression&#39; and &#39;Unspliced&#39; tensors&#34;)
                 x = self.Expression[:]
-                u = self.Unspliced[:]
+                u = self.Unspliced[:].astype(&#34;uint16&#34;)
 
                 mito_genes = self.Chromosome[:] == &#34;MT&#34;
+                if mito_genes.sum() == 0:
+                        mito_genes = self.Chromosome[:] == &#34;chrM&#34;
 
                 logging.info(f&#34; CellSummaryStatistics: Computing summary statistics for {ws.cells.length} cells&#34;)
                 nnz = np.count_nonzero(x, axis=1)
@@ -202,26 +212,7 @@ class CellSummaryStatistics(Module):
 <span>def <span class="ident">fit</span></span>(<span>self, ws: shoji.workspace.WorkspaceManager, save: bool = False) ‑> Tuple[numpy.ndarray, numpy.ndarray, numpy.ndarray, numpy.ndarray, numpy.ndarray]</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Calculate summary statistics for each cell</p>
-<h2 id="args">Args</h2>
-<p>ws
-shoji workspace
-save
-if true, save the result to the workspace</p>
-<h2 id="returns">Returns</h2>
-<p>NGenes
-Number of non-zero genes per cell
-TotalUMIs
-Total UMIs per cell
-MitoFraction
-Fraction mitochondrial UMIs per cell
-UnsplicedFraction
-Fraction unspliced UMIs per cell
-CellCycleFraction
-Fraction cell cycle UMIs per cell</p>
-<h2 id="remarks">Remarks</h2>
-<p>The complete Expression and Unspliced tensors are loaded into memory
-If species is None, cell cycle scores are set to 0</p></div>
+<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -229,7 +220,7 @@ If species is None, cell cycle scores are set to 0</p></div>
 <pre><code class="python">@requires(&#34;Expression&#34;, &#34;uint16&#34;, (&#34;cells&#34;, &#34;genes&#34;))
 @requires(&#34;Chromosome&#34;, &#34;string&#34;, (&#34;genes&#34;,))
 @requires(&#34;Gene&#34;, &#34;string&#34;, (&#34;genes&#34;,))
-@requires(&#34;Unspliced&#34;, &#34;uint16&#34;, (&#34;cells&#34;, &#34;genes&#34;))
+@requires(&#34;Unspliced&#34;, None, (&#34;cells&#34;, &#34;genes&#34;))
 @requires(&#34;Species&#34;, &#34;string&#34;, ())
 @creates(&#34;NGenes&#34;, &#34;uint32&#34;, (&#34;cells&#34;,))
 @creates(&#34;TotalUMIs&#34;, &#34;uint32&#34;, (&#34;cells&#34;,))
@@ -237,29 +228,13 @@ If species is None, cell cycle scores are set to 0</p></div>
 @creates(&#34;UnsplicedFraction&#34;, &#34;float32&#34;, (&#34;cells&#34;,))
 @creates(&#34;CellCycleFraction&#34;, &#34;float32&#34;, (&#34;cells&#34;,))
 def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-        &#34;&#34;&#34;
-        Calculate summary statistics for each cell
-
-        Args:
-                ws                              shoji workspace
-                save                    if true, save the result to the workspace
-
-        Returns:
-                NGenes                          Number of non-zero genes per cell
-                TotalUMIs                       Total UMIs per cell
-                MitoFraction            Fraction mitochondrial UMIs per cell
-                UnsplicedFraction       Fraction unspliced UMIs per cell
-                CellCycleFraction       Fraction cell cycle UMIs per cell
-        
-        Remarks:
-                The complete Expression and Unspliced tensors are loaded into memory
-                If species is None, cell cycle scores are set to 0
-        &#34;&#34;&#34;
         logging.info(&#34; CellSummaryStatistics: Loading &#39;Expression&#39; and &#39;Unspliced&#39; tensors&#34;)
         x = self.Expression[:]
-        u = self.Unspliced[:]
+        u = self.Unspliced[:].astype(&#34;uint16&#34;)
 
         mito_genes = self.Chromosome[:] == &#34;MT&#34;
+        if mito_genes.sum() == 0:
+                mito_genes = self.Chromosome[:] == &#34;chrM&#34;
 
         logging.info(f&#34; CellSummaryStatistics: Computing summary statistics for {ws.cells.length} cells&#34;)
         nnz = np.count_nonzero(x, axis=1)

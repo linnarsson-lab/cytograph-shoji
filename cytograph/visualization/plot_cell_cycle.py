@@ -5,11 +5,11 @@ import matplotlib.patheffects as PathEffects
 import numpy as np
 
 import shoji
-from cytograph import Module, requires, div0
+from cytograph import Algorithm, requires, div0
 import numpy_groupies as npg
 
 
-class PlotCellCycle(Module):
+class PlotCellCycle(Algorithm):
 	def __init__(self, filename: str = "cellcycle.png", **kwargs) -> None:
 		super().__init__(**kwargs)
 		self.filename = filename

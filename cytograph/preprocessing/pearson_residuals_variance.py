@@ -1,11 +1,11 @@
 import shoji
 import numpy as np
-from cytograph import requires, creates, Module
+from cytograph import requires, creates, Algorithm
 from ..utils import div0
 import logging
 
 
-class PearsonResidualsVariance(Module):
+class PearsonResidualsVariance(Algorithm):
 	def __init__(self, **kwargs) -> None:
 		"""
 		Calculate the variance of the Pearson residuals for each gene

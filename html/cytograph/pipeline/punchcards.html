@@ -27,24 +27,26 @@
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">import logging
-import os
 import sys
 from typing import Any, Dict, List, Optional
 import yaml
+from pathlib import Path
+from .resource_config import ResourceConfig
 
 
 class Punchcard:
-        def __init__(self, path: str) -&gt; None:
-                items = os.path.basename(path).split(&#34;.&#34;)
+        def __init__(self, path: Path) -&gt; None:
+                items = path.name.split(&#34;.&#34;)
                 if len(items) &gt; 2:
-                        logging.error(&#34;Punchcard name cannot contain dots (apart from .yaml suffix)&#34;)
+                        logging.error(f&#34;Punchcard name &#39;{path.name}&#39; cannot contain dots (apart from .yaml suffix)&#34;)
                         sys.exit(1)
                 self.name = items[0]
-                if not os.path.exists(path):
+                if not path.exists():
                         logging.error(f&#34;Punchcard &#39;{path}&#39; not found.&#34;)
                         sys.exit(1)
                 with open(path) as f:
                         spec: Dict[str, Any] = yaml.load(f, Loader=yaml.FullLoader)
+                self.with_annotation = spec.get(&#34;with_annotation&#34;)
                 self.onlyif = spec.get(&#34;onlyif&#34;, None)
                 sources_spec = spec.get(&#34;sources&#34;, [])
                 self.sources: List[str] = []
@@ -57,20 +59,29 @@ class Punchcard:
                                 self.sources.append(s)
                                 self.sources_onlyif.append(self.onlyif)
                 self.recipe = spec.get(&#34;recipe&#34;, &#34;punchcard&#34;)
-                self.resources = spec.get(&#34;resources&#34;)
+                resources = spec.get(&#34;resources&#34;, {})
+                n_cpus = resources.get(&#34;n_cpus&#34;, 1)
+                n_gpus = resources.get(&#34;n_gpus&#34;, 0)
+                memory = resources.get(&#34;memory&#34;, 8)
+                self.resources = ResourceConfig(n_cpus, n_gpus, memory)
 
         @staticmethod
-        def load_all(path: str) -&gt; List[&#34;Punchcard&#34;]:
+        def load_all(path: Path):
+                path = Path(path)
                 result: List[Punchcard] = []
-                if os.path.exists(path):
-                        for f in os.listdir(path):
-                                if f.lower().endswith(&#34;.yaml&#34;):
-                                        result.append(Punchcard(os.path.join(path, f)))
+                if path.exists():
+                        for f in path.iterdir():
+                                if f.name.endswith(&#34;.yaml&#34;):
+                                        if len(f.name.split(&#34;.&#34;)) &gt; 2:
+                                                logging.error(f&#34;Skipping punchcard &#39;{f.name}&#39; because it contains an extra period (.) which is not allowed&#34;)
+                                        else:
+                                                result.append(Punchcard(path / f))
+                else:
+                        logging.error(f&#34;Failed to load punchcards because path &#39;{path}&#39; does not exist&#34;)
                 return result
 
-
 class PunchcardDeck:
-        def __init__(self, punchcard_dir: str) -&gt; None:
+        def __init__(self, punchcard_dir: Path) -&gt; None:
                 self.punchcards: Dict[str, Punchcard] = {}
                 for p in Punchcard.load_all(punchcard_dir):
                         self.punchcards[p.name] = p</code></pre>
@@ -87,7 +98,7 @@ class PunchcardDeck:
 <dl>
 <dt id="cytograph.pipeline.punchcards.Punchcard"><code class="flex name class">
 <span>class <span class="ident">Punchcard</span></span>
-<span>(</span><span>path: str)</span>
+<span>(</span><span>path: pathlib.Path)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -96,17 +107,18 @@ class PunchcardDeck:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Punchcard:
-        def __init__(self, path: str) -&gt; None:
-                items = os.path.basename(path).split(&#34;.&#34;)
+        def __init__(self, path: Path) -&gt; None:
+                items = path.name.split(&#34;.&#34;)
                 if len(items) &gt; 2:
-                        logging.error(&#34;Punchcard name cannot contain dots (apart from .yaml suffix)&#34;)
+                        logging.error(f&#34;Punchcard name &#39;{path.name}&#39; cannot contain dots (apart from .yaml suffix)&#34;)
                         sys.exit(1)
                 self.name = items[0]
-                if not os.path.exists(path):
+                if not path.exists():
                         logging.error(f&#34;Punchcard &#39;{path}&#39; not found.&#34;)
                         sys.exit(1)
                 with open(path) as f:
                         spec: Dict[str, Any] = yaml.load(f, Loader=yaml.FullLoader)
+                self.with_annotation = spec.get(&#34;with_annotation&#34;)
                 self.onlyif = spec.get(&#34;onlyif&#34;, None)
                 sources_spec = spec.get(&#34;sources&#34;, [])
                 self.sources: List[str] = []
@@ -119,21 +131,31 @@ class PunchcardDeck:
                                 self.sources.append(s)
                                 self.sources_onlyif.append(self.onlyif)
                 self.recipe = spec.get(&#34;recipe&#34;, &#34;punchcard&#34;)
-                self.resources = spec.get(&#34;resources&#34;)
+                resources = spec.get(&#34;resources&#34;, {})
+                n_cpus = resources.get(&#34;n_cpus&#34;, 1)
+                n_gpus = resources.get(&#34;n_gpus&#34;, 0)
+                memory = resources.get(&#34;memory&#34;, 8)
+                self.resources = ResourceConfig(n_cpus, n_gpus, memory)
 
         @staticmethod
-        def load_all(path: str) -&gt; List[&#34;Punchcard&#34;]:
+        def load_all(path: Path):
+                path = Path(path)
                 result: List[Punchcard] = []
-                if os.path.exists(path):
-                        for f in os.listdir(path):
-                                if f.lower().endswith(&#34;.yaml&#34;):
-                                        result.append(Punchcard(os.path.join(path, f)))
+                if path.exists():
+                        for f in path.iterdir():
+                                if f.name.endswith(&#34;.yaml&#34;):
+                                        if len(f.name.split(&#34;.&#34;)) &gt; 2:
+                                                logging.error(f&#34;Skipping punchcard &#39;{f.name}&#39; because it contains an extra period (.) which is not allowed&#34;)
+                                        else:
+                                                result.append(Punchcard(path / f))
+                else:
+                        logging.error(f&#34;Failed to load punchcards because path &#39;{path}&#39; does not exist&#34;)
                 return result</code></pre>
 </details>
 <h3>Static methods</h3>
 <dl>
 <dt id="cytograph.pipeline.punchcards.Punchcard.load_all"><code class="name flex">
-<span>def <span class="ident">load_all</span></span>(<span>path: str) ‑> List[<a title="cytograph.pipeline.punchcards.Punchcard" href="#cytograph.pipeline.punchcards.Punchcard">Punchcard</a>]</span>
+<span>def <span class="ident">load_all</span></span>(<span>path: pathlib.Path)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -142,12 +164,18 @@ class PunchcardDeck:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@staticmethod
-def load_all(path: str) -&gt; List[&#34;Punchcard&#34;]:
+def load_all(path: Path):
+        path = Path(path)
         result: List[Punchcard] = []
-        if os.path.exists(path):
-                for f in os.listdir(path):
-                        if f.lower().endswith(&#34;.yaml&#34;):
-                                result.append(Punchcard(os.path.join(path, f)))
+        if path.exists():
+                for f in path.iterdir():
+                        if f.name.endswith(&#34;.yaml&#34;):
+                                if len(f.name.split(&#34;.&#34;)) &gt; 2:
+                                        logging.error(f&#34;Skipping punchcard &#39;{f.name}&#39; because it contains an extra period (.) which is not allowed&#34;)
+                                else:
+                                        result.append(Punchcard(path / f))
+        else:
+                logging.error(f&#34;Failed to load punchcards because path &#39;{path}&#39; does not exist&#34;)
         return result</code></pre>
 </details>
 </dd>
@@ -155,7 +183,7 @@ def load_all(path: str) -&gt; List[&#34;Punchcard&#34;]:
 </dd>
 <dt id="cytograph.pipeline.punchcards.PunchcardDeck"><code class="flex name class">
 <span>class <span class="ident">PunchcardDeck</span></span>
-<span>(</span><span>punchcard_dir: str)</span>
+<span>(</span><span>punchcard_dir: pathlib.Path)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -164,7 +192,7 @@ def load_all(path: str) -&gt; List[&#34;Punchcard&#34;]:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class PunchcardDeck:
-        def __init__(self, punchcard_dir: str) -&gt; None:
+        def __init__(self, punchcard_dir: Path) -&gt; None:
                 self.punchcards: Dict[str, Punchcard] = {}
                 for p in Punchcard.load_all(punchcard_dir):
                         self.punchcards[p.name] = p</code></pre>

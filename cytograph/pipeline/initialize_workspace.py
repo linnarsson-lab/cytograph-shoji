@@ -2,10 +2,10 @@ from typing import List
 import sys
 import shoji
 import logging
-from cytograph import Module
+from cytograph import Algorithm
 
 
-class InitializeWorkspace(Module):
+class InitializeWorkspace(Algorithm):
 	"""
 	Initialize a new workspace for the build
 	"""

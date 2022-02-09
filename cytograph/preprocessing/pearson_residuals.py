@@ -1,13 +1,13 @@
 from typing import Tuple
 
 import numpy as np
-from ..module import creates, requires, Module
+from ..algorithm import creates, requires, Algorithm
 import shoji
 import logging
 from ..utils import div0
 
 
-class PearsonResiduals(Module):
+class PearsonResiduals(Algorithm):
 	"""
 	Compute the clipped Pearson residuals.
 	See https://www.biorxiv.org/content/10.1101/2020.12.01.405886v1.full.pdf

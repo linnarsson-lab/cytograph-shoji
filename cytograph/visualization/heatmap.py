@@ -1,12 +1,12 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import shoji
-from cytograph import Module, Species, requires
+from cytograph import Algorithm, Species, requires
 from .dendrogram import dendrogram
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
 
-class Heatmap(Module):
+class Heatmap(Algorithm):
 	def __init__(self, filename: str = "heatmap.png", genes_per_cluster: int = 2, **kwargs) -> None:
 		super().__init__(**kwargs)
 		self.filename = filename

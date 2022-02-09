@@ -27,6 +27,7 @@
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">import logging
+from numpy.core.numeric import indices
 import shoji
 import numpy as np
 from cytograph import creates, requires, Module
@@ -35,7 +36,14 @@ from scipy.spatial.distance import pdist
 import fastcluster
 
 
+def indices_to_order_a_like_b(a, b):
+        return a.argsort()[b.argsort().argsort()]
+
+
 class Dendrogram(Module):
+        &#34;&#34;&#34;
+        Compute a dendrogram of clusters
+        &#34;&#34;&#34;
         def __init__(self, **kwargs) -&gt; None:
                 &#34;&#34;&#34;
                 Compute a dendrogram of clusters
@@ -43,14 +51,19 @@ class Dendrogram(Module):
                 Remarks:
                         Agglomeration using Ward&#39;s linkage on the normalized mean expression per cluster.
                         Mean expression values are normalized to the median total UMIs, and `log2(x + 1)` transformed.
+
+                        The returned Clusters and ClusterID are renumbered and correspond to the linkage ordering.
                 &#34;&#34;&#34;
                 super().__init__(**kwargs)
 
+        @requires(&#34;ClusterID&#34;, &#34;uint32&#34;, (&#34;clusters&#34;,))
+        @requires(&#34;Clusters&#34;, &#34;uint32&#34;, (&#34;cells&#34;,))
         @requires(&#34;SelectedFeatures&#34;, &#34;bool&#34;, (&#34;genes&#34;,))
         @requires(&#34;MeanExpression&#34;, &#34;float64&#34;, (&#34;clusters&#34;, &#34;genes&#34;))
         @creates(&#34;Linkage&#34;, &#34;float32&#34;, (None, 4))
-        @creates(&#34;LinkageOrdering&#34;, &#34;uint32&#34;, (&#34;clusters&#34;,))
-        def fit(self, ws: shoji.WorkspaceManager, save: bool) -&gt; np.ndarray:
+        @creates(&#34;ClusterID&#34;, &#34;uint32&#34;, (&#34;clusters&#34;,))
+        @creates(&#34;Clusters&#34;, &#34;uint32&#34;, (&#34;cells&#34;,))
+        def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; np.ndarray:
                 logging.info(&#34; Dendrogram: Computing normalized expression of selected genes&#34;)
                 selected = self.SelectedFeatures[:]
                 x = self.MeanExpression[:]
@@ -63,7 +76,31 @@ class Dendrogram(Module):
                 Z = hc.optimal_leaf_ordering(Z, D)
                 ordering = hc.leaves_list(Z)
 
-                return Z, ordering</code></pre>
+                # Renumber the linkage matrix so it corresponds to the reordered clusters
+                for i in range(len(Z)):
+                        if Z[i, 0] &lt; x.shape[0]:
+                                Z[i, 0] = np.where(Z[i, 0] == ordering)[0]
+                        if Z[i, 1] &lt; x.shape[0]:
+                                Z[i, 1] = np.where(Z[i, 1] == ordering)[0]
+
+                # Renumber the clusters according to the new ordering
+                clusters = self.Clusters[:]
+                cluster_ids = np.zeros(ws.clusters.length, dtype=&#34;uint32&#34;)
+                new_clusters = np.zeros(ws.cells.length, dtype=&#34;uint32&#34;)
+                for i in range(ws.clusters.length):
+                        selection = clusters == ordering[i]
+                        new_clusters[selection] = i
+                        cluster_ids[ordering[i]] = i
+
+                # # Reorder the aggregated tensors to match the numbering
+                # logging.info(&#34; Dendrogram: Reordering aggregated tensors&#34;)
+                # ordering = np.argsort(cluster_ids)
+                # for tname in ws._tensors():
+                #       tensor = ws[tname]
+                #       if tensor.rank &gt;= 1 and tensor.dims[0] == &#34;clusters&#34;:
+                #               ws[tname] = shoji.Tensor(tensor.dtype, tensor.dims, chunks=tensor.chunks, inits=tensor[:][ordering])
+
+                return Z, cluster_ids[ordering], new_clusters</code></pre>
 </details>
 </section>
 <section>
@@ -71,6 +108,22 @@ class Dendrogram(Module):
 <section>
 </section>
 <section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="cytograph.clustering.dendrogram.indices_to_order_a_like_b"><code class="name flex">
+<span>def <span class="ident">indices_to_order_a_like_b</span></span>(<span>a, b)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def indices_to_order_a_like_b(a, b):
+        return a.argsort()[b.argsort().argsort()]</code></pre>
+</details>
+</dd>
+</dl>
 </section>
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
@@ -81,14 +134,19 @@ class Dendrogram(Module):
 </code></dt>
 <dd>
 <div class="desc"><p>Compute a dendrogram of clusters</p>
+<p>Compute a dendrogram of clusters</p>
 <h2 id="remarks">Remarks</h2>
 <p>Agglomeration using Ward's linkage on the normalized mean expression per cluster.
-Mean expression values are normalized to the median total UMIs, and <code>log2(x + 1)</code> transformed.</p></div>
+Mean expression values are normalized to the median total UMIs, and <code>log2(x + 1)</code> transformed.</p>
+<p>The returned Clusters and ClusterID are renumbered and correspond to the linkage ordering.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Dendrogram(Module):
+        &#34;&#34;&#34;
+        Compute a dendrogram of clusters
+        &#34;&#34;&#34;
         def __init__(self, **kwargs) -&gt; None:
                 &#34;&#34;&#34;
                 Compute a dendrogram of clusters
@@ -96,14 +154,19 @@ Mean expression values are normalized to the median total UMIs, and <code>log2(x
                 Remarks:
                         Agglomeration using Ward&#39;s linkage on the normalized mean expression per cluster.
                         Mean expression values are normalized to the median total UMIs, and `log2(x + 1)` transformed.
+
+                        The returned Clusters and ClusterID are renumbered and correspond to the linkage ordering.
                 &#34;&#34;&#34;
                 super().__init__(**kwargs)
 
+        @requires(&#34;ClusterID&#34;, &#34;uint32&#34;, (&#34;clusters&#34;,))
+        @requires(&#34;Clusters&#34;, &#34;uint32&#34;, (&#34;cells&#34;,))
         @requires(&#34;SelectedFeatures&#34;, &#34;bool&#34;, (&#34;genes&#34;,))
         @requires(&#34;MeanExpression&#34;, &#34;float64&#34;, (&#34;clusters&#34;, &#34;genes&#34;))
         @creates(&#34;Linkage&#34;, &#34;float32&#34;, (None, 4))
-        @creates(&#34;LinkageOrdering&#34;, &#34;uint32&#34;, (&#34;clusters&#34;,))
-        def fit(self, ws: shoji.WorkspaceManager, save: bool) -&gt; np.ndarray:
+        @creates(&#34;ClusterID&#34;, &#34;uint32&#34;, (&#34;clusters&#34;,))
+        @creates(&#34;Clusters&#34;, &#34;uint32&#34;, (&#34;cells&#34;,))
+        def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; np.ndarray:
                 logging.info(&#34; Dendrogram: Computing normalized expression of selected genes&#34;)
                 selected = self.SelectedFeatures[:]
                 x = self.MeanExpression[:]
@@ -116,7 +179,31 @@ Mean expression values are normalized to the median total UMIs, and <code>log2(x
                 Z = hc.optimal_leaf_ordering(Z, D)
                 ordering = hc.leaves_list(Z)
 
-                return Z, ordering</code></pre>
+                # Renumber the linkage matrix so it corresponds to the reordered clusters
+                for i in range(len(Z)):
+                        if Z[i, 0] &lt; x.shape[0]:
+                                Z[i, 0] = np.where(Z[i, 0] == ordering)[0]
+                        if Z[i, 1] &lt; x.shape[0]:
+                                Z[i, 1] = np.where(Z[i, 1] == ordering)[0]
+
+                # Renumber the clusters according to the new ordering
+                clusters = self.Clusters[:]
+                cluster_ids = np.zeros(ws.clusters.length, dtype=&#34;uint32&#34;)
+                new_clusters = np.zeros(ws.cells.length, dtype=&#34;uint32&#34;)
+                for i in range(ws.clusters.length):
+                        selection = clusters == ordering[i]
+                        new_clusters[selection] = i
+                        cluster_ids[ordering[i]] = i
+
+                # # Reorder the aggregated tensors to match the numbering
+                # logging.info(&#34; Dendrogram: Reordering aggregated tensors&#34;)
+                # ordering = np.argsort(cluster_ids)
+                # for tname in ws._tensors():
+                #       tensor = ws[tname]
+                #       if tensor.rank &gt;= 1 and tensor.dims[0] == &#34;clusters&#34;:
+                #               ws[tname] = shoji.Tensor(tensor.dtype, tensor.dims, chunks=tensor.chunks, inits=tensor[:][ordering])
+
+                return Z, cluster_ids[ordering], new_clusters</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -125,7 +212,7 @@ Mean expression values are normalized to the median total UMIs, and <code>log2(x
 <h3>Methods</h3>
 <dl>
 <dt id="cytograph.clustering.dendrogram.Dendrogram.fit"><code class="name flex">
-<span>def <span class="ident">fit</span></span>(<span>self, ws: shoji.workspace.WorkspaceManager, save: bool) ‑> numpy.ndarray</span>
+<span>def <span class="ident">fit</span></span>(<span>self, ws: shoji.workspace.WorkspaceManager, save: bool = False) ‑> numpy.ndarray</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -133,11 +220,14 @@ Mean expression values are normalized to the median total UMIs, and <code>log2(x
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@requires(&#34;SelectedFeatures&#34;, &#34;bool&#34;, (&#34;genes&#34;,))
+<pre><code class="python">@requires(&#34;ClusterID&#34;, &#34;uint32&#34;, (&#34;clusters&#34;,))
+@requires(&#34;Clusters&#34;, &#34;uint32&#34;, (&#34;cells&#34;,))
+@requires(&#34;SelectedFeatures&#34;, &#34;bool&#34;, (&#34;genes&#34;,))
 @requires(&#34;MeanExpression&#34;, &#34;float64&#34;, (&#34;clusters&#34;, &#34;genes&#34;))
 @creates(&#34;Linkage&#34;, &#34;float32&#34;, (None, 4))
-@creates(&#34;LinkageOrdering&#34;, &#34;uint32&#34;, (&#34;clusters&#34;,))
-def fit(self, ws: shoji.WorkspaceManager, save: bool) -&gt; np.ndarray:
+@creates(&#34;ClusterID&#34;, &#34;uint32&#34;, (&#34;clusters&#34;,))
+@creates(&#34;Clusters&#34;, &#34;uint32&#34;, (&#34;cells&#34;,))
+def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; np.ndarray:
         logging.info(&#34; Dendrogram: Computing normalized expression of selected genes&#34;)
         selected = self.SelectedFeatures[:]
         x = self.MeanExpression[:]
@@ -150,7 +240,31 @@ def fit(self, ws: shoji.WorkspaceManager, save: bool) -&gt; np.ndarray:
         Z = hc.optimal_leaf_ordering(Z, D)
         ordering = hc.leaves_list(Z)
 
-        return Z, ordering</code></pre>
+        # Renumber the linkage matrix so it corresponds to the reordered clusters
+        for i in range(len(Z)):
+                if Z[i, 0] &lt; x.shape[0]:
+                        Z[i, 0] = np.where(Z[i, 0] == ordering)[0]
+                if Z[i, 1] &lt; x.shape[0]:
+                        Z[i, 1] = np.where(Z[i, 1] == ordering)[0]
+
+        # Renumber the clusters according to the new ordering
+        clusters = self.Clusters[:]
+        cluster_ids = np.zeros(ws.clusters.length, dtype=&#34;uint32&#34;)
+        new_clusters = np.zeros(ws.cells.length, dtype=&#34;uint32&#34;)
+        for i in range(ws.clusters.length):
+                selection = clusters == ordering[i]
+                new_clusters[selection] = i
+                cluster_ids[ordering[i]] = i
+
+        # # Reorder the aggregated tensors to match the numbering
+        # logging.info(&#34; Dendrogram: Reordering aggregated tensors&#34;)
+        # ordering = np.argsort(cluster_ids)
+        # for tname in ws._tensors():
+        #       tensor = ws[tname]
+        #       if tensor.rank &gt;= 1 and tensor.dims[0] == &#34;clusters&#34;:
+        #               ws[tname] = shoji.Tensor(tensor.dtype, tensor.dims, chunks=tensor.chunks, inits=tensor[:][ordering])
+
+        return Z, cluster_ids[ordering], new_clusters</code></pre>
 </details>
 </dd>
 </dl>
@@ -167,6 +281,11 @@ def fit(self, ws: shoji.WorkspaceManager, save: bool) -&gt; np.ndarray:
 <li><h3>Super-module</h3>
 <ul>
 <li><code><a title="cytograph.clustering" href="index.html">cytograph.clustering</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="cytograph.clustering.dendrogram.indices_to_order_a_like_b" href="#cytograph.clustering.dendrogram.indices_to_order_a_like_b">indices_to_order_a_like_b</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>

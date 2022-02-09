@@ -6,11 +6,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import shoji
-from cytograph import Module, requires
+from cytograph import Algorithm, requires
 from .scatter import scatterc
 
 
-class PlotManifold(Module):
+class PlotManifold(Algorithm):
 	def __init__(self, filename: str = "manifold.png", **kwargs) -> None:
 		super().__init__(**kwargs)
 		self.filename = filename

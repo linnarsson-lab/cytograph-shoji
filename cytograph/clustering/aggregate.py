@@ -1,14 +1,14 @@
 import logging
 import shoji
 import numpy as np
-from cytograph import Module
+from cytograph import Algorithm
 
 
 def indices_to_order_a_like_b(a, b):
 	return a.argsort()[b.argsort().argsort()]
 
 
-class Aggregate(Module):
+class Aggregate(Algorithm):
 	def __init__(self, tensor: str, using: str, into: str, by: str = "Clusters", orderby: str = "ClusterID", newdim: str = "clusters", **kwargs) -> None:
 		"""
 		Aggregate tensors by cluster ID (as given by the Clusters tensor)

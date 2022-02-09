@@ -35,17 +35,24 @@ import shoji
 
 
 class RnnManifold(Module):
-        def __init__(self, k: int, metric: str, mutual: bool = False, **kwargs) -&gt; None:
+        &#34;&#34;&#34;
+        Compute a radius nearest-neighbor manifold graph
+        &#34;&#34;&#34;
+        def __init__(self, k: int, metric: str, mutual: bool = False, max_radius_percentile: int = 90, **kwargs) -&gt; None:
                 &#34;&#34;&#34;
+                Compute a radius nearest-neighbor manifold graph
+        
                 Args:
-                        k                               The maximum number of neighbors to use
-                        metric                  The metric to use (e.g. &#34;euclidean&#34;)
-                        mutual                  If true, use only mutual neighbors
+                        k:                     The maximum number of neighbors to use
+                        metric:                The metric to use (e.g. &#34;euclidean&#34;)
+                        mutual:                If true, use only mutual neighbors
+                        max_radius_percentile: The radius to use, expressed as a percentile
                 &#34;&#34;&#34;
                 super().__init__(**kwargs)
                 self.k = k
                 self.metric = metric
                 self.mutual = mutual
+                self.max_radius_percentile = max_radius_percentile
 
         @requires(&#34;Factors&#34;, &#34;float32&#34;, (&#34;cells&#34;, None))
         @creates(&#34;ManifoldRadius&#34;, &#34;float32&#34;, ())
@@ -66,8 +73,8 @@ class RnnManifold(Module):
                 max_d = knn.data.max()
                 knn.data = (max_d - knn.data) / max_d
                 logging.info(f&#34; RnnManifold: Computing resolution&#34;)
-                radius = np.percentile(1 - knn.data, 90)
-                logging.info(f&#34; RnnManifold: 90th percentile radius: {radius:.02}&#34;)
+                radius = np.percentile(1 - knn.data, self.max_radius_percentile)
+                logging.info(f&#34; RnnManifold: {self.max_radius_percentile}th percentile radius: {radius:.02}&#34;)
 
                 if self.mutual:
                         logging.info(f&#34; RnnManifold: Converting to mutual nearest neighbors&#34;)
@@ -81,8 +88,12 @@ class RnnManifold(Module):
                 else:
                         knn = knn.tocoo()
                         inside = knn.data &gt; 1 - radius
+                        logging.info(f&#34; RnnManifold: Creating sparse matrix&#34;)
                         rnn = sparse.coo_matrix((knn.data[inside], (knn.row[inside], knn.col[inside])), shape=knn.shape)
-                return (radius, np.vstack([rnn.row, rnn.col]).T, rnn.data)</code></pre>
+                logging.info(f&#34; RnnManifold: Total of {rnn.getnnz():,} edges&#34;)
+                indices = np.vstack([rnn.row, rnn.col]).T
+                logging.info(f&#34; RnnManifold: Saving&#34;)
+                return (radius, indices, rnn.data)</code></pre>
 </details>
 </section>
 <section>
@@ -96,32 +107,54 @@ class RnnManifold(Module):
 <dl>
 <dt id="cytograph.manifold.rnn_manifold.RnnManifold"><code class="flex name class">
 <span>class <span class="ident">RnnManifold</span></span>
-<span>(</span><span>k: int, metric: str, mutual: bool = False, **kwargs)</span>
+<span>(</span><span>k: int, metric: str, mutual: bool = False, max_radius_percentile: int = 90, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><h2 id="args">Args</h2>
-<p>k
-The maximum number of neighbors to use
-metric
-The metric to use (e.g. "euclidean")
-mutual
-If true, use only mutual neighbors</p></div>
+<div class="desc"><p>Compute a radius nearest-neighbor manifold graph</p>
+<p>Compute a radius nearest-neighbor manifold graph</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>k</code></strong></dt>
+<dd>
+<pre><code>            The maximum number of neighbors to use
+</code></pre>
+</dd>
+<dt><strong><code>metric</code></strong></dt>
+<dd>
+<pre><code>       The metric to use (e.g. "euclidean")
+</code></pre>
+</dd>
+<dt><strong><code>mutual</code></strong></dt>
+<dd>
+<pre><code>       If true, use only mutual neighbors
+</code></pre>
+</dd>
+<dt><strong><code>max_radius_percentile</code></strong></dt>
+<dd>The radius to use, expressed as a percentile</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class RnnManifold(Module):
-        def __init__(self, k: int, metric: str, mutual: bool = False, **kwargs) -&gt; None:
+        &#34;&#34;&#34;
+        Compute a radius nearest-neighbor manifold graph
+        &#34;&#34;&#34;
+        def __init__(self, k: int, metric: str, mutual: bool = False, max_radius_percentile: int = 90, **kwargs) -&gt; None:
                 &#34;&#34;&#34;
+                Compute a radius nearest-neighbor manifold graph
+        
                 Args:
-                        k                               The maximum number of neighbors to use
-                        metric                  The metric to use (e.g. &#34;euclidean&#34;)
-                        mutual                  If true, use only mutual neighbors
+                        k:                     The maximum number of neighbors to use
+                        metric:                The metric to use (e.g. &#34;euclidean&#34;)
+                        mutual:                If true, use only mutual neighbors
+                        max_radius_percentile: The radius to use, expressed as a percentile
                 &#34;&#34;&#34;
                 super().__init__(**kwargs)
                 self.k = k
                 self.metric = metric
                 self.mutual = mutual
+                self.max_radius_percentile = max_radius_percentile
 
         @requires(&#34;Factors&#34;, &#34;float32&#34;, (&#34;cells&#34;, None))
         @creates(&#34;ManifoldRadius&#34;, &#34;float32&#34;, ())
@@ -142,8 +175,8 @@ If true, use only mutual neighbors</p></div>
                 max_d = knn.data.max()
                 knn.data = (max_d - knn.data) / max_d
                 logging.info(f&#34; RnnManifold: Computing resolution&#34;)
-                radius = np.percentile(1 - knn.data, 90)
-                logging.info(f&#34; RnnManifold: 90th percentile radius: {radius:.02}&#34;)
+                radius = np.percentile(1 - knn.data, self.max_radius_percentile)
+                logging.info(f&#34; RnnManifold: {self.max_radius_percentile}th percentile radius: {radius:.02}&#34;)
 
                 if self.mutual:
                         logging.info(f&#34; RnnManifold: Converting to mutual nearest neighbors&#34;)
@@ -157,8 +190,12 @@ If true, use only mutual neighbors</p></div>
                 else:
                         knn = knn.tocoo()
                         inside = knn.data &gt; 1 - radius
+                        logging.info(f&#34; RnnManifold: Creating sparse matrix&#34;)
                         rnn = sparse.coo_matrix((knn.data[inside], (knn.row[inside], knn.col[inside])), shape=knn.shape)
-                return (radius, np.vstack([rnn.row, rnn.col]).T, rnn.data)</code></pre>
+                logging.info(f&#34; RnnManifold: Total of {rnn.getnnz():,} edges&#34;)
+                indices = np.vstack([rnn.row, rnn.col]).T
+                logging.info(f&#34; RnnManifold: Saving&#34;)
+                return (radius, indices, rnn.data)</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -194,8 +231,8 @@ def fit(self, ws: shoji.WorkspaceManager, save=False):
         max_d = knn.data.max()
         knn.data = (max_d - knn.data) / max_d
         logging.info(f&#34; RnnManifold: Computing resolution&#34;)
-        radius = np.percentile(1 - knn.data, 90)
-        logging.info(f&#34; RnnManifold: 90th percentile radius: {radius:.02}&#34;)
+        radius = np.percentile(1 - knn.data, self.max_radius_percentile)
+        logging.info(f&#34; RnnManifold: {self.max_radius_percentile}th percentile radius: {radius:.02}&#34;)
 
         if self.mutual:
                 logging.info(f&#34; RnnManifold: Converting to mutual nearest neighbors&#34;)
@@ -209,8 +246,12 @@ def fit(self, ws: shoji.WorkspaceManager, save=False):
         else:
                 knn = knn.tocoo()
                 inside = knn.data &gt; 1 - radius
+                logging.info(f&#34; RnnManifold: Creating sparse matrix&#34;)
                 rnn = sparse.coo_matrix((knn.data[inside], (knn.row[inside], knn.col[inside])), shape=knn.shape)
-        return (radius, np.vstack([rnn.row, rnn.col]).T, rnn.data)</code></pre>
+        logging.info(f&#34; RnnManifold: Total of {rnn.getnnz():,} edges&#34;)
+        indices = np.vstack([rnn.row, rnn.col]).T
+        logging.info(f&#34; RnnManifold: Saving&#34;)
+        return (radius, indices, rnn.data)</code></pre>
 </details>
 </dd>
 </dl>

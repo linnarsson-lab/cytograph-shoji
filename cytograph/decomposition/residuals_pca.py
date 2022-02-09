@@ -3,12 +3,12 @@ from typing import Tuple
 import numpy as np
 from sklearn.decomposition import PCA
 from ..utils import div0
-from ..module import creates, requires, Module
+from ..algorithm import creates, requires, Algorithm
 import shoji
 import logging
 
 
-class ResidualsPCA(Module):
+class ResidualsPCA(Algorithm):
 	"""
 	Project a dataset into a reduced feature space using PCA on Pearson residuals.
 	See https://www.biorxiv.org/content/10.1101/2020.12.01.405886v1.full.pdf

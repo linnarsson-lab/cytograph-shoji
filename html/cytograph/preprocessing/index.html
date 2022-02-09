@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.8.4" />
 <title>cytograph.preprocessing API documentation</title>
-<meta name="description" content="" />
+<meta name="description" content="Algorithms for preprocessing samples" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/github.min.css" crossorigin>
@@ -22,17 +22,24 @@
 <h1 class="title">Module <code>cytograph.preprocessing</code></h1>
 </header>
 <section id="section-intro">
+<p>Algorithms for preprocessing samples</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">from .log2_normalizer import Log2Normalizer
+<pre><code class="python">&#34;&#34;&#34;
+Algorithms for preprocessing samples
+&#34;&#34;&#34;
+from .log2_normalizer import Log2Normalizer
 from .doublet_finder import DoubletFinder
 from .cell_summary_statistics import CellSummaryStatistics
 from .gene_summary_statistics import GeneSummaryStatistics
 from .detect_species import DetectSpecies
-from .deviance_statistics import DevianceStatistics
-from .quality_control import QualityControl</code></pre>
+from .pearson_residuals_variance import PearsonResidualsVariance
+from .quality_control import QualityControl
+from .pearson_residuals import PearsonResiduals
+from .classify_droplets import ClassifyDroplets
+from .compute_cell_hashes import ComputeCellHashes</code></pre>
 </details>
 </section>
 <section>
@@ -42,11 +49,15 @@ from .quality_control import QualityControl</code></pre>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt><code class="name"><a title="cytograph.preprocessing.detect_species" href="detect_species.html">cytograph.preprocessing.detect_species</a></code></dt>
+<dt><code class="name"><a title="cytograph.preprocessing.classify_droplets" href="classify_droplets.html">cytograph.preprocessing.classify_droplets</a></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt><code class="name"><a title="cytograph.preprocessing.deviance_statistics" href="deviance_statistics.html">cytograph.preprocessing.deviance_statistics</a></code></dt>
+<dt><code class="name"><a title="cytograph.preprocessing.compute_cell_hashes" href="compute_cell_hashes.html">cytograph.preprocessing.compute_cell_hashes</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="cytograph.preprocessing.detect_species" href="detect_species.html">cytograph.preprocessing.detect_species</a></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -62,7 +73,19 @@ from .quality_control import QualityControl</code></pre>
 <dd>
 <div class="desc"></div>
 </dd>
+<dt><code class="name"><a title="cytograph.preprocessing.pearson_residuals" href="pearson_residuals.html">cytograph.preprocessing.pearson_residuals</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="cytograph.preprocessing.pearson_residuals_variance" href="pearson_residuals_variance.html">cytograph.preprocessing.pearson_residuals_variance</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
 <dt><code class="name"><a title="cytograph.preprocessing.quality_control" href="quality_control.html">cytograph.preprocessing.quality_control</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="cytograph.preprocessing.umify" href="umify.html">cytograph.preprocessing.umify</a></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -89,12 +112,16 @@ from .quality_control import QualityControl</code></pre>
 <li><h3><a href="#header-submodules">Sub-modules</a></h3>
 <ul>
 <li><code><a title="cytograph.preprocessing.cell_summary_statistics" href="cell_summary_statistics.html">cytograph.preprocessing.cell_summary_statistics</a></code></li>
+<li><code><a title="cytograph.preprocessing.classify_droplets" href="classify_droplets.html">cytograph.preprocessing.classify_droplets</a></code></li>
+<li><code><a title="cytograph.preprocessing.compute_cell_hashes" href="compute_cell_hashes.html">cytograph.preprocessing.compute_cell_hashes</a></code></li>
 <li><code><a title="cytograph.preprocessing.detect_species" href="detect_species.html">cytograph.preprocessing.detect_species</a></code></li>
-<li><code><a title="cytograph.preprocessing.deviance_statistics" href="deviance_statistics.html">cytograph.preprocessing.deviance_statistics</a></code></li>
 <li><code><a title="cytograph.preprocessing.doublet_finder" href="doublet_finder.html">cytograph.preprocessing.doublet_finder</a></code></li>
 <li><code><a title="cytograph.preprocessing.gene_summary_statistics" href="gene_summary_statistics.html">cytograph.preprocessing.gene_summary_statistics</a></code></li>
 <li><code><a title="cytograph.preprocessing.log2_normalizer" href="log2_normalizer.html">cytograph.preprocessing.log2_normalizer</a></code></li>
+<li><code><a title="cytograph.preprocessing.pearson_residuals" href="pearson_residuals.html">cytograph.preprocessing.pearson_residuals</a></code></li>
+<li><code><a title="cytograph.preprocessing.pearson_residuals_variance" href="pearson_residuals_variance.html">cytograph.preprocessing.pearson_residuals_variance</a></code></li>
 <li><code><a title="cytograph.preprocessing.quality_control" href="quality_control.html">cytograph.preprocessing.quality_control</a></code></li>
+<li><code><a title="cytograph.preprocessing.umify" href="umify.html">cytograph.preprocessing.umify</a></code></li>
 </ul>
 </li>
 </ul>

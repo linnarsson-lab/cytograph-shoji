@@ -28,10 +28,12 @@
 </summary>
 <pre><code class="python">import logging
 import os
+import time
 import shutil
 import subprocess
 import sys
 from typing import List, Dict, Set
+from pathlib import Path
 
 from .config import Config
 from .punchcards import PunchcardDeck
@@ -97,6 +99,10 @@ class LocalEngine(Engine):
                 super().__init__(deck, dryrun)
 
         def execute(self) -&gt; None:
+                config = Config().load()
+                logdir: Path = config.path / &#34;logs&#34;
+                logdir.mkdir(exist_ok=True)
+
                 # Run all the punchcards
                 tasks = self.build_execution_dag()
                 for task, deps in tasks.items():
@@ -113,6 +119,12 @@ class LocalEngine(Engine):
                 if self.dryrun:
                         logging.info(&#34;Dry run only, with the following execution plan&#34;)
                 for ix, task in enumerate(ordered_tasks):
+                        # Atomically check if the task has already been launched
+                        try:
+                                (logdir / (task + &#34;.created&#34;)).touch(exist_ok=False)
+                        except FileExistsError:
+                                logging.info(f&#34;Skipping &#39;{task}&#39; because it was already run (remove &#39;{task}.created&#39; from logs to force rebuild).&#34;)
+                                continue
                         if not self.dryrun:
                                 logging.info(f&#34;\033[1;32;40mBuild step {ix + 1} of {len(ordered_tasks)}: cytograph process {task}\033[0m&#34;)
                                 subprocess.run([&#34;cytograph&#34;, &#34;--hide-message&#34;, &#34;process&#34;, task])
@@ -120,7 +132,7 @@ class LocalEngine(Engine):
                                 logging.info(f&#34;cytograph process {task}&#34;)
 
 
-class CondorEngine(Engine):
+class CondorDAGEngine(Engine):
         &#34;&#34;&#34;
         An engine that executes tasks in parallel on a HTCondor cluster, using the DAGman functionality
         of condor. Tasks will be executed in parallel as much as possible while respecting the
@@ -132,13 +144,9 @@ class CondorEngine(Engine):
         def execute(self) -&gt; None:
                 config = Config().load()
                 tasks = self.build_execution_dag()
-                # Make job files
-                exdir = os.path.abspath(os.path.join(config[&#34;paths&#34;][&#34;build&#34;], &#34;condor&#34;))
-                if os.path.exists(exdir):
-                        logging.warn(&#34;Removing previous build logs from &#39;condor&#39; directory.&#34;)
-                        shutil.rmtree(exdir, ignore_errors=True)
-                if not os.path.exists(exdir):
-                        os.mkdir(exdir)
+
+                logdir: Path = config.path / &#34;logs&#34;
+                logdir.mkdir(exist_ok=True)
 
                 # Find cytograph
                 cytograph_exe = shutil.which(&#39;cytograph&#39;)
@@ -147,44 +155,134 @@ class CondorEngine(Engine):
                         sys.exit(1)
 
                 for task in tasks.keys():
+                        if task not in self.deck.punchcards:
+                                logging.error(f&#34;Punchcard {task} not found.&#34;)
+                                sys.exit(1)
+
+                for task in tasks.keys():
                         config = Config().load()  # Load it fresh for each task since we&#39;re clobbering it below
                         cmd = &#34;&#34;
-                        if task not in self.deck.punchcards:
-                                logging.error(f&#34;Subset or view {task} not found.&#34;)
-                                sys.exit(1)
 
                         punchcard = self.deck.punchcards[task]
                         config = Config().load(punchcard)
                         cmd = f&#34;process {task}&#34;
                         # Must set &#39;request_gpus&#39; only if non-zero, because even asking for zero GPUs requires a node that has GPUs (weirdly)
-                        request_gpus = f&#34;request_gpus = {config[&#39;execution&#39;][&#39;n_gpus&#39;]}&#34; if config[&#39;execution&#39;][&#39;n_gpus&#39;] &gt; 0 else &#34;&#34;
-                        with open(os.path.join(exdir, task + &#34;.condor&#34;), &#34;w&#34;) as f:
+                        request_gpus = f&#34;request_gpus = {config.resources.n_gpus}&#34; if config.resources.n_gpus &gt; 0 else &#34;&#34;
+                        with open(logdir / (task + &#34;.condor&#34;), &#34;w&#34;) as f:
                                 f.write(f&#34;&#34;&#34;
 getenv       = true
 executable   = {os.path.abspath(cytograph_exe)}
 arguments    = &#34;{cmd}&#34;
-log          = {os.path.join(exdir, task)}.log
-output       = {os.path.join(exdir, task)}.out
-error        = {os.path.join(exdir, task)}.error
-request_cpus = {config[&#34;execution&#34;][&#34;n_cpus&#34;]}
+log          = {logdir / task}.log
+output       = {logdir / task}.out
+error        = {logdir / task}.error
+request_cpus = {config.resources.n_cpus}
 {request_gpus}
-request_memory = {config[&#34;execution&#34;][&#34;memory&#34;] * 1024}
+request_memory = {config.resources.memory * 1024}
 queue 1\n
 &#34;&#34;&#34;)
 
-                with open(os.path.join(exdir, &#34;_dag.condor&#34;), &#34;w&#34;) as f:
+                with open(os.path.join(logdir, &#34;_dag.condor&#34;), &#34;w&#34;) as f:
                         for task in tasks.keys():
-                                f.write(f&#34;JOB {task} {os.path.join(exdir, task)}.condor DIR {config[&#39;paths&#39;][&#39;build&#39;]}\n&#34;)
+                                f.write(f&#34;JOB {task} {logdir / task}.condor DIR {config.path}\n&#34;)
                         for task, deps in tasks.items():
                                 if len(deps) == 0:
                                         continue
                                 f.write(f&#34;PARENT {&#39; &#39;.join(deps)} CHILD {task}\n&#34;)
 
                 if not self.dryrun:
-                        logging.debug(f&#34;condor_submit_dag {os.path.join(exdir, &#39;_dag.condor&#39;)}&#34;)
-                        subprocess.run([&#34;condor_submit_dag&#34;, os.path.join(exdir, &#34;_dag.condor&#34;)])
+                        logging.debug(f&#34;condor_submit_dag {logdir / &#39;_dag.condor&#39;}&#34;)
+                        subprocess.run([&#34;condor_submit_dag&#34;, logdir / &#34;_dag.condor&#34;])
                 else:
-                        logging.info(f&#34;(Dry run) condor_submit_dag {os.path.join(exdir, &#39;_dag.condor&#39;)}&#34;)
+                        logging.info(f&#34;(Dry run) condor_submit_dag {logdir / &#39;_dag.condor&#39;}&#34;)
+
+
+class CondorEngine(Engine):
+        &#34;&#34;&#34;
+        An engine that executes tasks in parallel on a HTCondor cluster, by repeatedly launching tasks
+        when their predecessors are completed. Tasks will be executed in parallel as much as possible while respecting the
+        dependency graph. If new punchcards are added during the build (e.g. by CutDendrogram), they too will run.
+        &#34;&#34;&#34;
+        def __init__(self, deck: PunchcardDeck, dryrun: bool = True) -&gt; None:
+                super().__init__(deck, dryrun)
+
+        def execute(self) -&gt; None:
+                config = Config().load()
+                logdir: Path = config.path / &#34;logs&#34;
+                logdir.mkdir(exist_ok=True)
+
+                # Find cytograph
+                cytograph_exe = shutil.which(&#39;cytograph&#39;)
+                if cytograph_exe is None:
+                        logging.error(&#34;The &#39;cytograph&#39; command-line tool was not found.&#34;)
+                        sys.exit(1)
+
+                while True:
+                        starting = 0
+                        running = 0
+                        waiting = 0
+                        completed = 0
+                        logging.debug(f&#34;Checking for new tasks to launch.&#34;)
+                        self.deck = PunchcardDeck(config.path / &#34;punchcards&#34;)
+                        tasks = self.build_execution_dag()
+
+                        for task in tasks.keys():
+                                if task not in self.deck.punchcards:
+                                        logging.error(f&#34;Punchcard {task} not found.&#34;)
+                                        sys.exit(1)
+                                if (logdir / (task + &#34;.completed&#34;)).exists():
+                                        completed += 1
+                                elif (logdir / (task + &#34;.created&#34;)).exists():
+                                        running += 1
+                                else:
+                                        waiting += 1  # but might get started in this cycle
+                                
+                        for task, deps in tasks.items():
+                                if (logdir / (task + &#34;.completed&#34;)).exists():
+                                        logging.debug(f&#34;Skipping &#39;{task}&#39; because it was already completed.&#34;)
+                                        continue
+                                # Check if all the dependencies of this task have completed
+                                if all((logdir / (dep + &#34;.completed&#34;)).exists() for dep in deps):
+                                        # Atomically check if the task has already been launched
+                                        try:
+                                                (logdir / (task + &#34;.created&#34;)).touch(exist_ok=False)
+                                        except FileExistsError:
+                                                logging.debug(f&#34;Skipping &#39;{task}&#39; because it was already started.&#34;)
+                                                continue
+                                        # Launch the task
+                                        starting += 1
+                                        waiting -= 1
+                                        config = Config().load()  # Load it fresh for each task since we&#39;re clobbering it below
+                                        cmd = &#34;&#34;
+
+                                        punchcard = self.deck.punchcards[task]
+                                        config = Config().load(punchcard)
+                                        cmd = f&#34;process {task}&#34;
+                                        # Must set &#39;request_gpus&#39; only if non-zero, because even asking for zero GPUs requires a node that has GPUs (weirdly)
+                                        request_gpus = f&#34;request_gpus = {config.resources.n_gpus}&#34; if config.resources.n_gpus &gt; 0 else &#34;&#34;
+                                        with open(logdir / (task + &#34;.condor&#34;), &#34;w&#34;) as f:
+                                                f.write(f&#34;&#34;&#34;
+getenv       = true
+executable   = {os.path.abspath(cytograph_exe)}
+arguments    = &#34;{cmd}&#34;
+log          = {logdir / task}.log
+output       = {logdir / task}.out
+error        = {logdir / task}.error
+request_cpus = {config.resources.n_cpus}
+{request_gpus}
+request_memory = {config.resources.memory * 1024}
+queue 1\n
+&#34;&#34;&#34;)
+                                        if not self.dryrun:
+                                                logging.debug(f&#34;Launching &#39;{task}&#39;&#34;)
+                                                subprocess.run([&#34;condor_submit&#34;, logdir / (task + &#39;.condor&#39;)])
+                                        else:
+                                                logging.info(f&#34;(Dry run) condor_submit {logdir / (task + &#39;.condor&#39;)}&#34;)
+                                else:
+                                        logging.debug(f&#34;Skipping &#39;{task}&#39; because not all dependencies have been completed.&#34;)
+                        logging.debug(&#34;Waiting one minute before checking again.&#34;)
+                        logging.info(f&#34;Jobs: {starting} starting, {running} running, {waiting} waiting, {completed} completed&#34;)
+                        time.sleep(60)
 
 # TODO: SlurmEngine using job dependencies (https://hpc.nih.gov/docs/job_dependencies.html)
 # TODO: SgeEngine using job dependencies (https://arc.leeds.ac.uk/using-the-systems/why-have-a-scheduler/advanced-sge-job-dependencies/)</code></pre>
@@ -228,8 +326,8 @@ queue 1\n
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="cytograph.pipeline.engine.CondorEngine"><code class="flex name class">
-<span>class <span class="ident">CondorEngine</span></span>
+<dt id="cytograph.pipeline.engine.CondorDAGEngine"><code class="flex name class">
+<span>class <span class="ident">CondorDAGEngine</span></span>
 <span>(</span><span>deck: <a title="cytograph.pipeline.punchcards.PunchcardDeck" href="punchcards.html#cytograph.pipeline.punchcards.PunchcardDeck">PunchcardDeck</a>, dryrun: bool = True)</span>
 </code></dt>
 <dd>
@@ -240,7 +338,7 @@ dependency graph.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class CondorEngine(Engine):
+<pre><code class="python">class CondorDAGEngine(Engine):
         &#34;&#34;&#34;
         An engine that executes tasks in parallel on a HTCondor cluster, using the DAGman functionality
         of condor. Tasks will be executed in parallel as much as possible while respecting the
@@ -252,13 +350,9 @@ dependency graph.</p></div>
         def execute(self) -&gt; None:
                 config = Config().load()
                 tasks = self.build_execution_dag()
-                # Make job files
-                exdir = os.path.abspath(os.path.join(config[&#34;paths&#34;][&#34;build&#34;], &#34;condor&#34;))
-                if os.path.exists(exdir):
-                        logging.warn(&#34;Removing previous build logs from &#39;condor&#39; directory.&#34;)
-                        shutil.rmtree(exdir, ignore_errors=True)
-                if not os.path.exists(exdir):
-                        os.mkdir(exdir)
+
+                logdir: Path = config.path / &#34;logs&#34;
+                logdir.mkdir(exist_ok=True)
 
                 # Find cytograph
                 cytograph_exe = shutil.which(&#39;cytograph&#39;)
@@ -267,44 +361,226 @@ dependency graph.</p></div>
                         sys.exit(1)
 
                 for task in tasks.keys():
+                        if task not in self.deck.punchcards:
+                                logging.error(f&#34;Punchcard {task} not found.&#34;)
+                                sys.exit(1)
+
+                for task in tasks.keys():
                         config = Config().load()  # Load it fresh for each task since we&#39;re clobbering it below
                         cmd = &#34;&#34;
-                        if task not in self.deck.punchcards:
-                                logging.error(f&#34;Subset or view {task} not found.&#34;)
-                                sys.exit(1)
 
                         punchcard = self.deck.punchcards[task]
                         config = Config().load(punchcard)
                         cmd = f&#34;process {task}&#34;
                         # Must set &#39;request_gpus&#39; only if non-zero, because even asking for zero GPUs requires a node that has GPUs (weirdly)
-                        request_gpus = f&#34;request_gpus = {config[&#39;execution&#39;][&#39;n_gpus&#39;]}&#34; if config[&#39;execution&#39;][&#39;n_gpus&#39;] &gt; 0 else &#34;&#34;
-                        with open(os.path.join(exdir, task + &#34;.condor&#34;), &#34;w&#34;) as f:
+                        request_gpus = f&#34;request_gpus = {config.resources.n_gpus}&#34; if config.resources.n_gpus &gt; 0 else &#34;&#34;
+                        with open(logdir / (task + &#34;.condor&#34;), &#34;w&#34;) as f:
                                 f.write(f&#34;&#34;&#34;
 getenv       = true
 executable   = {os.path.abspath(cytograph_exe)}
 arguments    = &#34;{cmd}&#34;
-log          = {os.path.join(exdir, task)}.log
-output       = {os.path.join(exdir, task)}.out
-error        = {os.path.join(exdir, task)}.error
-request_cpus = {config[&#34;execution&#34;][&#34;n_cpus&#34;]}
+log          = {logdir / task}.log
+output       = {logdir / task}.out
+error        = {logdir / task}.error
+request_cpus = {config.resources.n_cpus}
 {request_gpus}
-request_memory = {config[&#34;execution&#34;][&#34;memory&#34;] * 1024}
+request_memory = {config.resources.memory * 1024}
 queue 1\n
 &#34;&#34;&#34;)
 
-                with open(os.path.join(exdir, &#34;_dag.condor&#34;), &#34;w&#34;) as f:
+                with open(os.path.join(logdir, &#34;_dag.condor&#34;), &#34;w&#34;) as f:
                         for task in tasks.keys():
-                                f.write(f&#34;JOB {task} {os.path.join(exdir, task)}.condor DIR {config[&#39;paths&#39;][&#39;build&#39;]}\n&#34;)
+                                f.write(f&#34;JOB {task} {logdir / task}.condor DIR {config.path}\n&#34;)
                         for task, deps in tasks.items():
                                 if len(deps) == 0:
                                         continue
                                 f.write(f&#34;PARENT {&#39; &#39;.join(deps)} CHILD {task}\n&#34;)
 
                 if not self.dryrun:
-                        logging.debug(f&#34;condor_submit_dag {os.path.join(exdir, &#39;_dag.condor&#39;)}&#34;)
-                        subprocess.run([&#34;condor_submit_dag&#34;, os.path.join(exdir, &#34;_dag.condor&#34;)])
+                        logging.debug(f&#34;condor_submit_dag {logdir / &#39;_dag.condor&#39;}&#34;)
+                        subprocess.run([&#34;condor_submit_dag&#34;, logdir / &#34;_dag.condor&#34;])
                 else:
-                        logging.info(f&#34;(Dry run) condor_submit_dag {os.path.join(exdir, &#39;_dag.condor&#39;)}&#34;)</code></pre>
+                        logging.info(f&#34;(Dry run) condor_submit_dag {logdir / &#39;_dag.condor&#39;}&#34;)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="cytograph.pipeline.engine.Engine" href="#cytograph.pipeline.engine.Engine">Engine</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="cytograph.pipeline.engine.CondorDAGEngine.execute"><code class="name flex">
+<span>def <span class="ident">execute</span></span>(<span>self) ‑> NoneType</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">        def execute(self) -&gt; None:
+                config = Config().load()
+                tasks = self.build_execution_dag()
+
+                logdir: Path = config.path / &#34;logs&#34;
+                logdir.mkdir(exist_ok=True)
+
+                # Find cytograph
+                cytograph_exe = shutil.which(&#39;cytograph&#39;)
+                if cytograph_exe is None:
+                        logging.error(&#34;The &#39;cytograph&#39; command-line tool was not found.&#34;)
+                        sys.exit(1)
+
+                for task in tasks.keys():
+                        if task not in self.deck.punchcards:
+                                logging.error(f&#34;Punchcard {task} not found.&#34;)
+                                sys.exit(1)
+
+                for task in tasks.keys():
+                        config = Config().load()  # Load it fresh for each task since we&#39;re clobbering it below
+                        cmd = &#34;&#34;
+
+                        punchcard = self.deck.punchcards[task]
+                        config = Config().load(punchcard)
+                        cmd = f&#34;process {task}&#34;
+                        # Must set &#39;request_gpus&#39; only if non-zero, because even asking for zero GPUs requires a node that has GPUs (weirdly)
+                        request_gpus = f&#34;request_gpus = {config.resources.n_gpus}&#34; if config.resources.n_gpus &gt; 0 else &#34;&#34;
+                        with open(logdir / (task + &#34;.condor&#34;), &#34;w&#34;) as f:
+                                f.write(f&#34;&#34;&#34;
+getenv       = true
+executable   = {os.path.abspath(cytograph_exe)}
+arguments    = &#34;{cmd}&#34;
+log          = {logdir / task}.log
+output       = {logdir / task}.out
+error        = {logdir / task}.error
+request_cpus = {config.resources.n_cpus}
+{request_gpus}
+request_memory = {config.resources.memory * 1024}
+queue 1\n
+&#34;&#34;&#34;)
+
+                with open(os.path.join(logdir, &#34;_dag.condor&#34;), &#34;w&#34;) as f:
+                        for task in tasks.keys():
+                                f.write(f&#34;JOB {task} {logdir / task}.condor DIR {config.path}\n&#34;)
+                        for task, deps in tasks.items():
+                                if len(deps) == 0:
+                                        continue
+                                f.write(f&#34;PARENT {&#39; &#39;.join(deps)} CHILD {task}\n&#34;)
+
+                if not self.dryrun:
+                        logging.debug(f&#34;condor_submit_dag {logdir / &#39;_dag.condor&#39;}&#34;)
+                        subprocess.run([&#34;condor_submit_dag&#34;, logdir / &#34;_dag.condor&#34;])
+                else:
+                        logging.info(f&#34;(Dry run) condor_submit_dag {logdir / &#39;_dag.condor&#39;}&#34;)</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="cytograph.pipeline.engine.Engine" href="#cytograph.pipeline.engine.Engine">Engine</a></b></code>:
+<ul class="hlist">
+<li><code><a title="cytograph.pipeline.engine.Engine.build_execution_dag" href="#cytograph.pipeline.engine.Engine.build_execution_dag">build_execution_dag</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="cytograph.pipeline.engine.CondorEngine"><code class="flex name class">
+<span>class <span class="ident">CondorEngine</span></span>
+<span>(</span><span>deck: <a title="cytograph.pipeline.punchcards.PunchcardDeck" href="punchcards.html#cytograph.pipeline.punchcards.PunchcardDeck">PunchcardDeck</a>, dryrun: bool = True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>An engine that executes tasks in parallel on a HTCondor cluster, by repeatedly launching tasks
+when their predecessors are completed. Tasks will be executed in parallel as much as possible while respecting the
+dependency graph. If new punchcards are added during the build (e.g. by CutDendrogram), they too will run.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class CondorEngine(Engine):
+        &#34;&#34;&#34;
+        An engine that executes tasks in parallel on a HTCondor cluster, by repeatedly launching tasks
+        when their predecessors are completed. Tasks will be executed in parallel as much as possible while respecting the
+        dependency graph. If new punchcards are added during the build (e.g. by CutDendrogram), they too will run.
+        &#34;&#34;&#34;
+        def __init__(self, deck: PunchcardDeck, dryrun: bool = True) -&gt; None:
+                super().__init__(deck, dryrun)
+
+        def execute(self) -&gt; None:
+                config = Config().load()
+                logdir: Path = config.path / &#34;logs&#34;
+                logdir.mkdir(exist_ok=True)
+
+                # Find cytograph
+                cytograph_exe = shutil.which(&#39;cytograph&#39;)
+                if cytograph_exe is None:
+                        logging.error(&#34;The &#39;cytograph&#39; command-line tool was not found.&#34;)
+                        sys.exit(1)
+
+                while True:
+                        starting = 0
+                        running = 0
+                        waiting = 0
+                        completed = 0
+                        logging.debug(f&#34;Checking for new tasks to launch.&#34;)
+                        self.deck = PunchcardDeck(config.path / &#34;punchcards&#34;)
+                        tasks = self.build_execution_dag()
+
+                        for task in tasks.keys():
+                                if task not in self.deck.punchcards:
+                                        logging.error(f&#34;Punchcard {task} not found.&#34;)
+                                        sys.exit(1)
+                                if (logdir / (task + &#34;.completed&#34;)).exists():
+                                        completed += 1
+                                elif (logdir / (task + &#34;.created&#34;)).exists():
+                                        running += 1
+                                else:
+                                        waiting += 1  # but might get started in this cycle
+                                
+                        for task, deps in tasks.items():
+                                if (logdir / (task + &#34;.completed&#34;)).exists():
+                                        logging.debug(f&#34;Skipping &#39;{task}&#39; because it was already completed.&#34;)
+                                        continue
+                                # Check if all the dependencies of this task have completed
+                                if all((logdir / (dep + &#34;.completed&#34;)).exists() for dep in deps):
+                                        # Atomically check if the task has already been launched
+                                        try:
+                                                (logdir / (task + &#34;.created&#34;)).touch(exist_ok=False)
+                                        except FileExistsError:
+                                                logging.debug(f&#34;Skipping &#39;{task}&#39; because it was already started.&#34;)
+                                                continue
+                                        # Launch the task
+                                        starting += 1
+                                        waiting -= 1
+                                        config = Config().load()  # Load it fresh for each task since we&#39;re clobbering it below
+                                        cmd = &#34;&#34;
+
+                                        punchcard = self.deck.punchcards[task]
+                                        config = Config().load(punchcard)
+                                        cmd = f&#34;process {task}&#34;
+                                        # Must set &#39;request_gpus&#39; only if non-zero, because even asking for zero GPUs requires a node that has GPUs (weirdly)
+                                        request_gpus = f&#34;request_gpus = {config.resources.n_gpus}&#34; if config.resources.n_gpus &gt; 0 else &#34;&#34;
+                                        with open(logdir / (task + &#34;.condor&#34;), &#34;w&#34;) as f:
+                                                f.write(f&#34;&#34;&#34;
+getenv       = true
+executable   = {os.path.abspath(cytograph_exe)}
+arguments    = &#34;{cmd}&#34;
+log          = {logdir / task}.log
+output       = {logdir / task}.out
+error        = {logdir / task}.error
+request_cpus = {config.resources.n_cpus}
+{request_gpus}
+request_memory = {config.resources.memory * 1024}
+queue 1\n
+&#34;&#34;&#34;)
+                                        if not self.dryrun:
+                                                logging.debug(f&#34;Launching &#39;{task}&#39;&#34;)
+                                                subprocess.run([&#34;condor_submit&#34;, logdir / (task + &#39;.condor&#39;)])
+                                        else:
+                                                logging.info(f&#34;(Dry run) condor_submit {logdir / (task + &#39;.condor&#39;)}&#34;)
+                                else:
+                                        logging.debug(f&#34;Skipping &#39;{task}&#39; because not all dependencies have been completed.&#34;)
+                        logging.debug(&#34;Waiting one minute before checking again.&#34;)
+                        logging.info(f&#34;Jobs: {starting} starting, {running} running, {waiting} waiting, {completed} completed&#34;)
+                        time.sleep(60)</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -323,14 +599,8 @@ queue 1\n
 </summary>
 <pre><code class="python">        def execute(self) -&gt; None:
                 config = Config().load()
-                tasks = self.build_execution_dag()
-                # Make job files
-                exdir = os.path.abspath(os.path.join(config[&#34;paths&#34;][&#34;build&#34;], &#34;condor&#34;))
-                if os.path.exists(exdir):
-                        logging.warn(&#34;Removing previous build logs from &#39;condor&#39; directory.&#34;)
-                        shutil.rmtree(exdir, ignore_errors=True)
-                if not os.path.exists(exdir):
-                        os.mkdir(exdir)
+                logdir: Path = config.path / &#34;logs&#34;
+                logdir.mkdir(exist_ok=True)
 
                 # Find cytograph
                 cytograph_exe = shutil.which(&#39;cytograph&#39;)
@@ -338,45 +608,72 @@ queue 1\n
                         logging.error(&#34;The &#39;cytograph&#39; command-line tool was not found.&#34;)
                         sys.exit(1)
 
-                for task in tasks.keys():
-                        config = Config().load()  # Load it fresh for each task since we&#39;re clobbering it below
-                        cmd = &#34;&#34;
-                        if task not in self.deck.punchcards:
-                                logging.error(f&#34;Subset or view {task} not found.&#34;)
-                                sys.exit(1)
+                while True:
+                        starting = 0
+                        running = 0
+                        waiting = 0
+                        completed = 0
+                        logging.debug(f&#34;Checking for new tasks to launch.&#34;)
+                        self.deck = PunchcardDeck(config.path / &#34;punchcards&#34;)
+                        tasks = self.build_execution_dag()
 
-                        punchcard = self.deck.punchcards[task]
-                        config = Config().load(punchcard)
-                        cmd = f&#34;process {task}&#34;
-                        # Must set &#39;request_gpus&#39; only if non-zero, because even asking for zero GPUs requires a node that has GPUs (weirdly)
-                        request_gpus = f&#34;request_gpus = {config[&#39;execution&#39;][&#39;n_gpus&#39;]}&#34; if config[&#39;execution&#39;][&#39;n_gpus&#39;] &gt; 0 else &#34;&#34;
-                        with open(os.path.join(exdir, task + &#34;.condor&#34;), &#34;w&#34;) as f:
-                                f.write(f&#34;&#34;&#34;
+                        for task in tasks.keys():
+                                if task not in self.deck.punchcards:
+                                        logging.error(f&#34;Punchcard {task} not found.&#34;)
+                                        sys.exit(1)
+                                if (logdir / (task + &#34;.completed&#34;)).exists():
+                                        completed += 1
+                                elif (logdir / (task + &#34;.created&#34;)).exists():
+                                        running += 1
+                                else:
+                                        waiting += 1  # but might get started in this cycle
+                                
+                        for task, deps in tasks.items():
+                                if (logdir / (task + &#34;.completed&#34;)).exists():
+                                        logging.debug(f&#34;Skipping &#39;{task}&#39; because it was already completed.&#34;)
+                                        continue
+                                # Check if all the dependencies of this task have completed
+                                if all((logdir / (dep + &#34;.completed&#34;)).exists() for dep in deps):
+                                        # Atomically check if the task has already been launched
+                                        try:
+                                                (logdir / (task + &#34;.created&#34;)).touch(exist_ok=False)
+                                        except FileExistsError:
+                                                logging.debug(f&#34;Skipping &#39;{task}&#39; because it was already started.&#34;)
+                                                continue
+                                        # Launch the task
+                                        starting += 1
+                                        waiting -= 1
+                                        config = Config().load()  # Load it fresh for each task since we&#39;re clobbering it below
+                                        cmd = &#34;&#34;
+
+                                        punchcard = self.deck.punchcards[task]
+                                        config = Config().load(punchcard)
+                                        cmd = f&#34;process {task}&#34;
+                                        # Must set &#39;request_gpus&#39; only if non-zero, because even asking for zero GPUs requires a node that has GPUs (weirdly)
+                                        request_gpus = f&#34;request_gpus = {config.resources.n_gpus}&#34; if config.resources.n_gpus &gt; 0 else &#34;&#34;
+                                        with open(logdir / (task + &#34;.condor&#34;), &#34;w&#34;) as f:
+                                                f.write(f&#34;&#34;&#34;
 getenv       = true
 executable   = {os.path.abspath(cytograph_exe)}
 arguments    = &#34;{cmd}&#34;
-log          = {os.path.join(exdir, task)}.log
-output       = {os.path.join(exdir, task)}.out
-error        = {os.path.join(exdir, task)}.error
-request_cpus = {config[&#34;execution&#34;][&#34;n_cpus&#34;]}
+log          = {logdir / task}.log
+output       = {logdir / task}.out
+error        = {logdir / task}.error
+request_cpus = {config.resources.n_cpus}
 {request_gpus}
-request_memory = {config[&#34;execution&#34;][&#34;memory&#34;] * 1024}
+request_memory = {config.resources.memory * 1024}
 queue 1\n
 &#34;&#34;&#34;)
-
-                with open(os.path.join(exdir, &#34;_dag.condor&#34;), &#34;w&#34;) as f:
-                        for task in tasks.keys():
-                                f.write(f&#34;JOB {task} {os.path.join(exdir, task)}.condor DIR {config[&#39;paths&#39;][&#39;build&#39;]}\n&#34;)
-                        for task, deps in tasks.items():
-                                if len(deps) == 0:
-                                        continue
-                                f.write(f&#34;PARENT {&#39; &#39;.join(deps)} CHILD {task}\n&#34;)
-
-                if not self.dryrun:
-                        logging.debug(f&#34;condor_submit_dag {os.path.join(exdir, &#39;_dag.condor&#39;)}&#34;)
-                        subprocess.run([&#34;condor_submit_dag&#34;, os.path.join(exdir, &#34;_dag.condor&#34;)])
-                else:
-                        logging.info(f&#34;(Dry run) condor_submit_dag {os.path.join(exdir, &#39;_dag.condor&#39;)}&#34;)</code></pre>
+                                        if not self.dryrun:
+                                                logging.debug(f&#34;Launching &#39;{task}&#39;&#34;)
+                                                subprocess.run([&#34;condor_submit&#34;, logdir / (task + &#39;.condor&#39;)])
+                                        else:
+                                                logging.info(f&#34;(Dry run) condor_submit {logdir / (task + &#39;.condor&#39;)}&#34;)
+                                else:
+                                        logging.debug(f&#34;Skipping &#39;{task}&#39; because not all dependencies have been completed.&#34;)
+                        logging.debug(&#34;Waiting one minute before checking again.&#34;)
+                        logging.info(f&#34;Jobs: {starting} starting, {running} running, {waiting} waiting, {completed} completed&#34;)
+                        time.sleep(60)</code></pre>
 </details>
 </dd>
 </dl>
@@ -438,6 +735,7 @@ executes it in some manner (e.g. locally and serially, or on a cluster and in pa
 </details>
 <h3>Subclasses</h3>
 <ul class="hlist">
+<li><a title="cytograph.pipeline.engine.CondorDAGEngine" href="#cytograph.pipeline.engine.CondorDAGEngine">CondorDAGEngine</a></li>
 <li><a title="cytograph.pipeline.engine.CondorEngine" href="#cytograph.pipeline.engine.CondorEngine">CondorEngine</a></li>
 <li><a title="cytograph.pipeline.engine.LocalEngine" href="#cytograph.pipeline.engine.LocalEngine">LocalEngine</a></li>
 </ul>
@@ -509,6 +807,10 @@ executes it in some manner (e.g. locally and serially, or on a cluster and in pa
                 super().__init__(deck, dryrun)
 
         def execute(self) -&gt; None:
+                config = Config().load()
+                logdir: Path = config.path / &#34;logs&#34;
+                logdir.mkdir(exist_ok=True)
+
                 # Run all the punchcards
                 tasks = self.build_execution_dag()
                 for task, deps in tasks.items():
@@ -525,6 +827,12 @@ executes it in some manner (e.g. locally and serially, or on a cluster and in pa
                 if self.dryrun:
                         logging.info(&#34;Dry run only, with the following execution plan&#34;)
                 for ix, task in enumerate(ordered_tasks):
+                        # Atomically check if the task has already been launched
+                        try:
+                                (logdir / (task + &#34;.created&#34;)).touch(exist_ok=False)
+                        except FileExistsError:
+                                logging.info(f&#34;Skipping &#39;{task}&#39; because it was already run (remove &#39;{task}.created&#39; from logs to force rebuild).&#34;)
+                                continue
                         if not self.dryrun:
                                 logging.info(f&#34;\033[1;32;40mBuild step {ix + 1} of {len(ordered_tasks)}: cytograph process {task}\033[0m&#34;)
                                 subprocess.run([&#34;cytograph&#34;, &#34;--hide-message&#34;, &#34;process&#34;, task])
@@ -547,6 +855,10 @@ executes it in some manner (e.g. locally and serially, or on a cluster and in pa
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def execute(self) -&gt; None:
+        config = Config().load()
+        logdir: Path = config.path / &#34;logs&#34;
+        logdir.mkdir(exist_ok=True)
+
         # Run all the punchcards
         tasks = self.build_execution_dag()
         for task, deps in tasks.items():
@@ -563,6 +875,12 @@ executes it in some manner (e.g. locally and serially, or on a cluster and in pa
         if self.dryrun:
                 logging.info(&#34;Dry run only, with the following execution plan&#34;)
         for ix, task in enumerate(ordered_tasks):
+                # Atomically check if the task has already been launched
+                try:
+                        (logdir / (task + &#34;.created&#34;)).touch(exist_ok=False)
+                except FileExistsError:
+                        logging.info(f&#34;Skipping &#39;{task}&#39; because it was already run (remove &#39;{task}.created&#39; from logs to force rebuild).&#34;)
+                        continue
                 if not self.dryrun:
                         logging.info(f&#34;\033[1;32;40mBuild step {ix + 1} of {len(ordered_tasks)}: cytograph process {task}\033[0m&#34;)
                         subprocess.run([&#34;cytograph&#34;, &#34;--hide-message&#34;, &#34;process&#34;, task])
@@ -601,6 +919,12 @@ executes it in some manner (e.g. locally and serially, or on a cluster and in pa
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
+<li>
+<h4><code><a title="cytograph.pipeline.engine.CondorDAGEngine" href="#cytograph.pipeline.engine.CondorDAGEngine">CondorDAGEngine</a></code></h4>
+<ul class="">
+<li><code><a title="cytograph.pipeline.engine.CondorDAGEngine.execute" href="#cytograph.pipeline.engine.CondorDAGEngine.execute">execute</a></code></li>
+</ul>
+</li>
 <li>
 <h4><code><a title="cytograph.pipeline.engine.CondorEngine" href="#cytograph.pipeline.engine.CondorEngine">CondorEngine</a></code></h4>
 <ul class="">

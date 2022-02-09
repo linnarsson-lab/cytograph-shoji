@@ -44,6 +44,10 @@ class PrincipalComponents(Module):
                 &#34;&#34;&#34;
                 Args:
                         n_factors:      The number of retained components
+                
+                Remarks:
+                        This algorithm loads all the data for selected features, which may require 
+                        a large amount of memory
                 &#34;&#34;&#34;
                 super().__init__(**kwargs)
                 self.n_factors = n_factors
@@ -94,7 +98,10 @@ class PrincipalComponents(Module):
 <dd>
 <p>The number of retained components</p>
 </dd>
-</dl></div>
+</dl>
+<h2 id="remarks">Remarks</h2>
+<p>This algorithm loads all the data for selected features, which may require
+a large amount of memory</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -107,6 +114,10 @@ class PrincipalComponents(Module):
                 &#34;&#34;&#34;
                 Args:
                         n_factors:      The number of retained components
+                
+                Remarks:
+                        This algorithm loads all the data for selected features, which may require 
+                        a large amount of memory
                 &#34;&#34;&#34;
                 super().__init__(**kwargs)
                 self.n_factors = n_factors

@@ -1,3 +1,6 @@
+"""
+The Algorithm base class from which all custom algorithms must inherit.
+"""
 from typing import Tuple, Optional, Callable, Union, Dict
 import functools
 import numpy as np
@@ -7,7 +10,7 @@ import sys
 import logging
 
 
-class Module:
+class Algorithm:
 	def __init__(self, requires: Dict[str, str] = None, creates: Dict[str, str] = None) -> None:
 		self.requires = requires if requires is not None else {}
 		self.creates = creates if creates is not None else {}
@@ -48,7 +51,7 @@ def requires(name: str, dtype: Optional[str], dims: Optional[Tuple[Union[str, in
 			if tname not in ws:
 				raise AttributeError(f"{self.__class__} requires tensor '{tname}'")
 			tensor = ws._get_tensor(tname)
-			if dims is not None and any(td != d and d != None for td, d in zip(tensor.dims, dims)):
+			if dims is not None and any(td != d and d is not None for td, d in zip(tensor.dims, dims)):
 				raise ValueError(f"{self.__class__} requires tensor '{tname}' with dims='{dims}'")
 			elif dtype is not None and tensor.dtype != dtype:
 				raise ValueError(f"{self.__class__} requires tensor '{tname}' with dtype='{dtype}'")

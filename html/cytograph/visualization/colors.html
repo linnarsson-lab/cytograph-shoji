@@ -38,10 +38,12 @@ color_alphabet = np.array([
 colors75 = np.concatenate([color_alphabet, 1 - (1 - color_alphabet) / 2, color_alphabet / 2])
 
 
-def colorize(x: np.ndarray, *, bgval: Any = None) -&gt; np.ndarray:
+def colorize(x: np.ndarray, *, bgval: Any = None, cmap: np.ndarray = None) -&gt; np.ndarray:
         le = LabelEncoder().fit(x)
         xt = le.transform(x)
-        colors = colors75[np.mod(xt, 75), :]
+        if cmap is None:
+                cmap = colors75
+        colors = cmap[np.mod(xt, 75), :]
         if bgval is not None:
                 colors[x == bgval, :] = np.array([0.8, 0.8, 0.8])
         return colors
@@ -108,7 +110,7 @@ class Colorizer:
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="cytograph.visualization.colors.colorize"><code class="name flex">
-<span>def <span class="ident">colorize</span></span>(<span>x: numpy.ndarray, *, bgval: Any = None) ‑> numpy.ndarray</span>
+<span>def <span class="ident">colorize</span></span>(<span>x: numpy.ndarray, *, bgval: Any = None, cmap: numpy.ndarray = None) ‑> numpy.ndarray</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -116,10 +118,12 @@ class Colorizer:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def colorize(x: np.ndarray, *, bgval: Any = None) -&gt; np.ndarray:
+<pre><code class="python">def colorize(x: np.ndarray, *, bgval: Any = None, cmap: np.ndarray = None) -&gt; np.ndarray:
         le = LabelEncoder().fit(x)
         xt = le.transform(x)
-        colors = colors75[np.mod(xt, 75), :]
+        if cmap is None:
+                cmap = colors75
+        colors = cmap[np.mod(xt, 75), :]
         if bgval is not None:
                 colors[x == bgval, :] = np.array([0.8, 0.8, 0.8])
         return colors</code></pre>

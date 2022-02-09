@@ -5,12 +5,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import shoji
-from cytograph import Module, requires
+from cytograph import Algorithm, requires
 from cytograph.pipeline import Config
 import yaml
 
 
-class PlotMarkers(Module):
+class PlotMarkers(Algorithm):
 	def __init__(self, markers: str = "immune", filename: str = None, **kwargs) -> None:
 		super().__init__(**kwargs)
 		self.filename = filename if filename is not None else markers + ".png"

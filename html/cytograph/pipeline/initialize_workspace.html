@@ -34,6 +34,9 @@ from cytograph import Module
 
 
 class InitializeWorkspace(Module):
+        &#34;&#34;&#34;
+        Initialize a new workspace for the build
+        &#34;&#34;&#34;
         def __init__(self, from_workspace: str, tensors: List[str], **kwargs) -&gt; None:
                 &#34;&#34;&#34;
                 Args:
@@ -87,7 +90,8 @@ class InitializeWorkspace(Module):
 <span>(</span><span>from_workspace: str, tensors: List[str], **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><h2 id="args">Args</h2>
+<div class="desc"><p>Initialize a new workspace for the build</p>
+<h2 id="args">Args</h2>
 <p>from_workspace
 Full shoji path of the workspace to use as template
 tensors
@@ -100,6 +104,9 @@ cells and genes dimensions, and importing all the tensors listed (supports only 
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class InitializeWorkspace(Module):
+        &#34;&#34;&#34;
+        Initialize a new workspace for the build
+        &#34;&#34;&#34;
         def __init__(self, from_workspace: str, tensors: List[str], **kwargs) -&gt; None:
                 &#34;&#34;&#34;
                 Args:

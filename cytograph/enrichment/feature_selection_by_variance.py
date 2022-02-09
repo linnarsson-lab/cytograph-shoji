@@ -2,12 +2,12 @@ from typing import List
 import numpy as np
 from sklearn.svm import SVR
 import cytograph as cg
-from cytograph import requires, creates, Module
+from cytograph import requires, creates, Algorithm
 import shoji
 import logging
 
 
-class FeatureSelectionByVariance(Module):
+class FeatureSelectionByVariance(Algorithm):
 	"""
 	Select features by excess variance
 	"""

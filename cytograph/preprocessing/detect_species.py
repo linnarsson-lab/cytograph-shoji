@@ -1,11 +1,11 @@
 from typing import Dict
 import shoji
 import numpy as np
-from cytograph import requires, creates, Module
+from cytograph import requires, creates, Algorithm
 import logging
 
 
-class DetectSpecies(Module):
+class DetectSpecies(Algorithm):
 	"""
 	Use gene names to detect the species
 	"""

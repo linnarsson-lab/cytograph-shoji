@@ -24,6 +24,18 @@ git clone https://github.com/linnarsson-lab/cytograph-shoji.git
 pip install -e cytograph-shoji
 ```
 
+### Rebuilding the docs
+
+Make sure you have [pdoc3](https://pdoc3.github.io/pdoc/) installed. In the repo, run:
+
+```
+pdoc --html cytograph --force
+```
+
+This will regenerate the API docs. Next, 
+
+
+
 ### Troubleshooting
 If, when importing cytograph in python, you get errors related to imports from 'harmony', solve by:
 ```

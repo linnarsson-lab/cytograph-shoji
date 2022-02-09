@@ -1,6 +1,6 @@
 from statsmodels.nonparametric.smoothers_lowess import lowess
 from ..utils import div0
-from ..module import requires, creates, Module
+from ..algorithm import requires, creates, Algorithm
 import numpy as np
 import shoji
 
@@ -16,11 +16,11 @@ def windowed_mean(x: np.ndarray, n: int):
 	return y
 
 
-class Karyotyper(Module):
+class Karyotyper(Algorithm):
 	"""
 	Estimate the karyotype of tumor cells using immune cells as internal reference
 	"""
-	def __init__(self, max_rv = 3, min_umis = 1, window_size: int = 20, smoothing_bandwidth: int = 0):
+	def __init__(self, max_rv: int = 3, min_umis: int = 1, window_size: int = 20, smoothing_bandwidth: int = 0):
 		"""
 		Estimate the karyotype
 

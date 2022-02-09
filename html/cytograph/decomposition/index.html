@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.8.4" />
 <title>cytograph.decomposition API documentation</title>
-<meta name="description" content="" />
+<meta name="description" content="Algorithms for decomposition of an expression matrix into components" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/github.min.css" crossorigin>
@@ -22,14 +22,19 @@
 <h1 class="title">Module <code>cytograph.decomposition</code></h1>
 </header>
 <section id="section-intro">
+<p>Algorithms for decomposition of an expression matrix into components</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">from .glmpca import GLMPCA
+<pre><code class="python">&#34;&#34;&#34;
+Algorithms for decomposition of an expression matrix into components
+&#34;&#34;&#34;
+from .glmpca import GLMPCA
 from .pca import PrincipalComponents
-from.harmony import Harmony
-from .residuals_pca import ResidualsPCA</code></pre>
+from .harmony import Harmony
+from .residuals_pca import ResidualsPCA
+from .incremental_residuals_pca import IncrementalResidualsPCA</code></pre>
 </details>
 </section>
 <section>
@@ -44,6 +49,10 @@ from .residuals_pca import ResidualsPCA</code></pre>
 <div class="desc"><p>Python implementation of the generalized PCA for dimension reduction of non-normally distributed data. The original R implementation is at …</p></div>
 </dd>
 <dt><code class="name"><a title="cytograph.decomposition.harmony" href="harmony.html">cytograph.decomposition.harmony</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="cytograph.decomposition.incremental_residuals_pca" href="incremental_residuals_pca.html">cytograph.decomposition.incremental_residuals_pca</a></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -80,6 +89,7 @@ from .residuals_pca import ResidualsPCA</code></pre>
 <li><code><a title="cytograph.decomposition.glmpca" href="glmpca.html">cytograph.decomposition.glmpca</a></code></li>
 <li><code><a title="cytograph.decomposition.glmpca_impl" href="glmpca_impl.html">cytograph.decomposition.glmpca_impl</a></code></li>
 <li><code><a title="cytograph.decomposition.harmony" href="harmony.html">cytograph.decomposition.harmony</a></code></li>
+<li><code><a title="cytograph.decomposition.incremental_residuals_pca" href="incremental_residuals_pca.html">cytograph.decomposition.incremental_residuals_pca</a></code></li>
 <li><code><a title="cytograph.decomposition.pca" href="pca.html">cytograph.decomposition.pca</a></code></li>
 <li><code><a title="cytograph.decomposition.residuals_pca" href="residuals_pca.html">cytograph.decomposition.residuals_pca</a></code></li>
 </ul>

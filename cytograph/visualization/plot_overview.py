@@ -6,7 +6,7 @@ from matplotlib.colors import to_rgb
 from numpy_groupies.aggregate_numpy import aggregate
 from sklearn.preprocessing import LabelEncoder, OrdinalEncoder
 from scipy.cluster.hierarchy import cut_tree
-from cytograph import Module, requires
+from cytograph import Algorithm, requires
 import logging
 import shoji
 
@@ -155,7 +155,7 @@ def plot_dendrogram(ax, n_clusters, linkage, labels, subtrees):
 	ax.axis("off")
 
 
-class PlotOverview(Module):
+class PlotOverview(Algorithm):
 	def __init__(self, filename: str = None, **kwargs) -> None:
 		super().__init__(**kwargs)
 		self.filename = filename if filename is not None else "_overview.png"

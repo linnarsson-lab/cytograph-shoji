@@ -35,10 +35,11 @@ from .embedding import *
 from .enrichment import *
 from .manifold import *
 from .metrics import *
-from .pipeline import InitializeWorkspace, CollectCells, LoadSampleMetadata
+from .pipeline import InitializeWorkspace, CollectCells, LoadSampleMetadata, PatchSampleMetadata, PatchGeneMetadata
 from .preprocessing import *
 from .species import *
-from .utils import *</code></pre>
+from .utils import *
+from .visualization import *</code></pre>
 </details>
 </section>
 <section>
@@ -46,7 +47,7 @@ from .utils import *</code></pre>
 <dl>
 <dt><code class="name"><a title="cytograph.annotation" href="annotation/index.html">cytograph.annotation</a></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Algorithms for annotating clusters</p></div>
 </dd>
 <dt><code class="name"><a title="cytograph.clustering" href="clustering/index.html">cytograph.clustering</a></code></dt>
 <dd>
@@ -54,19 +55,19 @@ from .utils import *</code></pre>
 </dd>
 <dt><code class="name"><a title="cytograph.decomposition" href="decomposition/index.html">cytograph.decomposition</a></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Algorithms for decomposition of an expression matrix into components</p></div>
 </dd>
 <dt><code class="name"><a title="cytograph.embedding" href="embedding/index.html">cytograph.embedding</a></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Algorithms for embedding into a low-dimensional space</p></div>
 </dd>
 <dt><code class="name"><a title="cytograph.enrichment" href="enrichment/index.html">cytograph.enrichment</a></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Algorithms for feature selection and for computing enrichments</p></div>
 </dd>
 <dt><code class="name"><a title="cytograph.manifold" href="manifold/index.html">cytograph.manifold</a></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Algorithms for computing a manifold</p></div>
 </dd>
 <dt><code class="name"><a title="cytograph.metrics" href="metrics/index.html">cytograph.metrics</a></code></dt>
 <dd>
@@ -78,19 +79,15 @@ from .utils import *</code></pre>
 </dd>
 <dt><code class="name"><a title="cytograph.pipeline" href="pipeline/index.html">cytograph.pipeline</a></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Algorithms for collecting cells, metadata and running the pipeline</p></div>
 </dd>
 <dt><code class="name"><a title="cytograph.plotting" href="plotting/index.html">cytograph.plotting</a></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt><code class="name"><a title="cytograph.postprocessing" href="postprocessing/index.html">cytograph.postprocessing</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
 <dt><code class="name"><a title="cytograph.preprocessing" href="preprocessing/index.html">cytograph.preprocessing</a></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Algorithms for preprocessing samples</p></div>
 </dd>
 <dt><code class="name"><a title="cytograph.species" href="species/index.html">cytograph.species</a></code></dt>
 <dd>
@@ -102,7 +99,7 @@ from .utils import *</code></pre>
 </dd>
 <dt><code class="name"><a title="cytograph.visualization" href="visualization/index.html">cytograph.visualization</a></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Algorithms for visualization</p></div>
 </dd>
 </dl>
 </section>
@@ -131,7 +128,6 @@ from .utils import *</code></pre>
 <li><code><a title="cytograph.module" href="module.html">cytograph.module</a></code></li>
 <li><code><a title="cytograph.pipeline" href="pipeline/index.html">cytograph.pipeline</a></code></li>
 <li><code><a title="cytograph.plotting" href="plotting/index.html">cytograph.plotting</a></code></li>
-<li><code><a title="cytograph.postprocessing" href="postprocessing/index.html">cytograph.postprocessing</a></code></li>
 <li><code><a title="cytograph.preprocessing" href="preprocessing/index.html">cytograph.preprocessing</a></code></li>
 <li><code><a title="cytograph.species" href="species/index.html">cytograph.species</a></code></li>
 <li><code><a title="cytograph.utils" href="utils.html">cytograph.utils</a></code></li>

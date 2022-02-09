@@ -1,5 +1,5 @@
 """
-Algorithms for collecting cells, metadata and running the pipeline
+Algorithms and utilities for collecting cells, metadata and running the pipeline
 """
 from .config import Config
 from .punchcards import Punchcard, PunchcardDeck

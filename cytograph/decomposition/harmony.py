@@ -3,12 +3,12 @@ from typing import List
 import numpy as np
 import pandas as pd
 from harmony import harmonize
-from cytograph import creates, requires, Module
+from cytograph import creates, requires, Algorithm
 import shoji
 import logging
 
 
-class Harmony(Module):
+class Harmony(Algorithm):
 	"""
 	Remove batch effects
 	"""
@@ -22,7 +22,7 @@ class Harmony(Module):
 		Remarks:
 			Uses harmony-pytorch (https://github.com/lilab-bcb/harmony-pytorch)
 
-			By default, this module will overwrite the existing Factors tensor. If you
+			By default, this algorithm will overwrite the existing Factors tensor. If you
 			want to keep the original factors, use `creates: {Factors: MyFactors}` in the
 			recipe to rename the output.
 		"""

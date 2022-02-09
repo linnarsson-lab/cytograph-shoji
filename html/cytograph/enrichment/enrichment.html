@@ -37,6 +37,14 @@ import shoji
 
 class Enrichment(Module):
         def __init__(self, **kwargs) -&gt; None:
+                &#34;&#34;&#34;
+                Compute gene enrichment in clusters
+
+                Remarks:
+                        Gene enrichment is computed as the regularized fold-change between
+                        each cluster and all other clusters. This is different from the
+                        previous cytograph version, which also considered the fraction non-zeros.
+                &#34;&#34;&#34;
                 super().__init__(**kwargs)
 
         def enrichment_by_clusters(self, ws: shoji.WorkspaceManager) -&gt; np.ndarray:
@@ -62,16 +70,7 @@ class Enrichment(Module):
         @requires(&#34;MeanExpression&#34;, None, (&#34;clusters&#34;, &#34;genes&#34;))
         @creates(&#34;Enrichment&#34;, &#34;float32&#34;, (&#34;clusters&#34;, &#34;genes&#34;))
         def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; Tuple[np.ndarray, np.ndarray]:
-                &#34;&#34;&#34;
-                Select genes at multiple levels in a hierarchy of clusters
 
-                Args:
-                        ws                              The shoji workspace containing aggregate data
-                        save                    If true, save the result as tensor SelectedFeatures (default: false)
-
-                Returns:
-                        Enrichment                      Enrichment scores
-                &#34;&#34;&#34;
                 logging.info(&#34; Enrichment: Computing enrichment at cluster leaves&#34;)
                 enr = self.enrichment_by_clusters(ws)
                 return enr</code></pre>
@@ -91,13 +90,25 @@ class Enrichment(Module):
 <span>(</span><span>**kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Compute gene enrichment in clusters</p>
+<h2 id="remarks">Remarks</h2>
+<p>Gene enrichment is computed as the regularized fold-change between
+each cluster and all other clusters. This is different from the
+previous cytograph version, which also considered the fraction non-zeros.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Enrichment(Module):
         def __init__(self, **kwargs) -&gt; None:
+                &#34;&#34;&#34;
+                Compute gene enrichment in clusters
+
+                Remarks:
+                        Gene enrichment is computed as the regularized fold-change between
+                        each cluster and all other clusters. This is different from the
+                        previous cytograph version, which also considered the fraction non-zeros.
+                &#34;&#34;&#34;
                 super().__init__(**kwargs)
 
         def enrichment_by_clusters(self, ws: shoji.WorkspaceManager) -&gt; np.ndarray:
@@ -123,16 +134,7 @@ class Enrichment(Module):
         @requires(&#34;MeanExpression&#34;, None, (&#34;clusters&#34;, &#34;genes&#34;))
         @creates(&#34;Enrichment&#34;, &#34;float32&#34;, (&#34;clusters&#34;, &#34;genes&#34;))
         def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; Tuple[np.ndarray, np.ndarray]:
-                &#34;&#34;&#34;
-                Select genes at multiple levels in a hierarchy of clusters
 
-                Args:
-                        ws                              The shoji workspace containing aggregate data
-                        save                    If true, save the result as tensor SelectedFeatures (default: false)
-
-                Returns:
-                        Enrichment                      Enrichment scores
-                &#34;&#34;&#34;
                 logging.info(&#34; Enrichment: Computing enrichment at cluster leaves&#34;)
                 enr = self.enrichment_by_clusters(ws)
                 return enr</code></pre>
@@ -183,15 +185,7 @@ A (n_clusters, n_genes) matrix of gene enrichment scores</p></div>
 <span>def <span class="ident">fit</span></span>(<span>self, ws: shoji.workspace.WorkspaceManager, save: bool = False) ‑> Tuple[numpy.ndarray, numpy.ndarray]</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Select genes at multiple levels in a hierarchy of clusters</p>
-<h2 id="args">Args</h2>
-<p>ws
-The shoji workspace containing aggregate data
-save
-If true, save the result as tensor SelectedFeatures (default: false)</p>
-<h2 id="returns">Returns</h2>
-<p>Enrichment
-Enrichment scores</p></div>
+<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -199,16 +193,7 @@ Enrichment scores</p></div>
 <pre><code class="python">@requires(&#34;MeanExpression&#34;, None, (&#34;clusters&#34;, &#34;genes&#34;))
 @creates(&#34;Enrichment&#34;, &#34;float32&#34;, (&#34;clusters&#34;, &#34;genes&#34;))
 def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; Tuple[np.ndarray, np.ndarray]:
-        &#34;&#34;&#34;
-        Select genes at multiple levels in a hierarchy of clusters
 
-        Args:
-                ws                              The shoji workspace containing aggregate data
-                save                    If true, save the result as tensor SelectedFeatures (default: false)
-
-        Returns:
-                Enrichment                      Enrichment scores
-        &#34;&#34;&#34;
         logging.info(&#34; Enrichment: Computing enrichment at cluster leaves&#34;)
         enr = self.enrichment_by_clusters(ws)
         return enr</code></pre>

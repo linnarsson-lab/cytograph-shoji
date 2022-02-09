@@ -2,7 +2,7 @@ from typing import Tuple
 import numpy as np
 from scipy.stats import multivariate_normal
 import shoji
-from cytograph import requires, creates, Module
+from cytograph import requires, creates, Algorithm
 import logging
 
 
@@ -28,7 +28,7 @@ class GaussianMLE(object):
 		return multivariate_normal.pdf(x, self.mu, self.sigma)
 
 
-class ClassifyDroplets(Module):
+class ClassifyDroplets(Algorithm):
 	"""
 	Classify droplets based on total UMI count and unspliced fraction
 	"""

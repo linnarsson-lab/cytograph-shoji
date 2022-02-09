@@ -2,11 +2,11 @@ from typing import Tuple
 import numpy as np
 import shoji
 from ..utils import div0
-from cytograph import requires, creates, Module
+from cytograph import requires, creates, Algorithm
 import logging
 
 
-class Log2Normalizer(Module):
+class Log2Normalizer(Algorithm):
 	"""
 	Normalize and log2-transform a dataset, dealing properly
 	with edge cases such as division by zero.

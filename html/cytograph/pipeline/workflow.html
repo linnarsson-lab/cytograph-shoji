@@ -34,6 +34,7 @@ from .config import Config
 from .punchcards import PunchcardDeck, Punchcard
 import cytograph as cg
 from datetime import datetime
+from pathlib import Path
 
 
 def nice_deltastring(delta):
@@ -55,14 +56,19 @@ def nice_deltastring(delta):
                 return f&#34;{delta.microseconds // 1000} ms&#34;
 
 
-def run_recipe(ws: shoji.WorkspaceManager, recipe: Dict) -&gt; None:
+def run_qc(ws: shoji.WorkspaceManager, recipe: Dict) -&gt; None:
         start_all = datetime.now()
+        config = Config.load()
+        export_dir = config.path / &#34;exported&#34; / &#34;qc&#34;
+        export_dir.mkdir(exist_ok=True)
+        
         for step in recipe:
                 for fname, args in step.items():  # This is almost always only a single function and args, but could in principle be several as long as they have distinct names
                         logging.info(f&#34;{fname}: {args}&#34;)
                         start = datetime.now()
                         # logging.info(f&#34;(not running)&#34;)
                         instance = getattr(cg, fname)(**args)
+                        instance.export_dir = export_dir
                         instance.fit(ws, save=True)
                         end = datetime.now()
                         logging.info(f&#34;{fname}: Done in {nice_deltastring(end - start)}.&#34;)
@@ -80,12 +86,33 @@ class Workflow:
                 self.config = Config.load(punchcard)
                 self.deck = deck
                 self.punchcard = punchcard
-                self.export_dir = os.path.join(self.config[&#34;paths&#34;][&#34;build&#34;], &#34;exported&#34;, punchcard.name)
+                self.export_dir = self.config.path / &#34;exported&#34; / punchcard.name
+                self.export_dir.mkdir(exist_ok=True)
 
         def process(self, resume_at: int = 0) -&gt; None:
-                ws = self.config[&#34;workspaces&#34;][&#34;build&#34;][self.punchcard.name]
+                logdir: Path = self.config.path / &#34;logs&#34;
+                logdir.mkdir(exist_ok=True)
+                assert self.config.workspaces.build is not None
+                ws = self.config.workspaces.build[self.punchcard.name]
                 logging.info(f&#34;Running recipe &#39;{self.punchcard.recipe}&#39; for &#39;{self.punchcard.name}&#39;&#34;)
-                run_recipe(ws, self.config[&#34;recipes&#34;][self.punchcard.recipe][resume_at:])</code></pre>
+                recipe = self.config.recipes[self.punchcard.recipe][resume_at:]
+                start_all = datetime.now()
+                for step in recipe:
+                        for fname, args in step.items():
+                                logging.info(f&#34;{fname}: {args}&#34;)
+                                start = datetime.now()
+                                instance = getattr(cg, fname)(**args)
+                                instance.export_dir = self.export_dir
+                                instance.fit(ws, save=True)
+                                end = datetime.now()
+                                logging.info(f&#34;{fname}: Done in {nice_deltastring(end - start)}.&#34;)
+                                logging.info(&#34;&#34;)
+                end_all = datetime.now()
+                logging.info(f&#34;Recipe completed in {nice_deltastring(end_all - start_all)}.&#34;)
+                logging.info(&#34;&#34;)
+
+                (logdir / (self.punchcard.name + &#34;.completed&#34;)).touch()
+                (logdir / (self.punchcard.name + &#34;.created&#34;)).unlink(missing_ok=True)</code></pre>
 </details>
 </section>
 <section>
@@ -123,8 +150,8 @@ class Workflow:
                 return f&#34;{delta.microseconds // 1000} ms&#34;</code></pre>
 </details>
 </dd>
-<dt id="cytograph.pipeline.workflow.run_recipe"><code class="name flex">
-<span>def <span class="ident">run_recipe</span></span>(<span>ws: shoji.workspace.WorkspaceManager, recipe: Dict) ‑> NoneType</span>
+<dt id="cytograph.pipeline.workflow.run_qc"><code class="name flex">
+<span>def <span class="ident">run_qc</span></span>(<span>ws: shoji.workspace.WorkspaceManager, recipe: Dict) ‑> NoneType</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -132,14 +159,19 @@ class Workflow:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def run_recipe(ws: shoji.WorkspaceManager, recipe: Dict) -&gt; None:
+<pre><code class="python">def run_qc(ws: shoji.WorkspaceManager, recipe: Dict) -&gt; None:
         start_all = datetime.now()
+        config = Config.load()
+        export_dir = config.path / &#34;exported&#34; / &#34;qc&#34;
+        export_dir.mkdir(exist_ok=True)
+        
         for step in recipe:
                 for fname, args in step.items():  # This is almost always only a single function and args, but could in principle be several as long as they have distinct names
                         logging.info(f&#34;{fname}: {args}&#34;)
                         start = datetime.now()
                         # logging.info(f&#34;(not running)&#34;)
                         instance = getattr(cg, fname)(**args)
+                        instance.export_dir = export_dir
                         instance.fit(ws, save=True)
                         end = datetime.now()
                         logging.info(f&#34;{fname}: Done in {nice_deltastring(end - start)}.&#34;)
@@ -172,12 +204,33 @@ class Workflow:
                 self.config = Config.load(punchcard)
                 self.deck = deck
                 self.punchcard = punchcard
-                self.export_dir = os.path.join(self.config[&#34;paths&#34;][&#34;build&#34;], &#34;exported&#34;, punchcard.name)
+                self.export_dir = self.config.path / &#34;exported&#34; / punchcard.name
+                self.export_dir.mkdir(exist_ok=True)
 
         def process(self, resume_at: int = 0) -&gt; None:
-                ws = self.config[&#34;workspaces&#34;][&#34;build&#34;][self.punchcard.name]
+                logdir: Path = self.config.path / &#34;logs&#34;
+                logdir.mkdir(exist_ok=True)
+                assert self.config.workspaces.build is not None
+                ws = self.config.workspaces.build[self.punchcard.name]
                 logging.info(f&#34;Running recipe &#39;{self.punchcard.recipe}&#39; for &#39;{self.punchcard.name}&#39;&#34;)
-                run_recipe(ws, self.config[&#34;recipes&#34;][self.punchcard.recipe][resume_at:])</code></pre>
+                recipe = self.config.recipes[self.punchcard.recipe][resume_at:]
+                start_all = datetime.now()
+                for step in recipe:
+                        for fname, args in step.items():
+                                logging.info(f&#34;{fname}: {args}&#34;)
+                                start = datetime.now()
+                                instance = getattr(cg, fname)(**args)
+                                instance.export_dir = self.export_dir
+                                instance.fit(ws, save=True)
+                                end = datetime.now()
+                                logging.info(f&#34;{fname}: Done in {nice_deltastring(end - start)}.&#34;)
+                                logging.info(&#34;&#34;)
+                end_all = datetime.now()
+                logging.info(f&#34;Recipe completed in {nice_deltastring(end_all - start_all)}.&#34;)
+                logging.info(&#34;&#34;)
+
+                (logdir / (self.punchcard.name + &#34;.completed&#34;)).touch()
+                (logdir / (self.punchcard.name + &#34;.created&#34;)).unlink(missing_ok=True)</code></pre>
 </details>
 <h3>Methods</h3>
 <dl>
@@ -191,9 +244,29 @@ class Workflow:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def process(self, resume_at: int = 0) -&gt; None:
-        ws = self.config[&#34;workspaces&#34;][&#34;build&#34;][self.punchcard.name]
+        logdir: Path = self.config.path / &#34;logs&#34;
+        logdir.mkdir(exist_ok=True)
+        assert self.config.workspaces.build is not None
+        ws = self.config.workspaces.build[self.punchcard.name]
         logging.info(f&#34;Running recipe &#39;{self.punchcard.recipe}&#39; for &#39;{self.punchcard.name}&#39;&#34;)
-        run_recipe(ws, self.config[&#34;recipes&#34;][self.punchcard.recipe][resume_at:])</code></pre>
+        recipe = self.config.recipes[self.punchcard.recipe][resume_at:]
+        start_all = datetime.now()
+        for step in recipe:
+                for fname, args in step.items():
+                        logging.info(f&#34;{fname}: {args}&#34;)
+                        start = datetime.now()
+                        instance = getattr(cg, fname)(**args)
+                        instance.export_dir = self.export_dir
+                        instance.fit(ws, save=True)
+                        end = datetime.now()
+                        logging.info(f&#34;{fname}: Done in {nice_deltastring(end - start)}.&#34;)
+                        logging.info(&#34;&#34;)
+        end_all = datetime.now()
+        logging.info(f&#34;Recipe completed in {nice_deltastring(end_all - start_all)}.&#34;)
+        logging.info(&#34;&#34;)
+
+        (logdir / (self.punchcard.name + &#34;.completed&#34;)).touch()
+        (logdir / (self.punchcard.name + &#34;.created&#34;)).unlink(missing_ok=True)</code></pre>
 </details>
 </dd>
 </dl>
@@ -215,7 +288,7 @@ class Workflow:
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
 <li><code><a title="cytograph.pipeline.workflow.nice_deltastring" href="#cytograph.pipeline.workflow.nice_deltastring">nice_deltastring</a></code></li>
-<li><code><a title="cytograph.pipeline.workflow.run_recipe" href="#cytograph.pipeline.workflow.run_recipe">run_recipe</a></code></li>
+<li><code><a title="cytograph.pipeline.workflow.run_qc" href="#cytograph.pipeline.workflow.run_qc">run_qc</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>

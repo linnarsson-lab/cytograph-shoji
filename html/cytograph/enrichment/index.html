@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.8.4" />
 <title>cytograph.enrichment API documentation</title>
-<meta name="description" content="" />
+<meta name="description" content="Algorithms for feature selection and for computing enrichments" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/github.min.css" crossorigin>
@@ -22,15 +22,20 @@
 <h1 class="title">Module <code>cytograph.enrichment</code></h1>
 </header>
 <section id="section-intro">
+<p>Algorithms for feature selection and for computing enrichments</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">from .feature_selection_and_multilevel_enrichment import FeatureSelectionAndMultilevelEnrichment
+<pre><code class="python">&#34;&#34;&#34;
+Algorithms for feature selection and for computing enrichments
+&#34;&#34;&#34;
+from .feature_selection_and_multilevel_enrichment import FeatureSelectionAndMultilevelEnrichment
 from .feature_selection_by_variance import FeatureSelectionByVariance
-from .feature_selection_by_deviance import FeatureSelectionByDeviance
+from .feature_selection_by_pearson_residuals import FeatureSelectionByPearsonResiduals
 from .gsea import GSEA
-from .enrichment import Enrichment</code></pre>
+from .enrichment import Enrichment
+from .trinarize import Trinarize</code></pre>
 </details>
 </section>
 <section>
@@ -48,7 +53,7 @@ from .enrichment import Enrichment</code></pre>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt><code class="name"><a title="cytograph.enrichment.feature_selection_by_deviance" href="feature_selection_by_deviance.html">cytograph.enrichment.feature_selection_by_deviance</a></code></dt>
+<dt><code class="name"><a title="cytograph.enrichment.feature_selection_by_pearson_residuals" href="feature_selection_by_pearson_residuals.html">cytograph.enrichment.feature_selection_by_pearson_residuals</a></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -57,6 +62,10 @@ from .enrichment import Enrichment</code></pre>
 <div class="desc"></div>
 </dd>
 <dt><code class="name"><a title="cytograph.enrichment.gsea" href="gsea.html">cytograph.enrichment.gsea</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="cytograph.enrichment.trinarize" href="trinarize.html">cytograph.enrichment.trinarize</a></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -85,9 +94,10 @@ from .enrichment import Enrichment</code></pre>
 <li><code><a title="cytograph.enrichment.binary_differential_expression" href="binary_differential_expression.html">cytograph.enrichment.binary_differential_expression</a></code></li>
 <li><code><a title="cytograph.enrichment.enrichment" href="enrichment.html">cytograph.enrichment.enrichment</a></code></li>
 <li><code><a title="cytograph.enrichment.feature_selection_and_multilevel_enrichment" href="feature_selection_and_multilevel_enrichment.html">cytograph.enrichment.feature_selection_and_multilevel_enrichment</a></code></li>
-<li><code><a title="cytograph.enrichment.feature_selection_by_deviance" href="feature_selection_by_deviance.html">cytograph.enrichment.feature_selection_by_deviance</a></code></li>
+<li><code><a title="cytograph.enrichment.feature_selection_by_pearson_residuals" href="feature_selection_by_pearson_residuals.html">cytograph.enrichment.feature_selection_by_pearson_residuals</a></code></li>
 <li><code><a title="cytograph.enrichment.feature_selection_by_variance" href="feature_selection_by_variance.html">cytograph.enrichment.feature_selection_by_variance</a></code></li>
 <li><code><a title="cytograph.enrichment.gsea" href="gsea.html">cytograph.enrichment.gsea</a></code></li>
+<li><code><a title="cytograph.enrichment.trinarize" href="trinarize.html">cytograph.enrichment.trinarize</a></code></li>
 </ul>
 </li>
 </ul>

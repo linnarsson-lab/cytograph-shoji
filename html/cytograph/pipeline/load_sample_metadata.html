@@ -35,6 +35,7 @@ import sqlite3 as sqlite
 import os
 import numpy as np
 from cytograph import Module
+import pandas as pd
 
 
 # Here&#39;s what was in the db on 2020-12-07 for 10X101_1:
@@ -70,8 +71,13 @@ from cytograph import Module
 # Editat 2019-05-30 16:52:20 &lt;class &#39;str&#39;&gt;
 
 class LoadSampleMetadata(Module):
+        &#34;&#34;&#34;
+        Load samples metadata from a sqlite database
+        &#34;&#34;&#34;
         def __init__(self, db: str, tensors: List[str], convert_10x_sample_name: bool = True, **kwargs) -&gt; None:
                 &#34;&#34;&#34;
+                Load samples metadata from a sqlite database
+        
                 Args:
                         db                              Full path to the metadata database file (a sqlite .db file)
                         tensors                 List of tensors to be created (or overwritten) from metadata
@@ -89,38 +95,67 @@ class LoadSampleMetadata(Module):
         def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; None:
                 db = shoji.connect()
                 config = Config.load()
-                punchcard = config[&#34;punchcard&#34;]
+                punchcard = config.punchcard
+                assert punchcard is not None
+                missing = False
+                samples_ws = db[config.workspaces.samples_workspace_name]
                 for source in punchcard.sources:
-                        if source in db[config[&#34;workspaces&#34;][&#34;samples&#34;]]:
-                                source_ws = db[config[&#34;workspaces&#34;][&#34;samples&#34;]][source]
+                        if source not in samples_ws:
+                                logging.error(f&#34;Sample {source} not found!&#34;)
+                                missing = True
+                if missing:
+                        sys.exit(1)
+                for source in punchcard.sources:
+                        if source in samples_ws:
+                                source_ws = samples_ws[source]
                         else:
                                 logging.error(f&#34;Sample {source} not found!&#34;)
                                 sys.exit(1)
                         logging.info(f&#34; LoadSampleMetadata: Updating metadata for &#39;{source}&#39;&#34;)
-                        if self.convert_10x_sample_name:
+                        if self.convert_10x_sample_name and source.startswith(&#34;TenX&#34;):
                                 sample_id = &#34;10X&#34; + source[4:]
                         else:
                                 sample_id = source
-                        with sqlite.connect(self.db) as sqldb:
-                                cursor = sqldb.cursor()
-                                cursor.execute(&#34;SELECT * FROM sample WHERE name = ? COLLATE NOCASE&#34;, (sample_id,))
-                                keys = [x[0].lower() for x in cursor.description]
-                                vals = cursor.fetchone()
-                                if vals is None:
-                                        logging.warning(f&#34;Sample &#39;{sample_id}&#39; not found in database&#34;)
-                                else:
-                                        d = dict(zip(keys, vals))
-                                        for tensor in self.tensors:
-                                                if tensor.lower() not in d:
-                                                        logging.error(f&#34;Tensor &#39;{tensor}&#39; was not found in the metadata&#34;)
-                                                        sys.exit(1)
-                                                val = d[tensor.lower()]
-                                                if isinstance(val, int):
-                                                        source_ws[tensor] = shoji.Tensor(&#34;int32&#34;, (), np.array(val, dtype=&#34;int32&#34;))
-                                                elif isinstance(val, float):
-                                                        source_ws[tensor] = shoji.Tensor(&#34;float32&#34;, (), np.array(val, dtype=&#34;float32&#34;))
-                                                elif isinstance(val, str):
-                                                        source_ws[tensor] = shoji.Tensor(&#34;string&#34;, (), np.array(val, dtype=object))</code></pre>
+                        if self.db.endswith(&#34;.db&#34;):
+                                with sqlite.connect(self.db) as sqldb:
+                                        cursor = sqldb.cursor()
+                                        cursor.execute(&#34;SELECT * FROM sample WHERE name = ? COLLATE NOCASE&#34;, (sample_id,))
+                                        keys = [x[0].lower() for x in cursor.description]
+                                        vals = cursor.fetchone()
+                                        if vals is None:
+                                                logging.warning(f&#34;Sample &#39;{sample_id}&#39; not found in database&#34;)
+                                        else:
+                                                d = dict(zip(keys, vals))
+                                                for tensor in self.tensors:
+                                                        if tensor.lower() not in d:
+                                                                logging.error(f&#34;Tensor &#39;{tensor}&#39; was not found in the metadata&#34;)
+                                                                sys.exit(1)
+                                                        val = d[tensor.lower()]
+                                                        if isinstance(val, int):
+                                                                source_ws[tensor] = shoji.Tensor(&#34;int32&#34;, (), inits=np.array(val, dtype=&#34;int32&#34;))
+                                                        elif isinstance(val, float):
+                                                                source_ws[tensor] = shoji.Tensor(&#34;float32&#34;, (), inits=np.array(val, dtype=&#34;float32&#34;))
+                                                        elif isinstance(val, str):
+                                                                source_ws[tensor] = shoji.Tensor(&#34;string&#34;, (), inits=np.array(val, dtype=object))
+                        elif self.db.endswith(&#34;.xlsx&#34;):
+                                table = pd.read_excel(self.db)
+                                row = table[table[&#34;SampleID&#34;] == sample_id]
+                                keys = row.columns.values
+                                vals = row.values[0]
+                                d = dict(zip(keys, vals))
+                                for tensor in self.tensors:
+                                        if tensor not in d:
+                                                logging.error(f&#34;Tensor &#39;{tensor}&#39; was not found in the metadata&#34;)
+                                                sys.exit(1)
+                                        val = d[tensor]
+                                        if isinstance(val, int):
+                                                source_ws[tensor] = shoji.Tensor(&#34;int32&#34;, (), inits=np.array(val, dtype=&#34;int32&#34;))
+                                        elif isinstance(val, float):
+                                                source_ws[tensor] = shoji.Tensor(&#34;float32&#34;, (), inits=np.array(val, dtype=&#34;float32&#34;))
+                                        elif isinstance(val, str):
+                                                source_ws[tensor] = shoji.Tensor(&#34;string&#34;, (), inits=np.array(val, dtype=object))
+                                        else:
+                                                logging.error(f&#34;Invalid datatype &#39;{type(val)}&#39; for &#39;{tensor}&#39;&#34;)</code></pre>
 </details>
 </section>
 <section>
@@ -137,7 +172,9 @@ class LoadSampleMetadata(Module):
 <span>(</span><span>db: str, tensors: List[str], convert_10x_sample_name: bool = True, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><h2 id="args">Args</h2>
+<div class="desc"><p>Load samples metadata from a sqlite database</p>
+<p>Load samples metadata from a sqlite database</p>
+<h2 id="args">Args</h2>
 <p>db
 Full path to the metadata database file (a sqlite .db file)
 tensors
@@ -149,8 +186,13 @@ If true, convert "10X101_2" to "TenX101_2"</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class LoadSampleMetadata(Module):
+        &#34;&#34;&#34;
+        Load samples metadata from a sqlite database
+        &#34;&#34;&#34;
         def __init__(self, db: str, tensors: List[str], convert_10x_sample_name: bool = True, **kwargs) -&gt; None:
                 &#34;&#34;&#34;
+                Load samples metadata from a sqlite database
+        
                 Args:
                         db                              Full path to the metadata database file (a sqlite .db file)
                         tensors                 List of tensors to be created (or overwritten) from metadata
@@ -168,38 +210,67 @@ If true, convert "10X101_2" to "TenX101_2"</p></div>
         def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; None:
                 db = shoji.connect()
                 config = Config.load()
-                punchcard = config[&#34;punchcard&#34;]
+                punchcard = config.punchcard
+                assert punchcard is not None
+                missing = False
+                samples_ws = db[config.workspaces.samples_workspace_name]
                 for source in punchcard.sources:
-                        if source in db[config[&#34;workspaces&#34;][&#34;samples&#34;]]:
-                                source_ws = db[config[&#34;workspaces&#34;][&#34;samples&#34;]][source]
+                        if source not in samples_ws:
+                                logging.error(f&#34;Sample {source} not found!&#34;)
+                                missing = True
+                if missing:
+                        sys.exit(1)
+                for source in punchcard.sources:
+                        if source in samples_ws:
+                                source_ws = samples_ws[source]
                         else:
                                 logging.error(f&#34;Sample {source} not found!&#34;)
                                 sys.exit(1)
                         logging.info(f&#34; LoadSampleMetadata: Updating metadata for &#39;{source}&#39;&#34;)
-                        if self.convert_10x_sample_name:
+                        if self.convert_10x_sample_name and source.startswith(&#34;TenX&#34;):
                                 sample_id = &#34;10X&#34; + source[4:]
                         else:
                                 sample_id = source
-                        with sqlite.connect(self.db) as sqldb:
-                                cursor = sqldb.cursor()
-                                cursor.execute(&#34;SELECT * FROM sample WHERE name = ? COLLATE NOCASE&#34;, (sample_id,))
-                                keys = [x[0].lower() for x in cursor.description]
-                                vals = cursor.fetchone()
-                                if vals is None:
-                                        logging.warning(f&#34;Sample &#39;{sample_id}&#39; not found in database&#34;)
-                                else:
-                                        d = dict(zip(keys, vals))
-                                        for tensor in self.tensors:
-                                                if tensor.lower() not in d:
-                                                        logging.error(f&#34;Tensor &#39;{tensor}&#39; was not found in the metadata&#34;)
-                                                        sys.exit(1)
-                                                val = d[tensor.lower()]
-                                                if isinstance(val, int):
-                                                        source_ws[tensor] = shoji.Tensor(&#34;int32&#34;, (), np.array(val, dtype=&#34;int32&#34;))
-                                                elif isinstance(val, float):
-                                                        source_ws[tensor] = shoji.Tensor(&#34;float32&#34;, (), np.array(val, dtype=&#34;float32&#34;))
-                                                elif isinstance(val, str):
-                                                        source_ws[tensor] = shoji.Tensor(&#34;string&#34;, (), np.array(val, dtype=object))</code></pre>
+                        if self.db.endswith(&#34;.db&#34;):
+                                with sqlite.connect(self.db) as sqldb:
+                                        cursor = sqldb.cursor()
+                                        cursor.execute(&#34;SELECT * FROM sample WHERE name = ? COLLATE NOCASE&#34;, (sample_id,))
+                                        keys = [x[0].lower() for x in cursor.description]
+                                        vals = cursor.fetchone()
+                                        if vals is None:
+                                                logging.warning(f&#34;Sample &#39;{sample_id}&#39; not found in database&#34;)
+                                        else:
+                                                d = dict(zip(keys, vals))
+                                                for tensor in self.tensors:
+                                                        if tensor.lower() not in d:
+                                                                logging.error(f&#34;Tensor &#39;{tensor}&#39; was not found in the metadata&#34;)
+                                                                sys.exit(1)
+                                                        val = d[tensor.lower()]
+                                                        if isinstance(val, int):
+                                                                source_ws[tensor] = shoji.Tensor(&#34;int32&#34;, (), inits=np.array(val, dtype=&#34;int32&#34;))
+                                                        elif isinstance(val, float):
+                                                                source_ws[tensor] = shoji.Tensor(&#34;float32&#34;, (), inits=np.array(val, dtype=&#34;float32&#34;))
+                                                        elif isinstance(val, str):
+                                                                source_ws[tensor] = shoji.Tensor(&#34;string&#34;, (), inits=np.array(val, dtype=object))
+                        elif self.db.endswith(&#34;.xlsx&#34;):
+                                table = pd.read_excel(self.db)
+                                row = table[table[&#34;SampleID&#34;] == sample_id]
+                                keys = row.columns.values
+                                vals = row.values[0]
+                                d = dict(zip(keys, vals))
+                                for tensor in self.tensors:
+                                        if tensor not in d:
+                                                logging.error(f&#34;Tensor &#39;{tensor}&#39; was not found in the metadata&#34;)
+                                                sys.exit(1)
+                                        val = d[tensor]
+                                        if isinstance(val, int):
+                                                source_ws[tensor] = shoji.Tensor(&#34;int32&#34;, (), inits=np.array(val, dtype=&#34;int32&#34;))
+                                        elif isinstance(val, float):
+                                                source_ws[tensor] = shoji.Tensor(&#34;float32&#34;, (), inits=np.array(val, dtype=&#34;float32&#34;))
+                                        elif isinstance(val, str):
+                                                source_ws[tensor] = shoji.Tensor(&#34;string&#34;, (), inits=np.array(val, dtype=object))
+                                        else:
+                                                logging.error(f&#34;Invalid datatype &#39;{type(val)}&#39; for &#39;{tensor}&#39;&#34;)</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -219,38 +290,67 @@ If true, convert "10X101_2" to "TenX101_2"</p></div>
 <pre><code class="python">def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; None:
         db = shoji.connect()
         config = Config.load()
-        punchcard = config[&#34;punchcard&#34;]
+        punchcard = config.punchcard
+        assert punchcard is not None
+        missing = False
+        samples_ws = db[config.workspaces.samples_workspace_name]
         for source in punchcard.sources:
-                if source in db[config[&#34;workspaces&#34;][&#34;samples&#34;]]:
-                        source_ws = db[config[&#34;workspaces&#34;][&#34;samples&#34;]][source]
+                if source not in samples_ws:
+                        logging.error(f&#34;Sample {source} not found!&#34;)
+                        missing = True
+        if missing:
+                sys.exit(1)
+        for source in punchcard.sources:
+                if source in samples_ws:
+                        source_ws = samples_ws[source]
                 else:
                         logging.error(f&#34;Sample {source} not found!&#34;)
                         sys.exit(1)
                 logging.info(f&#34; LoadSampleMetadata: Updating metadata for &#39;{source}&#39;&#34;)
-                if self.convert_10x_sample_name:
+                if self.convert_10x_sample_name and source.startswith(&#34;TenX&#34;):
                         sample_id = &#34;10X&#34; + source[4:]
                 else:
                         sample_id = source
-                with sqlite.connect(self.db) as sqldb:
-                        cursor = sqldb.cursor()
-                        cursor.execute(&#34;SELECT * FROM sample WHERE name = ? COLLATE NOCASE&#34;, (sample_id,))
-                        keys = [x[0].lower() for x in cursor.description]
-                        vals = cursor.fetchone()
-                        if vals is None:
-                                logging.warning(f&#34;Sample &#39;{sample_id}&#39; not found in database&#34;)
-                        else:
-                                d = dict(zip(keys, vals))
-                                for tensor in self.tensors:
-                                        if tensor.lower() not in d:
-                                                logging.error(f&#34;Tensor &#39;{tensor}&#39; was not found in the metadata&#34;)
-                                                sys.exit(1)
-                                        val = d[tensor.lower()]
-                                        if isinstance(val, int):
-                                                source_ws[tensor] = shoji.Tensor(&#34;int32&#34;, (), np.array(val, dtype=&#34;int32&#34;))
-                                        elif isinstance(val, float):
-                                                source_ws[tensor] = shoji.Tensor(&#34;float32&#34;, (), np.array(val, dtype=&#34;float32&#34;))
-                                        elif isinstance(val, str):
-                                                source_ws[tensor] = shoji.Tensor(&#34;string&#34;, (), np.array(val, dtype=object))</code></pre>
+                if self.db.endswith(&#34;.db&#34;):
+                        with sqlite.connect(self.db) as sqldb:
+                                cursor = sqldb.cursor()
+                                cursor.execute(&#34;SELECT * FROM sample WHERE name = ? COLLATE NOCASE&#34;, (sample_id,))
+                                keys = [x[0].lower() for x in cursor.description]
+                                vals = cursor.fetchone()
+                                if vals is None:
+                                        logging.warning(f&#34;Sample &#39;{sample_id}&#39; not found in database&#34;)
+                                else:
+                                        d = dict(zip(keys, vals))
+                                        for tensor in self.tensors:
+                                                if tensor.lower() not in d:
+                                                        logging.error(f&#34;Tensor &#39;{tensor}&#39; was not found in the metadata&#34;)
+                                                        sys.exit(1)
+                                                val = d[tensor.lower()]
+                                                if isinstance(val, int):
+                                                        source_ws[tensor] = shoji.Tensor(&#34;int32&#34;, (), inits=np.array(val, dtype=&#34;int32&#34;))
+                                                elif isinstance(val, float):
+                                                        source_ws[tensor] = shoji.Tensor(&#34;float32&#34;, (), inits=np.array(val, dtype=&#34;float32&#34;))
+                                                elif isinstance(val, str):
+                                                        source_ws[tensor] = shoji.Tensor(&#34;string&#34;, (), inits=np.array(val, dtype=object))
+                elif self.db.endswith(&#34;.xlsx&#34;):
+                        table = pd.read_excel(self.db)
+                        row = table[table[&#34;SampleID&#34;] == sample_id]
+                        keys = row.columns.values
+                        vals = row.values[0]
+                        d = dict(zip(keys, vals))
+                        for tensor in self.tensors:
+                                if tensor not in d:
+                                        logging.error(f&#34;Tensor &#39;{tensor}&#39; was not found in the metadata&#34;)
+                                        sys.exit(1)
+                                val = d[tensor]
+                                if isinstance(val, int):
+                                        source_ws[tensor] = shoji.Tensor(&#34;int32&#34;, (), inits=np.array(val, dtype=&#34;int32&#34;))
+                                elif isinstance(val, float):
+                                        source_ws[tensor] = shoji.Tensor(&#34;float32&#34;, (), inits=np.array(val, dtype=&#34;float32&#34;))
+                                elif isinstance(val, str):
+                                        source_ws[tensor] = shoji.Tensor(&#34;string&#34;, (), inits=np.array(val, dtype=object))
+                                else:
+                                        logging.error(f&#34;Invalid datatype &#39;{type(val)}&#39; for &#39;{tensor}&#39;&#34;)</code></pre>
 </details>
 </dd>
 </dl>

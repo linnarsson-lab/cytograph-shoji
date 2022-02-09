@@ -4,13 +4,13 @@ import numpy as np
 from sklearn.preprocessing import OneHotEncoder
 
 import shoji
-from cytograph import requires, creates, Module
+from cytograph import requires, creates, Algorithm
 from .glmpca_impl import glmpca
 import sys
 import logging
 
 
-class GLMPCA(Module):
+class GLMPCA(Algorithm):
 	"""
 	Project a dataset into a reduced feature space using GLM PCA.
 	"""

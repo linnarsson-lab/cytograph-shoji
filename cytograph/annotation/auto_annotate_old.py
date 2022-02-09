@@ -3,7 +3,7 @@ import os
 import re
 from typing import List, Tuple
 
-from cytograph import creates, requires, Module
+from cytograph import creates, requires, Algorithm
 import numpy_groupies as npg
 from scipy.special import gammaincc
 
@@ -52,7 +52,7 @@ class Annotation:
 		return temp
 
 
-class AutoAnnotate(Module):
+class AutoAnnotate(Algorithm):
 	def __init__(self, path: str, threshold: float = 1, **kwargs) -> None:
 		"""
 		Args:

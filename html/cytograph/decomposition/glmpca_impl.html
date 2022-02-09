@@ -559,7 +559,9 @@ dL/dtheta * dtheta/du</p></div>
     # dL/dtheta*d^2theta/du^2 = score
     info = info1 - score
     # L2 penalty on u=log(th)
-    return np.exp(u + (score - u) / (info + 1))</code></pre>
+    return np.exp(u + (score - u) / (info + 1))
+    # grad= score-u
+    # exp(u+sign(grad)*min(maxstep,abs(grad)))</code></pre>
 </details>
 </dd>
 <dt id="cytograph.decomposition.glmpca_impl.glmpca"><code class="name flex">

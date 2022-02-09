@@ -36,6 +36,16 @@ import logging
 
 class GeneSummaryStatistics(Module):
         def __init__(self, **kwargs) -&gt; None:
+                &#34;&#34;&#34;
+                Calculate summary statistics for each gene
+
+                Creates:
+                        MeanExpression          Mean expression per gene
+                        StdevExpression         Standard deviation of expression per gene
+                        Nonzeros                        Nonzero count per gene
+                        GeneTotalUMIs           Total UMIs per gene
+                        ValidGenes                      Bool array indicating genes with nnz &gt; 10
+                &#34;&#34;&#34;
                 super().__init__(**kwargs)
 
         @requires(&#34;Expression&#34;, &#34;uint16&#34;, (&#34;cells&#34;, &#34;genes&#34;))
@@ -47,20 +57,6 @@ class GeneSummaryStatistics(Module):
         @creates(&#34;ValidGenes&#34;, &#34;bool&#34;, (&#34;genes&#34;,))
         @creates(&#34;OverallTotalUMIs&#34;, &#34;uint64&#34;, ())
         def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-                &#34;&#34;&#34;
-                Calculate summary statistics for each gene
-
-                Args:
-                        ws                              shoji workspace
-                        save                    if true, save the result to the workspace
-
-                Returns:
-                        MeanExpression          Mean expression per gene
-                        StdevExpression         Standard deviation of expression per gene
-                        Nonzeros                        Nonzero count per gene
-                        GeneTotalUMIs           Total UMIs per gene
-                        ValidGenes                      Bool array indicating genes with nnz &gt; 10
-                &#34;&#34;&#34;
                 logging.info(&#34; GeneSummaryStatistics: Computing summary statistics for genes&#34;)
                 stats = ws.cells.groupby(None).stats(self.requires[&#34;Expression&#34;])
                 mu = stats.mean()[1].flatten()
@@ -90,13 +86,34 @@ class GeneSummaryStatistics(Module):
 <span>(</span><span>**kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Calculate summary statistics for each gene</p>
+<h2 id="creates">Creates</h2>
+<p>MeanExpression
+Mean expression per gene
+StdevExpression
+Standard deviation of expression per gene
+Nonzeros
+Nonzero count per gene
+GeneTotalUMIs
+Total UMIs per gene
+ValidGenes
+Bool array indicating genes with nnz &gt; 10</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class GeneSummaryStatistics(Module):
         def __init__(self, **kwargs) -&gt; None:
+                &#34;&#34;&#34;
+                Calculate summary statistics for each gene
+
+                Creates:
+                        MeanExpression          Mean expression per gene
+                        StdevExpression         Standard deviation of expression per gene
+                        Nonzeros                        Nonzero count per gene
+                        GeneTotalUMIs           Total UMIs per gene
+                        ValidGenes                      Bool array indicating genes with nnz &gt; 10
+                &#34;&#34;&#34;
                 super().__init__(**kwargs)
 
         @requires(&#34;Expression&#34;, &#34;uint16&#34;, (&#34;cells&#34;, &#34;genes&#34;))
@@ -108,20 +125,6 @@ class GeneSummaryStatistics(Module):
         @creates(&#34;ValidGenes&#34;, &#34;bool&#34;, (&#34;genes&#34;,))
         @creates(&#34;OverallTotalUMIs&#34;, &#34;uint64&#34;, ())
         def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-                &#34;&#34;&#34;
-                Calculate summary statistics for each gene
-
-                Args:
-                        ws                              shoji workspace
-                        save                    if true, save the result to the workspace
-
-                Returns:
-                        MeanExpression          Mean expression per gene
-                        StdevExpression         Standard deviation of expression per gene
-                        Nonzeros                        Nonzero count per gene
-                        GeneTotalUMIs           Total UMIs per gene
-                        ValidGenes                      Bool array indicating genes with nnz &gt; 10
-                &#34;&#34;&#34;
                 logging.info(&#34; GeneSummaryStatistics: Computing summary statistics for genes&#34;)
                 stats = ws.cells.groupby(None).stats(self.requires[&#34;Expression&#34;])
                 mu = stats.mean()[1].flatten()
@@ -146,23 +149,7 @@ class GeneSummaryStatistics(Module):
 <span>def <span class="ident">fit</span></span>(<span>self, ws: shoji.workspace.WorkspaceManager, save: bool = False) ‑> Tuple[numpy.ndarray, numpy.ndarray, numpy.ndarray, numpy.ndarray, numpy.ndarray, numpy.ndarray]</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Calculate summary statistics for each gene</p>
-<h2 id="args">Args</h2>
-<p>ws
-shoji workspace
-save
-if true, save the result to the workspace</p>
-<h2 id="returns">Returns</h2>
-<p>MeanExpression
-Mean expression per gene
-StdevExpression
-Standard deviation of expression per gene
-Nonzeros
-Nonzero count per gene
-GeneTotalUMIs
-Total UMIs per gene
-ValidGenes
-Bool array indicating genes with nnz &gt; 10</p></div>
+<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -176,20 +163,6 @@ Bool array indicating genes with nnz &gt; 10</p></div>
 @creates(&#34;ValidGenes&#34;, &#34;bool&#34;, (&#34;genes&#34;,))
 @creates(&#34;OverallTotalUMIs&#34;, &#34;uint64&#34;, ())
 def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-        &#34;&#34;&#34;
-        Calculate summary statistics for each gene
-
-        Args:
-                ws                              shoji workspace
-                save                    if true, save the result to the workspace
-
-        Returns:
-                MeanExpression          Mean expression per gene
-                StdevExpression         Standard deviation of expression per gene
-                Nonzeros                        Nonzero count per gene
-                GeneTotalUMIs           Total UMIs per gene
-                ValidGenes                      Bool array indicating genes with nnz &gt; 10
-        &#34;&#34;&#34;
         logging.info(&#34; GeneSummaryStatistics: Computing summary statistics for genes&#34;)
         stats = ws.cells.groupby(None).stats(self.requires[&#34;Expression&#34;])
         mu = stats.mean()[1].flatten()

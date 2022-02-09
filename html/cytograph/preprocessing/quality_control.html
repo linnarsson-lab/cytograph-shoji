@@ -34,6 +34,9 @@ import logging
 
 
 class QualityControl(Module):
+        &#34;&#34;&#34;
+        Compute QC metrics and mark valid cells (note: consider using ClassifyDroplets instead)
+        &#34;&#34;&#34;
         def __init__(self, doublet_threshold: Union[float, str] = &#34;auto&#34;, min_umis: int = 0, max_mt_fraction: float = 1, min_unspliced_fraction: float = 0, min_fraction_good_cells: float = 0, **kwargs) -&gt; None:
                 &#34;&#34;&#34;
                 Args:
@@ -116,7 +119,8 @@ class QualityControl(Module):
 <span>(</span><span>doublet_threshold: Union[float, str] = 'auto', min_umis: int = 0, max_mt_fraction: float = 1, min_unspliced_fraction: float = 0, min_fraction_good_cells: float = 0, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><h2 id="args">Args</h2>
+<div class="desc"><p>Compute QC metrics and mark valid cells (note: consider using ClassifyDroplets instead)</p>
+<h2 id="args">Args</h2>
 <p>doublet_threshold
 Threshold to call doublets, or "auto" to use automatic threshold (default: "auto")
 min_umis
@@ -131,6 +135,9 @@ min_fraction_good_cells Minimum fraction of cells that must pass QC for the samp
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class QualityControl(Module):
+        &#34;&#34;&#34;
+        Compute QC metrics and mark valid cells (note: consider using ClassifyDroplets instead)
+        &#34;&#34;&#34;
         def __init__(self, doublet_threshold: Union[float, str] = &#34;auto&#34;, min_umis: int = 0, max_mt_fraction: float = 1, min_unspliced_fraction: float = 0, min_fraction_good_cells: float = 0, **kwargs) -&gt; None:
                 &#34;&#34;&#34;
                 Args:

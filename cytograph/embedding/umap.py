@@ -1,12 +1,12 @@
 import logging
 from typing import Callable, Union
-from cytograph import requires, creates, Module
+from cytograph import requires, creates, Algorithm
 import numpy as np
 import shoji
 import umap
 
 
-class UMAP(Module):
+class UMAP(Algorithm):
 	"""
 	Uniform Manifold Approximation and Projection for Dimension Reduction
 	"""

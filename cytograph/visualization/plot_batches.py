@@ -5,11 +5,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import shoji
-from cytograph import Module, requires
+from cytograph import Algorithm, requires
 from .scatter import scatterc, scattern
 
 
-class PlotBatches(Module):
+class PlotBatches(Algorithm):
 	def __init__(self, filename: str = "batches.png", **kwargs) -> None:
 		super().__init__(**kwargs)
 		self.filename = filename

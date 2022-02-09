@@ -76,8 +76,8 @@ def requires(name: str, dtype: Optional[str], dims: Optional[Tuple[Union[str, in
                         if tname not in ws:
                                 raise AttributeError(f&#34;{self.__class__} requires tensor &#39;{tname}&#39;&#34;)
                         tensor = ws._get_tensor(tname)
-                        if dims is not None and tensor.dims != dims:
-                                        raise ValueError(f&#34;{self.__class__} requires tensor &#39;{tname}&#39; with dims=&#39;{dims}&#39;&#34;)
+                        if dims is not None and any(td != d and d != None for td, d in zip(tensor.dims, dims)):
+                                raise ValueError(f&#34;{self.__class__} requires tensor &#39;{tname}&#39; with dims=&#39;{dims}&#39;&#34;)
                         elif dtype is not None and tensor.dtype != dtype:
                                 raise ValueError(f&#34;{self.__class__} requires tensor &#39;{tname}&#39; with dtype=&#39;{dtype}&#39;&#34;)
                         return func(self, ws, *args, **kwargs)
@@ -140,11 +140,14 @@ def creates(name: str, dtype: str, dims: Tuple[Optional[Union[str, int]], ...], 
                                 if hasattr(self, &#34;creates&#34;) and self.creates is not None:
                                         if name in self.creates:
                                                 tname = self.creates[name]
+                                logging.info(f&#34; [Creating tensor {tname} of shape {inits.shape}]&#34;)
                                 ws[tname] = shoji.Tensor(dtype, dims, inits=np.array(inits))
                         except fdb.impl.FDBError as e:
                                 if e.code == 2101:
-                                        logging.error(f&#34;Result tensor &#39;{name}&#39; was too large to fit in transaction; make it smaller, or use atomic=False&#34;)
+                                        logging.error(f&#34;Result tensor &#39;{name}&#39; was too large to fit in transaction&#34;)
                                         sys.exit(1)
+                                else:
+                                        raise e
                         if len(result.args) == 1:
                                 if len(result.stored) == 1:
                                         return result.stored[0]
@@ -239,11 +242,14 @@ return (expression, age)
                                 if hasattr(self, &#34;creates&#34;) and self.creates is not None:
                                         if name in self.creates:
                                                 tname = self.creates[name]
+                                logging.info(f&#34; [Creating tensor {tname} of shape {inits.shape}]&#34;)
                                 ws[tname] = shoji.Tensor(dtype, dims, inits=np.array(inits))
                         except fdb.impl.FDBError as e:
                                 if e.code == 2101:
-                                        logging.error(f&#34;Result tensor &#39;{name}&#39; was too large to fit in transaction; make it smaller, or use atomic=False&#34;)
+                                        logging.error(f&#34;Result tensor &#39;{name}&#39; was too large to fit in transaction&#34;)
                                         sys.exit(1)
+                                else:
+                                        raise e
                         if len(result.args) == 1:
                                 if len(result.stored) == 1:
                                         return result.stored[0]
@@ -302,8 +308,8 @@ def fit(self, ws) -&gt; None:
                         if tname not in ws:
                                 raise AttributeError(f&#34;{self.__class__} requires tensor &#39;{tname}&#39;&#34;)
                         tensor = ws._get_tensor(tname)
-                        if dims is not None and tensor.dims != dims:
-                                        raise ValueError(f&#34;{self.__class__} requires tensor &#39;{tname}&#39; with dims=&#39;{dims}&#39;&#34;)
+                        if dims is not None and any(td != d and d != None for td, d in zip(tensor.dims, dims)):
+                                raise ValueError(f&#34;{self.__class__} requires tensor &#39;{tname}&#39; with dims=&#39;{dims}&#39;&#34;)
                         elif dtype is not None and tensor.dtype != dtype:
                                 raise ValueError(f&#34;{self.__class__} requires tensor &#39;{tname}&#39; with dtype=&#39;{dtype}&#39;&#34;)
                         return func(self, ws, *args, **kwargs)
@@ -337,31 +343,56 @@ def fit(self, ws) -&gt; None:
 </details>
 <h3>Subclasses</h3>
 <ul class="hlist">
+<li><a title="cytograph.annotation.auto_annotate.AutoAnnotate" href="annotation/auto_annotate.html#cytograph.annotation.auto_annotate.AutoAnnotate">AutoAnnotate</a></li>
+<li><a title="cytograph.annotation.auto_annotate_old.AutoAnnotate" href="annotation/auto_annotate_old.html#cytograph.annotation.auto_annotate_old.AutoAnnotate">AutoAnnotate</a></li>
+<li><a title="cytograph.annotation.karyotyper.Karyotyper" href="annotation/karyotyper.html#cytograph.annotation.karyotyper.Karyotyper">Karyotyper</a></li>
 <li><a title="cytograph.clustering.aggregate.Aggregate" href="clustering/aggregate.html#cytograph.clustering.aggregate.Aggregate">Aggregate</a></li>
+<li><a title="cytograph.clustering.cut_dendrogram.CutDendrogram" href="clustering/cut_dendrogram.html#cytograph.clustering.cut_dendrogram.CutDendrogram">CutDendrogram</a></li>
 <li><a title="cytograph.clustering.dendrogram.Dendrogram" href="clustering/dendrogram.html#cytograph.clustering.dendrogram.Dendrogram">Dendrogram</a></li>
+<li><a title="cytograph.clustering.more_polished_leiden.MorePolishedLeiden" href="clustering/more_polished_leiden.html#cytograph.clustering.more_polished_leiden.MorePolishedLeiden">MorePolishedLeiden</a></li>
 <li><a title="cytograph.clustering.polished_leiden.PolishedLeiden" href="clustering/polished_leiden.html#cytograph.clustering.polished_leiden.PolishedLeiden">PolishedLeiden</a></li>
-<li><a title="cytograph.clustering.residuals_dendrogram.ResidualsDendrogram" href="clustering/residuals_dendrogram.html#cytograph.clustering.residuals_dendrogram.ResidualsDendrogram">ResidualsDendrogram</a></li>
 <li><a title="cytograph.decomposition.glmpca.GLMPCA" href="decomposition/glmpca.html#cytograph.decomposition.glmpca.GLMPCA">GLMPCA</a></li>
 <li><a title="cytograph.decomposition.harmony.Harmony" href="decomposition/harmony.html#cytograph.decomposition.harmony.Harmony">Harmony</a></li>
+<li><a title="cytograph.decomposition.incremental_residuals_pca.IncrementalResidualsPCA" href="decomposition/incremental_residuals_pca.html#cytograph.decomposition.incremental_residuals_pca.IncrementalResidualsPCA">IncrementalResidualsPCA</a></li>
 <li><a title="cytograph.decomposition.pca.PrincipalComponents" href="decomposition/pca.html#cytograph.decomposition.pca.PrincipalComponents">PrincipalComponents</a></li>
 <li><a title="cytograph.decomposition.residuals_pca.ResidualsPCA" href="decomposition/residuals_pca.html#cytograph.decomposition.residuals_pca.ResidualsPCA">ResidualsPCA</a></li>
 <li><a title="cytograph.embedding.art_of_tsne.ArtOfTsne" href="embedding/art_of_tsne.html#cytograph.embedding.art_of_tsne.ArtOfTsne">ArtOfTsne</a></li>
+<li><a title="cytograph.embedding.umap.UMAP" href="embedding/umap.html#cytograph.embedding.umap.UMAP">UMAP</a></li>
 <li><a title="cytograph.enrichment.enrichment.Enrichment" href="enrichment/enrichment.html#cytograph.enrichment.enrichment.Enrichment">Enrichment</a></li>
 <li><a title="cytograph.enrichment.feature_selection_and_multilevel_enrichment.FeatureSelectionAndMultilevelEnrichment" href="enrichment/feature_selection_and_multilevel_enrichment.html#cytograph.enrichment.feature_selection_and_multilevel_enrichment.FeatureSelectionAndMultilevelEnrichment">FeatureSelectionAndMultilevelEnrichment</a></li>
-<li><a title="cytograph.enrichment.feature_selection_by_deviance.FeatureSelectionByDeviance" href="enrichment/feature_selection_by_deviance.html#cytograph.enrichment.feature_selection_by_deviance.FeatureSelectionByDeviance">FeatureSelectionByDeviance</a></li>
+<li><a title="cytograph.enrichment.feature_selection_by_pearson_residuals.FeatureSelectionByPearsonResiduals" href="enrichment/feature_selection_by_pearson_residuals.html#cytograph.enrichment.feature_selection_by_pearson_residuals.FeatureSelectionByPearsonResiduals">FeatureSelectionByPearsonResiduals</a></li>
 <li><a title="cytograph.enrichment.feature_selection_by_variance.FeatureSelectionByVariance" href="enrichment/feature_selection_by_variance.html#cytograph.enrichment.feature_selection_by_variance.FeatureSelectionByVariance">FeatureSelectionByVariance</a></li>
+<li><a title="cytograph.enrichment.trinarize.Trinarize" href="enrichment/trinarize.html#cytograph.enrichment.trinarize.Trinarize">Trinarize</a></li>
 <li><a title="cytograph.manifold.rnn_manifold.RnnManifold" href="manifold/rnn_manifold.html#cytograph.manifold.rnn_manifold.RnnManifold">RnnManifold</a></li>
 <li><a title="cytograph.pipeline.collect_cells.CollectCells" href="pipeline/collect_cells.html#cytograph.pipeline.collect_cells.CollectCells">CollectCells</a></li>
 <li><a title="cytograph.pipeline.initialize_workspace.InitializeWorkspace" href="pipeline/initialize_workspace.html#cytograph.pipeline.initialize_workspace.InitializeWorkspace">InitializeWorkspace</a></li>
 <li><a title="cytograph.pipeline.load_sample_metadata.LoadSampleMetadata" href="pipeline/load_sample_metadata.html#cytograph.pipeline.load_sample_metadata.LoadSampleMetadata">LoadSampleMetadata</a></li>
+<li><a title="cytograph.pipeline.patch_gene_metadata.PatchGeneMetadata" href="pipeline/patch_gene_metadata.html#cytograph.pipeline.patch_gene_metadata.PatchGeneMetadata">PatchGeneMetadata</a></li>
+<li><a title="cytograph.pipeline.patch_sample_metadata.PatchSampleMetadata" href="pipeline/patch_sample_metadata.html#cytograph.pipeline.patch_sample_metadata.PatchSampleMetadata">PatchSampleMetadata</a></li>
 <li><a title="cytograph.preprocessing.cell_summary_statistics.CellSummaryStatistics" href="preprocessing/cell_summary_statistics.html#cytograph.preprocessing.cell_summary_statistics.CellSummaryStatistics">CellSummaryStatistics</a></li>
+<li><a title="cytograph.preprocessing.classify_droplets.ClassifyDroplets" href="preprocessing/classify_droplets.html#cytograph.preprocessing.classify_droplets.ClassifyDroplets">ClassifyDroplets</a></li>
+<li><a title="cytograph.preprocessing.compute_cell_hashes.ComputeCellHashes" href="preprocessing/compute_cell_hashes.html#cytograph.preprocessing.compute_cell_hashes.ComputeCellHashes">ComputeCellHashes</a></li>
 <li><a title="cytograph.preprocessing.detect_species.DetectSpecies" href="preprocessing/detect_species.html#cytograph.preprocessing.detect_species.DetectSpecies">DetectSpecies</a></li>
-<li><a title="cytograph.preprocessing.deviance_statistics.DevianceStatistics" href="preprocessing/deviance_statistics.html#cytograph.preprocessing.deviance_statistics.DevianceStatistics">DevianceStatistics</a></li>
 <li><a title="cytograph.preprocessing.doublet_finder.DoubletFinder" href="preprocessing/doublet_finder.html#cytograph.preprocessing.doublet_finder.DoubletFinder">DoubletFinder</a></li>
 <li><a title="cytograph.preprocessing.gene_summary_statistics.GeneSummaryStatistics" href="preprocessing/gene_summary_statistics.html#cytograph.preprocessing.gene_summary_statistics.GeneSummaryStatistics">GeneSummaryStatistics</a></li>
 <li><a title="cytograph.preprocessing.log2_normalizer.Log2Normalizer" href="preprocessing/log2_normalizer.html#cytograph.preprocessing.log2_normalizer.Log2Normalizer">Log2Normalizer</a></li>
+<li><a title="cytograph.preprocessing.pearson_residuals.PearsonResiduals" href="preprocessing/pearson_residuals.html#cytograph.preprocessing.pearson_residuals.PearsonResiduals">PearsonResiduals</a></li>
+<li><a title="cytograph.preprocessing.pearson_residuals_variance.PearsonResidualsVariance" href="preprocessing/pearson_residuals_variance.html#cytograph.preprocessing.pearson_residuals_variance.PearsonResidualsVariance">PearsonResidualsVariance</a></li>
 <li><a title="cytograph.preprocessing.quality_control.QualityControl" href="preprocessing/quality_control.html#cytograph.preprocessing.quality_control.QualityControl">QualityControl</a></li>
 <li><a title="cytograph.visualization.heatmap.Heatmap" href="visualization/heatmap.html#cytograph.visualization.heatmap.Heatmap">Heatmap</a></li>
+<li><a title="cytograph.visualization.plot_age.PlotAge" href="visualization/plot_age.html#cytograph.visualization.plot_age.PlotAge">PlotAge</a></li>
+<li><a title="cytograph.visualization.plot_batches.PlotBatches" href="visualization/plot_batches.html#cytograph.visualization.plot_batches.PlotBatches">PlotBatches</a></li>
+<li><a title="cytograph.visualization.plot_cell_cycle.PlotCellCycle" href="visualization/plot_cell_cycle.html#cytograph.visualization.plot_cell_cycle.PlotCellCycle">PlotCellCycle</a></li>
+<li><a title="cytograph.visualization.plot_droplet_classes.PlotDropletClasses" href="visualization/plot_droplet_classes.html#cytograph.visualization.plot_droplet_classes.PlotDropletClasses">PlotDropletClasses</a></li>
+<li><a title="cytograph.visualization.plot_karyotype.PlotKaryotype" href="visualization/plot_karyotype.html#cytograph.visualization.plot_karyotype.PlotKaryotype">PlotKaryotype</a></li>
+<li><a title="cytograph.visualization.plot_manifold.PlotManifold" href="visualization/plot_manifold.html#cytograph.visualization.plot_manifold.PlotManifold">PlotManifold</a></li>
+<li><a title="cytograph.visualization.plot_markers.PlotMarkers" href="visualization/plot_markers.html#cytograph.visualization.plot_markers.PlotMarkers">PlotMarkers</a></li>
+<li><a title="cytograph.visualization.plot_overview.PlotOverview" href="visualization/plot_overview.html#cytograph.visualization.plot_overview.PlotOverview">PlotOverview</a></li>
+<li><a title="cytograph.visualization.plot_qc.PlotQC" href="visualization/plot_qc.html#cytograph.visualization.plot_qc.PlotQC">PlotQC</a></li>
+<li><a title="cytograph.visualization.plot_region.PlotRegion" href="visualization/plot_region.html#cytograph.visualization.plot_region.PlotRegion">PlotRegion</a></li>
+<li><a title="cytograph.visualization.plot_scatter.CategoricalScatterplot" href="visualization/plot_scatter.html#cytograph.visualization.plot_scatter.CategoricalScatterplot">CategoricalScatterplot</a></li>
+<li><a title="cytograph.visualization.plot_scatter.NumericalScatterplot" href="visualization/plot_scatter.html#cytograph.visualization.plot_scatter.NumericalScatterplot">NumericalScatterplot</a></li>
+<li><a title="cytograph.visualization.plot_subregion.PlotSubregion" href="visualization/plot_subregion.html#cytograph.visualization.plot_subregion.PlotSubregion">PlotSubregion</a></li>
 </ul>
 </dd>
 <dt id="cytograph.module.ResultHolder"><code class="flex name class">

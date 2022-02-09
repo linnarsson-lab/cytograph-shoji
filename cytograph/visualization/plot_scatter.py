@@ -5,11 +5,11 @@ import matplotlib.colors as colors
 import numpy as np
 
 import shoji
-from cytograph import Module, requires
+from cytograph import Algorithm, requires
 from .scatter import scatterc, scattern
 
 
-class NumericalScatterplot(Module):
+class NumericalScatterplot(Algorithm):
 	def __init__(self, tensor: str, width: float = 8, height: float = 8, cmap: str = "viridis", vmin: float = None, vmax: float = None, vcenter: float = None, filename: str = "scatter.png", **kwargs) -> None:
 		super().__init__(**kwargs)
 		self.tensor = tensor
@@ -52,7 +52,7 @@ class NumericalScatterplot(Module):
 			pass
 
 
-class CategoricalScatterplot(Module):
+class CategoricalScatterplot(Algorithm):
 	def __init__(self, tensor: str, width: float = 8, height: float = 8, legend: str = "outside", filename: str = "scatter.png", **kwargs) -> None:
 		super().__init__(**kwargs)
 		self.tensor = tensor

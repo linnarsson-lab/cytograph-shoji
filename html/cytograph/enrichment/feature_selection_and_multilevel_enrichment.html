@@ -97,9 +97,9 @@ class FeatureSelectionAndMultilevelEnrichment(Module):
                 return enrichment
 
         @requires(&#34;Species&#34;, &#34;string&#34;, ())
-        @requires(&#34;Linkage&#34;, &#34;float64&#34;, None)
+        @requires(&#34;Linkage&#34;, &#34;float32&#34;, None)
         @requires(&#34;MeanExpression&#34;, None, (&#34;clusters&#34;, &#34;genes&#34;))
-        @requires(&#34;NCells&#34;, &#34;int64&#34;, (&#34;clusters&#34;,))
+        @requires(&#34;NCells&#34;, &#34;uint64&#34;, (&#34;clusters&#34;,))
         @requires(&#34;Gene&#34;, &#34;string&#34;, (&#34;genes&#34;,))
         @creates(&#34;SelectedFeatures&#34;, &#34;bool&#34;, (&#34;genes&#34;,), indices=True)  # indices=True means that the return value is a vector of indices that should be automatically converted to a bool vector
         @creates(&#34;Enrichment&#34;, &#34;float32&#34;, (&#34;clusters&#34;, &#34;genes&#34;))
@@ -131,11 +131,12 @@ class FeatureSelectionAndMultilevelEnrichment(Module):
 
                 n = 2
                 selected: List[int] = []
-
+                enrichments: List[np.ndarray] = []
                 # Select from the dendrogram
                 while n &lt;= n_clusters // 2:
-                        labels = hc.cut_tree(self.Linkage[:], n_clusters=n).T[0]
+                        labels = hc.cut_tree(self.Linkage[:].astype(&#34;float64&#34;), n_clusters=n).T[0]
                         enr = self.enrichment_by_cluster_groups(ws, labels)
+                        enrichments.append(enr)
                         for j in range(n):
                                 top = np.argsort(-enr[j, :])
                                 n_selected = 0
@@ -150,18 +151,19 @@ class FeatureSelectionAndMultilevelEnrichment(Module):
                 logging.info(&#34; FeatureSelectionAndMultilevelEnrichment: Selecting features and calculating enrichment at cluster leaves&#34;)
                 # Select from the leaves
                 enr = self.enrichment_by_clusters(ws)
+                enrichments.append(enr)
                 for j in range(n_clusters):
                         top = np.argsort(-enr[j, :])
                         n_selected = 0
                         for t in top:
-                                if t not in selected and mask_genes[t]:
+                                if t not in selected and not mask_genes[t]:
                                         n_selected += 1
                                         selected.append(t)
                                         if n_selected == self.n_genes_per_group:
                                                 break
 
                 logging.info(f&#34; FeatureSelectionAndMultilevelEnrichment: Selected {len(selected)} features&#34;)
-                return selected, enr</code></pre>
+                return np.array(selected), np.concatenate(enrichments)</code></pre>
 </details>
 </section>
 <section>
@@ -248,9 +250,9 @@ Optional list indicating categories of genes that should not be selected</p></di
                 return enrichment
 
         @requires(&#34;Species&#34;, &#34;string&#34;, ())
-        @requires(&#34;Linkage&#34;, &#34;float64&#34;, None)
+        @requires(&#34;Linkage&#34;, &#34;float32&#34;, None)
         @requires(&#34;MeanExpression&#34;, None, (&#34;clusters&#34;, &#34;genes&#34;))
-        @requires(&#34;NCells&#34;, &#34;int64&#34;, (&#34;clusters&#34;,))
+        @requires(&#34;NCells&#34;, &#34;uint64&#34;, (&#34;clusters&#34;,))
         @requires(&#34;Gene&#34;, &#34;string&#34;, (&#34;genes&#34;,))
         @creates(&#34;SelectedFeatures&#34;, &#34;bool&#34;, (&#34;genes&#34;,), indices=True)  # indices=True means that the return value is a vector of indices that should be automatically converted to a bool vector
         @creates(&#34;Enrichment&#34;, &#34;float32&#34;, (&#34;clusters&#34;, &#34;genes&#34;))
@@ -282,11 +284,12 @@ Optional list indicating categories of genes that should not be selected</p></di
 
                 n = 2
                 selected: List[int] = []
-
+                enrichments: List[np.ndarray] = []
                 # Select from the dendrogram
                 while n &lt;= n_clusters // 2:
-                        labels = hc.cut_tree(self.Linkage[:], n_clusters=n).T[0]
+                        labels = hc.cut_tree(self.Linkage[:].astype(&#34;float64&#34;), n_clusters=n).T[0]
                         enr = self.enrichment_by_cluster_groups(ws, labels)
+                        enrichments.append(enr)
                         for j in range(n):
                                 top = np.argsort(-enr[j, :])
                                 n_selected = 0
@@ -301,18 +304,19 @@ Optional list indicating categories of genes that should not be selected</p></di
                 logging.info(&#34; FeatureSelectionAndMultilevelEnrichment: Selecting features and calculating enrichment at cluster leaves&#34;)
                 # Select from the leaves
                 enr = self.enrichment_by_clusters(ws)
+                enrichments.append(enr)
                 for j in range(n_clusters):
                         top = np.argsort(-enr[j, :])
                         n_selected = 0
                         for t in top:
-                                if t not in selected and mask_genes[t]:
+                                if t not in selected and not mask_genes[t]:
                                         n_selected += 1
                                         selected.append(t)
                                         if n_selected == self.n_genes_per_group:
                                                 break
 
                 logging.info(f&#34; FeatureSelectionAndMultilevelEnrichment: Selected {len(selected)} features&#34;)
-                return selected, enr</code></pre>
+                return np.array(selected), np.concatenate(enrichments)</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -428,9 +432,9 @@ cut at n = 2, 4, 8, &hellip; (for n &lt;= n_clusters // 2) clusters and the most
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@requires(&#34;Species&#34;, &#34;string&#34;, ())
-@requires(&#34;Linkage&#34;, &#34;float64&#34;, None)
+@requires(&#34;Linkage&#34;, &#34;float32&#34;, None)
 @requires(&#34;MeanExpression&#34;, None, (&#34;clusters&#34;, &#34;genes&#34;))
-@requires(&#34;NCells&#34;, &#34;int64&#34;, (&#34;clusters&#34;,))
+@requires(&#34;NCells&#34;, &#34;uint64&#34;, (&#34;clusters&#34;,))
 @requires(&#34;Gene&#34;, &#34;string&#34;, (&#34;genes&#34;,))
 @creates(&#34;SelectedFeatures&#34;, &#34;bool&#34;, (&#34;genes&#34;,), indices=True)  # indices=True means that the return value is a vector of indices that should be automatically converted to a bool vector
 @creates(&#34;Enrichment&#34;, &#34;float32&#34;, (&#34;clusters&#34;, &#34;genes&#34;))
@@ -462,11 +466,12 @@ def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; Tuple[np.nda
 
         n = 2
         selected: List[int] = []
-
+        enrichments: List[np.ndarray] = []
         # Select from the dendrogram
         while n &lt;= n_clusters // 2:
-                labels = hc.cut_tree(self.Linkage[:], n_clusters=n).T[0]
+                labels = hc.cut_tree(self.Linkage[:].astype(&#34;float64&#34;), n_clusters=n).T[0]
                 enr = self.enrichment_by_cluster_groups(ws, labels)
+                enrichments.append(enr)
                 for j in range(n):
                         top = np.argsort(-enr[j, :])
                         n_selected = 0
@@ -481,18 +486,19 @@ def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; Tuple[np.nda
         logging.info(&#34; FeatureSelectionAndMultilevelEnrichment: Selecting features and calculating enrichment at cluster leaves&#34;)
         # Select from the leaves
         enr = self.enrichment_by_clusters(ws)
+        enrichments.append(enr)
         for j in range(n_clusters):
                 top = np.argsort(-enr[j, :])
                 n_selected = 0
                 for t in top:
-                        if t not in selected and mask_genes[t]:
+                        if t not in selected and not mask_genes[t]:
                                 n_selected += 1
                                 selected.append(t)
                                 if n_selected == self.n_genes_per_group:
                                         break
 
         logging.info(f&#34; FeatureSelectionAndMultilevelEnrichment: Selected {len(selected)} features&#34;)
-        return selected, enr</code></pre>
+        return np.array(selected), np.concatenate(enrichments)</code></pre>
 </details>
 </dd>
 </dl>

@@ -5,12 +5,12 @@ import numpy as np
 from .config import Config
 import logging
 import cytograph as cg
-from cytograph import Module
+from cytograph import Algorithm
 import sys
 from sklearn.preprocessing import LabelEncoder
 
 
-class CollectCells(Module):
+class CollectCells(Algorithm):
 	"""
 	Collect tensors from the source workspaces (e.g. samples)
 	"""

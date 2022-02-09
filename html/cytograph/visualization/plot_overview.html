@@ -1,0 +1,828 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.8.4" />
+<title>cytograph.visualization.plot_overview API documentation</title>
+<meta name="description" content="" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/highlight.min.js" integrity="sha256-eOgo0OtLL4cdq7RdwRUiGKLX9XsIJ7nGhWEKbohmVAQ=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>cytograph.visualization.plot_overview</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">import cytograph as cg
+import cytograph.visualization as cgplot
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.colors import to_rgb
+from numpy_groupies.aggregate_numpy import aggregate
+from sklearn.preprocessing import LabelEncoder, OrdinalEncoder
+from scipy.cluster.hierarchy import cut_tree
+from cytograph import Module, requires
+import logging
+import shoji
+
+
+def sparkline(ax, x, ymax, color, plot_label, labels, subtrees):
+        n_clusters = labels.max() + 1
+        if ymax is None:
+                ymax = np.max(x)
+        ax.bar(np.arange(n_clusters) + 0.5, x, color=color, width=1, lw=0)
+        ax.set_xlim(0, n_clusters + 1)
+        ax.set_ylim(0, ymax)
+        ax.axis(&#34;off&#34;)
+        ax.text(0, 0, plot_label, va=&#34;bottom&#34;, ha=&#34;right&#34;, transform=ax.transAxes)
+        for ix in range(subtrees.max() + 1):
+                ax.vlines(labels[subtrees == ix].max() + 1, 0, ymax, linestyles=&#34;--&#34;, lw=1, color=&#34;grey&#34;)
+
+
+def indices_to_order_a_like_b(a, b):
+        return a.argsort()[b.argsort().argsort()]
+
+
+def plot_regions(ax, regions, region_colors, labels, subtrees):
+        classes = np.array(list(region_colors.keys()))
+        n_classes = len(classes)
+        le = OrdinalEncoder(categories=[classes])
+        le.fit(regions.reshape(-1, 1))
+        n_clusters = labels.max() + 1
+        distro = np.zeros((n_classes, n_clusters))
+        for label in np.arange(n_clusters):
+                subset = le.transform(regions[labels == label].reshape(-1, 1)).flatten().astype(&#34;int32&#34;)
+                d = aggregate(subset, subset, func=&#34;count&#34;, size=n_classes)
+                distro[:, label] = d
+
+        opacity = distro / distro.sum(axis=0)
+        color = np.zeros((n_classes, n_clusters, 4))
+        color[:, :, 3] = opacity
+        for ix, cls in enumerate(classes):
+                color[ix, :, :3] = to_rgb(region_colors[cls])
+        ax.imshow(color, cmap=plt.cm.Reds, aspect=&#39;auto&#39;, interpolation=&#34;none&#34;, origin=&#34;upper&#34;, extent=(0, n_clusters, n_classes, 0))
+        ax.set_yticks(np.arange(n_classes) + 0.5)
+        ax.set_yticklabels(classes)
+        ax.set_xticks([])
+        ax.hlines(n_classes, 0, n_clusters, lw=1, linestyles=&#34;--&#34;, color=&#34;grey&#34;)
+        for ix in range(subtrees.max() + 1):
+                ax.vlines(labels[subtrees == ix].max() + 1, 0, n_classes, linestyles=&#34;--&#34;, lw=1, color=&#34;grey&#34;)
+        ax.set_ylim(n_classes, 0)
+        ax.set_xlim(0, n_clusters)
+        ax.spines[&#34;top&#34;].set_visible(False)
+        ax.spines[&#34;right&#34;].set_visible(False)
+        ax.spines[&#34;bottom&#34;].set_visible(False)
+
+
+def plot_ages(ax, ages, labels, subtrees):
+        le = LabelEncoder()
+        le.fit(ages)
+        n_clusters = labels.max() + 1
+        n_classes = len(le.classes_)
+        distro = np.zeros((n_classes, n_clusters))
+        for label in np.arange(n_clusters):
+                subset = le.transform(ages[labels == label])
+                d = aggregate(subset, subset, func=&#34;count&#34;, size=n_classes)
+                distro[:, label] = d
+
+        distro = (distro.T / distro.sum(axis=1)).T
+        distro = distro / distro.sum(axis=0)
+        classes = le.classes_
+
+        ax.imshow(distro, cmap=plt.cm.Reds, aspect=&#39;auto&#39;, interpolation=&#34;none&#34;, origin=&#34;lower&#34;, extent=(0, n_clusters, 0, n_classes))
+        ax.set_yticks(np.arange(len(classes)) + 0.5)
+        ax.set_yticklabels(classes)
+        ax.hlines(np.arange(5, len(classes), 5), 0, n_clusters, lw=1, linestyles=&#34;--&#34;, color=&#34;grey&#34;)
+        for ix in range(subtrees.max() + 1):
+                ax.vlines(labels[subtrees == ix].max() + 1, 0, len(classes), linestyles=&#34;--&#34;, lw=1, color=&#34;grey&#34;)
+        ax.set_ylim(len(classes), 0)
+        ax.set_xlim(0, n_clusters)
+        ax.set_ylabel(&#34;Age (p.c.w.)&#34;)
+        ax.spines[&#34;top&#34;].set_visible(False)
+        ax.spines[&#34;right&#34;].set_visible(False)
+        ax.spines[&#34;bottom&#34;].set_visible(False)
+
+
+def plot_genes(ax, markers, mean_x, genes, labels, subtrees, enriched_genes):
+        # Add the markers
+        m = []
+        m_names = []
+        for category, mgenes in markers.items():
+                for gene in mgenes:
+                        gene_ix = np.where(genes == gene)[0][0]
+                        m.append(mean_x[:, gene_ix])
+                        m_names.append(f&#34;{gene} ({category})&#34;)
+        n_genes = len(m_names)
+        n_clusters = labels.max() + 1
+
+        # Normalize
+        x = np.array(m)
+        totals = mean_x.sum(axis=1)
+        x_norm = (x / totals * np.median(totals))
+
+        ax.imshow(np.log10(x_norm + 0.001), vmin=-1, vmax=2, cmap=&#34;RdGy_r&#34;, interpolation=&#34;none&#34;, aspect=&#34;auto&#34;, extent=(0, n_clusters, n_genes, 0))
+        ax.set_yticks(np.arange(len(m_names)) + 0.5)
+        ax.set_yticklabels(m_names)
+        if n_clusters &lt; 200:
+                ax.set_xticks(np.arange(n_clusters) + 0.5)
+                ax.set_xticklabels(enriched_genes, rotation=60, rotation_mode=&#39;anchor&#39;, fontsize=min(12, 20 / n_clusters * 72 * 0.6), verticalalignment=&#39;top&#39;, horizontalalignment=&#39;right&#39;)
+        else:
+                subtree_right_edges = np.array([0] + [labels[subtrees == ix].max() for ix in range(subtrees.max() + 1)])
+                subtree_centers = subtree_right_edges[:-1] + np.diff(subtree_right_edges) / 2
+                ax.set_xticks(subtree_centers + 1)
+                ax.set_xticklabels(np.arange(subtrees.max() + 1), rotation=60, rotation_mode=&#39;anchor&#39;, fontsize=min(12, 20 / n_clusters * 72 * 0.6), verticalalignment=&#39;top&#39;, horizontalalignment=&#39;right&#39;)
+        for ix in range(subtrees.max() + 1):
+                ax.vlines(labels[subtrees == ix].max() + 1, 0, n_genes, linestyles=&#34;--&#34;, lw=1, color=&#34;grey&#34;)
+
+        ax.spines[&#34;top&#34;].set_visible(False)
+        ax.spines[&#34;right&#34;].set_visible(False)
+        ax.spines[&#34;bottom&#34;].set_visible(False)
+
+
+def plot_auto_annotation(ax, ann_names, ann_post, labels, subtrees):
+        n_anns = len(ann_names)
+        n_clusters = labels.max() + 1
+
+        ax.imshow(ann_post, cmap=plt.cm.Purples, vmin=0, vmax=1, aspect=&#39;auto&#39;, interpolation=&#34;none&#34;, origin=&#34;upper&#34;, extent=(0, n_clusters, n_anns, 0))
+        ax.set_yticks(np.arange(n_anns) + 0.5)
+        ax.set_yticklabels(ann_names)
+        ax.hlines(np.arange(5, n_anns, 5), 0, n_clusters, lw=1, linestyles=&#34;--&#34;, color=&#34;grey&#34;)
+        for ix in range(subtrees.max() + 1):
+                ax.vlines(labels[subtrees == ix].max() + 1, 0, n_anns, linestyles=&#34;--&#34;, lw=1, color=&#34;grey&#34;)
+        ax.set_ylim(len(ann_names), 0)
+
+        ax.spines[&#34;top&#34;].set_visible(False)
+        ax.spines[&#34;right&#34;].set_visible(False)
+        ax.spines[&#34;bottom&#34;].set_visible(False)
+
+
+def plot_dendrogram(ax, n_clusters, linkage, labels, subtrees):
+        lc = cgplot.dendrogram(linkage, leaf_positions=np.arange(n_clusters) + 0.5)
+        ax.add_collection(lc)
+        ax.set_xlim(0, n_clusters)
+        ax.set_ylim(0, linkage[:, 2].max())
+        if n_clusters &lt; 100:
+                for i in range(n_clusters):
+                        ax.text(i + 0.5, 0, str(i), rotation=60, rotation_mode=&#39;anchor&#39;, fontsize=min(12, 20 / n_clusters * 72 * 0.6), verticalalignment=&#39;top&#39;, horizontalalignment=&#39;right&#39;)
+        else:
+                for ix in range(subtrees.max() + 1):
+                        ax.text(labels[subtrees == ix].max() + 0.5, 0, str(labels[subtrees == ix].max()), rotation=60, rotation_mode=&#39;anchor&#39;, fontsize=min(12, 20 / n_clusters * 72 * 0.6), verticalalignment=&#39;top&#39;, horizontalalignment=&#39;right&#39;)
+        ax.axis(&#34;off&#34;)
+
+
+class PlotOverview(Module):
+        def __init__(self, filename: str = None, **kwargs) -&gt; None:
+                super().__init__(**kwargs)
+                self.filename = filename if filename is not None else &#34;_overview.png&#34;
+
+        @requires(&#34;Species&#34;, &#34;string&#34;, ())
+        @requires(&#34;Gene&#34;, &#34;string&#34;, (&#34;genes&#34;,))
+        @requires(&#34;Clusters&#34;, &#34;uint32&#34;, (&#34;cells&#34;,))
+        @requires(&#34;TotalUMIs&#34;, &#34;uint32&#34;, (&#34;cells&#34;,))
+        @requires(&#34;CellCycleFraction&#34;, &#34;float32&#34;, (&#34;cells&#34;,))
+        @requires(&#34;DoubletScore&#34;, &#34;float32&#34;, (&#34;cells&#34;,))
+        @requires(&#34;Region&#34;, &#34;string&#34;, (&#34;cells&#34;,))
+        @requires(&#34;Subregion&#34;, &#34;string&#34;, (&#34;cells&#34;,))
+        @requires(&#34;Age&#34;, &#34;float32&#34;, (&#34;cells&#34;,))
+        @requires(&#34;MeanExpression&#34;, &#34;float64&#34;, (&#34;clusters&#34;,))
+        @requires(&#34;ClusterID&#34;, &#34;uint32&#34;, (&#34;clusters&#34;,))
+        @requires(&#34;AnnotationName&#34;, &#34;string&#34;, (&#34;annotations&#34;,))
+        @requires(&#34;AnnotationPosterior&#34;, &#34;float32&#34;, (&#34;clusters&#34;, &#34;annotations&#34;))
+        @requires(&#34;NCells&#34;, &#34;uint64&#34;, (&#34;clusters&#34;,))
+        @requires(&#34;Linkage&#34;, &#34;float32&#34;, None)
+        @requires(&#34;Enrichment&#34;, &#34;float32&#34;, (&#34;clusters&#34;, &#34;genes&#34;))
+        def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; None:
+                logging.info(&#34; PlotOverview: Plotting the heatmap&#34;)
+
+                labels = self.Clusters[:]
+                regions = self.Region[:]
+                subregions = self.Subregion[:]
+                ages = self.Age[:].astype(int)
+                n_clusters = ws.clusters.length
+
+                cluster_labels = self.ClusterID[:]
+                ordering = np.argsort(cluster_labels)
+                mean_x = self.MeanExpression[:][ordering]
+                markers = cg.Species(self.Species[:]).markers
+                genes = self.Gene[:]
+                enrichment = self.Enrichment[:]
+                enriched_genes = []
+                for i in range(ws.clusters.length):
+                        enriched_genes.append(&#34; &#34;.join(genes[np.argsort(-enrichment[cluster_labels == i, :][0])[:5]]))
+
+                ordering = indices_to_order_a_like_b(self.ClusterID[:], np.arange(n_clusters))
+                ann_names = self.AnnotationName[:]
+                ann_post = self.AnnotationPosterior[:].T[:, ordering]
+                n_cells = self.NCells[:]
+                linkage = self.Linkage[:].astype(&#34;float64&#34;)
+
+                if &#34;Subtree&#34; in ws:
+                        subtrees = ws.Subtree[:]
+                else:
+                        # Cut the tree into subtrees with about ten clusters each
+                        cluster_subtrees = cut_tree(linkage, n_clusters=max(1, n_clusters // 10)).flatten().astype(&#34;int&#34;)
+                        # Map this onto the individual cells
+                        subtrees = np.zeros(ws.cells.length, dtype=&#34;uint32&#34;)
+                        for j in range(n_clusters):
+                                subtrees[labels == j] = cluster_subtrees[j]
+
+                fig, axes = plt.subplots(nrows=10, ncols=1, sharex=True, gridspec_kw={&#34;height_ratios&#34;: (2, 0.25, 0.25, 0.25, 0.25, 2, 2, 6, 8, 12)}, figsize=(20, 33))
+                plot_dendrogram(axes[0], n_clusters, linkage, labels, subtrees)
+                sparkline(axes[1], n_cells, None, &#34;orange&#34;, &#34;Cells&#34;, labels, subtrees)
+                sparkline(axes[2], aggregate(labels, self.TotalUMIs[:], func=&#34;mean&#34;), None, &#34;green&#34;, &#34;TotalUMIs&#34;, labels, subtrees)
+                sparkline(axes[3], aggregate(labels, self.CellCycleFraction[:], func=&#34;mean&#34;), 0.05, &#34;blue&#34;, &#34;Cell cycle&#34;, labels, subtrees)
+                sparkline(axes[4], aggregate(labels, self.DoubletScore[:], func=&#34;mean&#34;), 0.4, &#34;crimson&#34;, &#34;Doublet score&#34;, labels, subtrees)
+                plot_ages(axes[5], ages, labels, subtrees)
+                plot_regions(axes[6], regions, {
+                        &#39;Head&#39;: &#39;brown&#39;,
+                        &#39;Brain&#39;: &#39;teal&#39;,
+                        &#39;Forebrain&#39;: &#39;crimson&#39;,
+                        &#39;Telencephalon&#39;: &#39;crimson&#39;,
+                        &#39;Diencephalon&#39;: &#39;orange&#39;,
+                        &#39;Midbrain&#39;: &#39;green&#39;,
+                        &#39;Hindbrain&#39;: &#39;magenta&#39;,
+                        &#39;Pons&#39;: &#39;magenta&#39;,
+                        &#39;Cerebellum&#39;: &#39;magenta&#39;,
+                        &#39;Medulla&#39;: &#39;blue&#39;
+                }, labels, subtrees)
+
+                plot_regions(axes[7], subregions, {
+                        &#39;Head&#39;: &#39;brown&#39;,
+                        &#39;Brain&#39;: &#39;teal&#39;,
+
+                        &#39;Forebrain&#39;: &#39;red&#39;,
+                        &#39;Telencephalon&#39;: &#39;red&#39;,
+                        &#39;Cortex&#39;: &#39;red&#39;,
+                        &#39;Cortex hemisphere A&#39;: &#39;red&#39;,
+                        &#39;Cortex hemisphere B&#39;: &#39;red&#39;,
+                        &#39;Cortex lower&#39;: &#39;red&#39;,
+                        &#39;Cortex upper&#39;: &#39;red&#39;,
+                        &#39;Cortex occipital&#39;: &#39;red&#39;,
+                        &#39;Cortex entorhinal&#39;: &#39;red&#39;,
+                        &#39;Cortex frontotemporal&#39;: &#39;red&#39;,
+                        &#39;Cortical hem&#39;: &#39;red&#39;,
+
+                        &#39;Hippocampus&#39;: &#39;pink&#39;,
+
+                        &#39;Subcortex&#39;: &#39;orange&#39;,
+                        &#39;Caudate+Putamen&#39;: &#39;orange&#39;,
+                        &#39;Striatum&#39;: &#39;orange&#39;,
+
+                        &#39;Diencephalon&#39;: &#39;orange&#39;,
+                        &#39;Hypothalamus&#39;: &#39;orange&#39;,
+                        &#39;Thalamus&#39;: &#39;orange&#39;,
+
+                        &#39;Midbrain&#39;: &#39;green&#39;,
+                        &#39;Midbrain dorsal&#39;: &#39;green&#39;,
+                        &#39;Midbrain ventral&#39;: &#39;green&#39;,
+
+                        &#39;Hindbrain&#39;: &#39;magenta&#39;,
+                        &#39;Cerebellum&#39;: &#39;magenta&#39;,
+                        &#39;Pons&#39;: &#39;magenta&#39;,
+                        &#39;Medulla&#39;: &#39;blue&#39;
+                }, labels, subtrees)
+                plot_auto_annotation(axes[8], ann_names, ann_post, labels, subtrees)
+                plot_genes(axes[9], markers, mean_x, genes, labels, subtrees, enriched_genes)
+                fig.tight_layout(pad=0, h_pad=0, w_pad=0)
+
+                if save:
+                        plt.savefig(self.export_dir / (ws._name + self.filename), dpi=300, bbox_inches=&#39;tight&#39;)
+                        plt.close()</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="cytograph.visualization.plot_overview.indices_to_order_a_like_b"><code class="name flex">
+<span>def <span class="ident">indices_to_order_a_like_b</span></span>(<span>a, b)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def indices_to_order_a_like_b(a, b):
+        return a.argsort()[b.argsort().argsort()]</code></pre>
+</details>
+</dd>
+<dt id="cytograph.visualization.plot_overview.plot_ages"><code class="name flex">
+<span>def <span class="ident">plot_ages</span></span>(<span>ax, ages, labels, subtrees)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def plot_ages(ax, ages, labels, subtrees):
+        le = LabelEncoder()
+        le.fit(ages)
+        n_clusters = labels.max() + 1
+        n_classes = len(le.classes_)
+        distro = np.zeros((n_classes, n_clusters))
+        for label in np.arange(n_clusters):
+                subset = le.transform(ages[labels == label])
+                d = aggregate(subset, subset, func=&#34;count&#34;, size=n_classes)
+                distro[:, label] = d
+
+        distro = (distro.T / distro.sum(axis=1)).T
+        distro = distro / distro.sum(axis=0)
+        classes = le.classes_
+
+        ax.imshow(distro, cmap=plt.cm.Reds, aspect=&#39;auto&#39;, interpolation=&#34;none&#34;, origin=&#34;lower&#34;, extent=(0, n_clusters, 0, n_classes))
+        ax.set_yticks(np.arange(len(classes)) + 0.5)
+        ax.set_yticklabels(classes)
+        ax.hlines(np.arange(5, len(classes), 5), 0, n_clusters, lw=1, linestyles=&#34;--&#34;, color=&#34;grey&#34;)
+        for ix in range(subtrees.max() + 1):
+                ax.vlines(labels[subtrees == ix].max() + 1, 0, len(classes), linestyles=&#34;--&#34;, lw=1, color=&#34;grey&#34;)
+        ax.set_ylim(len(classes), 0)
+        ax.set_xlim(0, n_clusters)
+        ax.set_ylabel(&#34;Age (p.c.w.)&#34;)
+        ax.spines[&#34;top&#34;].set_visible(False)
+        ax.spines[&#34;right&#34;].set_visible(False)
+        ax.spines[&#34;bottom&#34;].set_visible(False)</code></pre>
+</details>
+</dd>
+<dt id="cytograph.visualization.plot_overview.plot_auto_annotation"><code class="name flex">
+<span>def <span class="ident">plot_auto_annotation</span></span>(<span>ax, ann_names, ann_post, labels, subtrees)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def plot_auto_annotation(ax, ann_names, ann_post, labels, subtrees):
+        n_anns = len(ann_names)
+        n_clusters = labels.max() + 1
+
+        ax.imshow(ann_post, cmap=plt.cm.Purples, vmin=0, vmax=1, aspect=&#39;auto&#39;, interpolation=&#34;none&#34;, origin=&#34;upper&#34;, extent=(0, n_clusters, n_anns, 0))
+        ax.set_yticks(np.arange(n_anns) + 0.5)
+        ax.set_yticklabels(ann_names)
+        ax.hlines(np.arange(5, n_anns, 5), 0, n_clusters, lw=1, linestyles=&#34;--&#34;, color=&#34;grey&#34;)
+        for ix in range(subtrees.max() + 1):
+                ax.vlines(labels[subtrees == ix].max() + 1, 0, n_anns, linestyles=&#34;--&#34;, lw=1, color=&#34;grey&#34;)
+        ax.set_ylim(len(ann_names), 0)
+
+        ax.spines[&#34;top&#34;].set_visible(False)
+        ax.spines[&#34;right&#34;].set_visible(False)
+        ax.spines[&#34;bottom&#34;].set_visible(False)</code></pre>
+</details>
+</dd>
+<dt id="cytograph.visualization.plot_overview.plot_dendrogram"><code class="name flex">
+<span>def <span class="ident">plot_dendrogram</span></span>(<span>ax, n_clusters, linkage, labels, subtrees)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def plot_dendrogram(ax, n_clusters, linkage, labels, subtrees):
+        lc = cgplot.dendrogram(linkage, leaf_positions=np.arange(n_clusters) + 0.5)
+        ax.add_collection(lc)
+        ax.set_xlim(0, n_clusters)
+        ax.set_ylim(0, linkage[:, 2].max())
+        if n_clusters &lt; 100:
+                for i in range(n_clusters):
+                        ax.text(i + 0.5, 0, str(i), rotation=60, rotation_mode=&#39;anchor&#39;, fontsize=min(12, 20 / n_clusters * 72 * 0.6), verticalalignment=&#39;top&#39;, horizontalalignment=&#39;right&#39;)
+        else:
+                for ix in range(subtrees.max() + 1):
+                        ax.text(labels[subtrees == ix].max() + 0.5, 0, str(labels[subtrees == ix].max()), rotation=60, rotation_mode=&#39;anchor&#39;, fontsize=min(12, 20 / n_clusters * 72 * 0.6), verticalalignment=&#39;top&#39;, horizontalalignment=&#39;right&#39;)
+        ax.axis(&#34;off&#34;)</code></pre>
+</details>
+</dd>
+<dt id="cytograph.visualization.plot_overview.plot_genes"><code class="name flex">
+<span>def <span class="ident">plot_genes</span></span>(<span>ax, markers, mean_x, genes, labels, subtrees, enriched_genes)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def plot_genes(ax, markers, mean_x, genes, labels, subtrees, enriched_genes):
+        # Add the markers
+        m = []
+        m_names = []
+        for category, mgenes in markers.items():
+                for gene in mgenes:
+                        gene_ix = np.where(genes == gene)[0][0]
+                        m.append(mean_x[:, gene_ix])
+                        m_names.append(f&#34;{gene} ({category})&#34;)
+        n_genes = len(m_names)
+        n_clusters = labels.max() + 1
+
+        # Normalize
+        x = np.array(m)
+        totals = mean_x.sum(axis=1)
+        x_norm = (x / totals * np.median(totals))
+
+        ax.imshow(np.log10(x_norm + 0.001), vmin=-1, vmax=2, cmap=&#34;RdGy_r&#34;, interpolation=&#34;none&#34;, aspect=&#34;auto&#34;, extent=(0, n_clusters, n_genes, 0))
+        ax.set_yticks(np.arange(len(m_names)) + 0.5)
+        ax.set_yticklabels(m_names)
+        if n_clusters &lt; 200:
+                ax.set_xticks(np.arange(n_clusters) + 0.5)
+                ax.set_xticklabels(enriched_genes, rotation=60, rotation_mode=&#39;anchor&#39;, fontsize=min(12, 20 / n_clusters * 72 * 0.6), verticalalignment=&#39;top&#39;, horizontalalignment=&#39;right&#39;)
+        else:
+                subtree_right_edges = np.array([0] + [labels[subtrees == ix].max() for ix in range(subtrees.max() + 1)])
+                subtree_centers = subtree_right_edges[:-1] + np.diff(subtree_right_edges) / 2
+                ax.set_xticks(subtree_centers + 1)
+                ax.set_xticklabels(np.arange(subtrees.max() + 1), rotation=60, rotation_mode=&#39;anchor&#39;, fontsize=min(12, 20 / n_clusters * 72 * 0.6), verticalalignment=&#39;top&#39;, horizontalalignment=&#39;right&#39;)
+        for ix in range(subtrees.max() + 1):
+                ax.vlines(labels[subtrees == ix].max() + 1, 0, n_genes, linestyles=&#34;--&#34;, lw=1, color=&#34;grey&#34;)
+
+        ax.spines[&#34;top&#34;].set_visible(False)
+        ax.spines[&#34;right&#34;].set_visible(False)
+        ax.spines[&#34;bottom&#34;].set_visible(False)</code></pre>
+</details>
+</dd>
+<dt id="cytograph.visualization.plot_overview.plot_regions"><code class="name flex">
+<span>def <span class="ident">plot_regions</span></span>(<span>ax, regions, region_colors, labels, subtrees)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def plot_regions(ax, regions, region_colors, labels, subtrees):
+        classes = np.array(list(region_colors.keys()))
+        n_classes = len(classes)
+        le = OrdinalEncoder(categories=[classes])
+        le.fit(regions.reshape(-1, 1))
+        n_clusters = labels.max() + 1
+        distro = np.zeros((n_classes, n_clusters))
+        for label in np.arange(n_clusters):
+                subset = le.transform(regions[labels == label].reshape(-1, 1)).flatten().astype(&#34;int32&#34;)
+                d = aggregate(subset, subset, func=&#34;count&#34;, size=n_classes)
+                distro[:, label] = d
+
+        opacity = distro / distro.sum(axis=0)
+        color = np.zeros((n_classes, n_clusters, 4))
+        color[:, :, 3] = opacity
+        for ix, cls in enumerate(classes):
+                color[ix, :, :3] = to_rgb(region_colors[cls])
+        ax.imshow(color, cmap=plt.cm.Reds, aspect=&#39;auto&#39;, interpolation=&#34;none&#34;, origin=&#34;upper&#34;, extent=(0, n_clusters, n_classes, 0))
+        ax.set_yticks(np.arange(n_classes) + 0.5)
+        ax.set_yticklabels(classes)
+        ax.set_xticks([])
+        ax.hlines(n_classes, 0, n_clusters, lw=1, linestyles=&#34;--&#34;, color=&#34;grey&#34;)
+        for ix in range(subtrees.max() + 1):
+                ax.vlines(labels[subtrees == ix].max() + 1, 0, n_classes, linestyles=&#34;--&#34;, lw=1, color=&#34;grey&#34;)
+        ax.set_ylim(n_classes, 0)
+        ax.set_xlim(0, n_clusters)
+        ax.spines[&#34;top&#34;].set_visible(False)
+        ax.spines[&#34;right&#34;].set_visible(False)
+        ax.spines[&#34;bottom&#34;].set_visible(False)</code></pre>
+</details>
+</dd>
+<dt id="cytograph.visualization.plot_overview.sparkline"><code class="name flex">
+<span>def <span class="ident">sparkline</span></span>(<span>ax, x, ymax, color, plot_label, labels, subtrees)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def sparkline(ax, x, ymax, color, plot_label, labels, subtrees):
+        n_clusters = labels.max() + 1
+        if ymax is None:
+                ymax = np.max(x)
+        ax.bar(np.arange(n_clusters) + 0.5, x, color=color, width=1, lw=0)
+        ax.set_xlim(0, n_clusters + 1)
+        ax.set_ylim(0, ymax)
+        ax.axis(&#34;off&#34;)
+        ax.text(0, 0, plot_label, va=&#34;bottom&#34;, ha=&#34;right&#34;, transform=ax.transAxes)
+        for ix in range(subtrees.max() + 1):
+                ax.vlines(labels[subtrees == ix].max() + 1, 0, ymax, linestyles=&#34;--&#34;, lw=1, color=&#34;grey&#34;)</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="cytograph.visualization.plot_overview.PlotOverview"><code class="flex name class">
+<span>class <span class="ident">PlotOverview</span></span>
+<span>(</span><span>filename: str = None, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class PlotOverview(Module):
+        def __init__(self, filename: str = None, **kwargs) -&gt; None:
+                super().__init__(**kwargs)
+                self.filename = filename if filename is not None else &#34;_overview.png&#34;
+
+        @requires(&#34;Species&#34;, &#34;string&#34;, ())
+        @requires(&#34;Gene&#34;, &#34;string&#34;, (&#34;genes&#34;,))
+        @requires(&#34;Clusters&#34;, &#34;uint32&#34;, (&#34;cells&#34;,))
+        @requires(&#34;TotalUMIs&#34;, &#34;uint32&#34;, (&#34;cells&#34;,))
+        @requires(&#34;CellCycleFraction&#34;, &#34;float32&#34;, (&#34;cells&#34;,))
+        @requires(&#34;DoubletScore&#34;, &#34;float32&#34;, (&#34;cells&#34;,))
+        @requires(&#34;Region&#34;, &#34;string&#34;, (&#34;cells&#34;,))
+        @requires(&#34;Subregion&#34;, &#34;string&#34;, (&#34;cells&#34;,))
+        @requires(&#34;Age&#34;, &#34;float32&#34;, (&#34;cells&#34;,))
+        @requires(&#34;MeanExpression&#34;, &#34;float64&#34;, (&#34;clusters&#34;,))
+        @requires(&#34;ClusterID&#34;, &#34;uint32&#34;, (&#34;clusters&#34;,))
+        @requires(&#34;AnnotationName&#34;, &#34;string&#34;, (&#34;annotations&#34;,))
+        @requires(&#34;AnnotationPosterior&#34;, &#34;float32&#34;, (&#34;clusters&#34;, &#34;annotations&#34;))
+        @requires(&#34;NCells&#34;, &#34;uint64&#34;, (&#34;clusters&#34;,))
+        @requires(&#34;Linkage&#34;, &#34;float32&#34;, None)
+        @requires(&#34;Enrichment&#34;, &#34;float32&#34;, (&#34;clusters&#34;, &#34;genes&#34;))
+        def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; None:
+                logging.info(&#34; PlotOverview: Plotting the heatmap&#34;)
+
+                labels = self.Clusters[:]
+                regions = self.Region[:]
+                subregions = self.Subregion[:]
+                ages = self.Age[:].astype(int)
+                n_clusters = ws.clusters.length
+
+                cluster_labels = self.ClusterID[:]
+                ordering = np.argsort(cluster_labels)
+                mean_x = self.MeanExpression[:][ordering]
+                markers = cg.Species(self.Species[:]).markers
+                genes = self.Gene[:]
+                enrichment = self.Enrichment[:]
+                enriched_genes = []
+                for i in range(ws.clusters.length):
+                        enriched_genes.append(&#34; &#34;.join(genes[np.argsort(-enrichment[cluster_labels == i, :][0])[:5]]))
+
+                ordering = indices_to_order_a_like_b(self.ClusterID[:], np.arange(n_clusters))
+                ann_names = self.AnnotationName[:]
+                ann_post = self.AnnotationPosterior[:].T[:, ordering]
+                n_cells = self.NCells[:]
+                linkage = self.Linkage[:].astype(&#34;float64&#34;)
+
+                if &#34;Subtree&#34; in ws:
+                        subtrees = ws.Subtree[:]
+                else:
+                        # Cut the tree into subtrees with about ten clusters each
+                        cluster_subtrees = cut_tree(linkage, n_clusters=max(1, n_clusters // 10)).flatten().astype(&#34;int&#34;)
+                        # Map this onto the individual cells
+                        subtrees = np.zeros(ws.cells.length, dtype=&#34;uint32&#34;)
+                        for j in range(n_clusters):
+                                subtrees[labels == j] = cluster_subtrees[j]
+
+                fig, axes = plt.subplots(nrows=10, ncols=1, sharex=True, gridspec_kw={&#34;height_ratios&#34;: (2, 0.25, 0.25, 0.25, 0.25, 2, 2, 6, 8, 12)}, figsize=(20, 33))
+                plot_dendrogram(axes[0], n_clusters, linkage, labels, subtrees)
+                sparkline(axes[1], n_cells, None, &#34;orange&#34;, &#34;Cells&#34;, labels, subtrees)
+                sparkline(axes[2], aggregate(labels, self.TotalUMIs[:], func=&#34;mean&#34;), None, &#34;green&#34;, &#34;TotalUMIs&#34;, labels, subtrees)
+                sparkline(axes[3], aggregate(labels, self.CellCycleFraction[:], func=&#34;mean&#34;), 0.05, &#34;blue&#34;, &#34;Cell cycle&#34;, labels, subtrees)
+                sparkline(axes[4], aggregate(labels, self.DoubletScore[:], func=&#34;mean&#34;), 0.4, &#34;crimson&#34;, &#34;Doublet score&#34;, labels, subtrees)
+                plot_ages(axes[5], ages, labels, subtrees)
+                plot_regions(axes[6], regions, {
+                        &#39;Head&#39;: &#39;brown&#39;,
+                        &#39;Brain&#39;: &#39;teal&#39;,
+                        &#39;Forebrain&#39;: &#39;crimson&#39;,
+                        &#39;Telencephalon&#39;: &#39;crimson&#39;,
+                        &#39;Diencephalon&#39;: &#39;orange&#39;,
+                        &#39;Midbrain&#39;: &#39;green&#39;,
+                        &#39;Hindbrain&#39;: &#39;magenta&#39;,
+                        &#39;Pons&#39;: &#39;magenta&#39;,
+                        &#39;Cerebellum&#39;: &#39;magenta&#39;,
+                        &#39;Medulla&#39;: &#39;blue&#39;
+                }, labels, subtrees)
+
+                plot_regions(axes[7], subregions, {
+                        &#39;Head&#39;: &#39;brown&#39;,
+                        &#39;Brain&#39;: &#39;teal&#39;,
+
+                        &#39;Forebrain&#39;: &#39;red&#39;,
+                        &#39;Telencephalon&#39;: &#39;red&#39;,
+                        &#39;Cortex&#39;: &#39;red&#39;,
+                        &#39;Cortex hemisphere A&#39;: &#39;red&#39;,
+                        &#39;Cortex hemisphere B&#39;: &#39;red&#39;,
+                        &#39;Cortex lower&#39;: &#39;red&#39;,
+                        &#39;Cortex upper&#39;: &#39;red&#39;,
+                        &#39;Cortex occipital&#39;: &#39;red&#39;,
+                        &#39;Cortex entorhinal&#39;: &#39;red&#39;,
+                        &#39;Cortex frontotemporal&#39;: &#39;red&#39;,
+                        &#39;Cortical hem&#39;: &#39;red&#39;,
+
+                        &#39;Hippocampus&#39;: &#39;pink&#39;,
+
+                        &#39;Subcortex&#39;: &#39;orange&#39;,
+                        &#39;Caudate+Putamen&#39;: &#39;orange&#39;,
+                        &#39;Striatum&#39;: &#39;orange&#39;,
+
+                        &#39;Diencephalon&#39;: &#39;orange&#39;,
+                        &#39;Hypothalamus&#39;: &#39;orange&#39;,
+                        &#39;Thalamus&#39;: &#39;orange&#39;,
+
+                        &#39;Midbrain&#39;: &#39;green&#39;,
+                        &#39;Midbrain dorsal&#39;: &#39;green&#39;,
+                        &#39;Midbrain ventral&#39;: &#39;green&#39;,
+
+                        &#39;Hindbrain&#39;: &#39;magenta&#39;,
+                        &#39;Cerebellum&#39;: &#39;magenta&#39;,
+                        &#39;Pons&#39;: &#39;magenta&#39;,
+                        &#39;Medulla&#39;: &#39;blue&#39;
+                }, labels, subtrees)
+                plot_auto_annotation(axes[8], ann_names, ann_post, labels, subtrees)
+                plot_genes(axes[9], markers, mean_x, genes, labels, subtrees, enriched_genes)
+                fig.tight_layout(pad=0, h_pad=0, w_pad=0)
+
+                if save:
+                        plt.savefig(self.export_dir / (ws._name + self.filename), dpi=300, bbox_inches=&#39;tight&#39;)
+                        plt.close()</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="cytograph.module.Module" href="../module.html#cytograph.module.Module">Module</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="cytograph.visualization.plot_overview.PlotOverview.fit"><code class="name flex">
+<span>def <span class="ident">fit</span></span>(<span>self, ws: shoji.workspace.WorkspaceManager, save: bool = False) ‑> NoneType</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@requires(&#34;Species&#34;, &#34;string&#34;, ())
+@requires(&#34;Gene&#34;, &#34;string&#34;, (&#34;genes&#34;,))
+@requires(&#34;Clusters&#34;, &#34;uint32&#34;, (&#34;cells&#34;,))
+@requires(&#34;TotalUMIs&#34;, &#34;uint32&#34;, (&#34;cells&#34;,))
+@requires(&#34;CellCycleFraction&#34;, &#34;float32&#34;, (&#34;cells&#34;,))
+@requires(&#34;DoubletScore&#34;, &#34;float32&#34;, (&#34;cells&#34;,))
+@requires(&#34;Region&#34;, &#34;string&#34;, (&#34;cells&#34;,))
+@requires(&#34;Subregion&#34;, &#34;string&#34;, (&#34;cells&#34;,))
+@requires(&#34;Age&#34;, &#34;float32&#34;, (&#34;cells&#34;,))
+@requires(&#34;MeanExpression&#34;, &#34;float64&#34;, (&#34;clusters&#34;,))
+@requires(&#34;ClusterID&#34;, &#34;uint32&#34;, (&#34;clusters&#34;,))
+@requires(&#34;AnnotationName&#34;, &#34;string&#34;, (&#34;annotations&#34;,))
+@requires(&#34;AnnotationPosterior&#34;, &#34;float32&#34;, (&#34;clusters&#34;, &#34;annotations&#34;))
+@requires(&#34;NCells&#34;, &#34;uint64&#34;, (&#34;clusters&#34;,))
+@requires(&#34;Linkage&#34;, &#34;float32&#34;, None)
+@requires(&#34;Enrichment&#34;, &#34;float32&#34;, (&#34;clusters&#34;, &#34;genes&#34;))
+def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; None:
+        logging.info(&#34; PlotOverview: Plotting the heatmap&#34;)
+
+        labels = self.Clusters[:]
+        regions = self.Region[:]
+        subregions = self.Subregion[:]
+        ages = self.Age[:].astype(int)
+        n_clusters = ws.clusters.length
+
+        cluster_labels = self.ClusterID[:]
+        ordering = np.argsort(cluster_labels)
+        mean_x = self.MeanExpression[:][ordering]
+        markers = cg.Species(self.Species[:]).markers
+        genes = self.Gene[:]
+        enrichment = self.Enrichment[:]
+        enriched_genes = []
+        for i in range(ws.clusters.length):
+                enriched_genes.append(&#34; &#34;.join(genes[np.argsort(-enrichment[cluster_labels == i, :][0])[:5]]))
+
+        ordering = indices_to_order_a_like_b(self.ClusterID[:], np.arange(n_clusters))
+        ann_names = self.AnnotationName[:]
+        ann_post = self.AnnotationPosterior[:].T[:, ordering]
+        n_cells = self.NCells[:]
+        linkage = self.Linkage[:].astype(&#34;float64&#34;)
+
+        if &#34;Subtree&#34; in ws:
+                subtrees = ws.Subtree[:]
+        else:
+                # Cut the tree into subtrees with about ten clusters each
+                cluster_subtrees = cut_tree(linkage, n_clusters=max(1, n_clusters // 10)).flatten().astype(&#34;int&#34;)
+                # Map this onto the individual cells
+                subtrees = np.zeros(ws.cells.length, dtype=&#34;uint32&#34;)
+                for j in range(n_clusters):
+                        subtrees[labels == j] = cluster_subtrees[j]
+
+        fig, axes = plt.subplots(nrows=10, ncols=1, sharex=True, gridspec_kw={&#34;height_ratios&#34;: (2, 0.25, 0.25, 0.25, 0.25, 2, 2, 6, 8, 12)}, figsize=(20, 33))
+        plot_dendrogram(axes[0], n_clusters, linkage, labels, subtrees)
+        sparkline(axes[1], n_cells, None, &#34;orange&#34;, &#34;Cells&#34;, labels, subtrees)
+        sparkline(axes[2], aggregate(labels, self.TotalUMIs[:], func=&#34;mean&#34;), None, &#34;green&#34;, &#34;TotalUMIs&#34;, labels, subtrees)
+        sparkline(axes[3], aggregate(labels, self.CellCycleFraction[:], func=&#34;mean&#34;), 0.05, &#34;blue&#34;, &#34;Cell cycle&#34;, labels, subtrees)
+        sparkline(axes[4], aggregate(labels, self.DoubletScore[:], func=&#34;mean&#34;), 0.4, &#34;crimson&#34;, &#34;Doublet score&#34;, labels, subtrees)
+        plot_ages(axes[5], ages, labels, subtrees)
+        plot_regions(axes[6], regions, {
+                &#39;Head&#39;: &#39;brown&#39;,
+                &#39;Brain&#39;: &#39;teal&#39;,
+                &#39;Forebrain&#39;: &#39;crimson&#39;,
+                &#39;Telencephalon&#39;: &#39;crimson&#39;,
+                &#39;Diencephalon&#39;: &#39;orange&#39;,
+                &#39;Midbrain&#39;: &#39;green&#39;,
+                &#39;Hindbrain&#39;: &#39;magenta&#39;,
+                &#39;Pons&#39;: &#39;magenta&#39;,
+                &#39;Cerebellum&#39;: &#39;magenta&#39;,
+                &#39;Medulla&#39;: &#39;blue&#39;
+        }, labels, subtrees)
+
+        plot_regions(axes[7], subregions, {
+                &#39;Head&#39;: &#39;brown&#39;,
+                &#39;Brain&#39;: &#39;teal&#39;,
+
+                &#39;Forebrain&#39;: &#39;red&#39;,
+                &#39;Telencephalon&#39;: &#39;red&#39;,
+                &#39;Cortex&#39;: &#39;red&#39;,
+                &#39;Cortex hemisphere A&#39;: &#39;red&#39;,
+                &#39;Cortex hemisphere B&#39;: &#39;red&#39;,
+                &#39;Cortex lower&#39;: &#39;red&#39;,
+                &#39;Cortex upper&#39;: &#39;red&#39;,
+                &#39;Cortex occipital&#39;: &#39;red&#39;,
+                &#39;Cortex entorhinal&#39;: &#39;red&#39;,
+                &#39;Cortex frontotemporal&#39;: &#39;red&#39;,
+                &#39;Cortical hem&#39;: &#39;red&#39;,
+
+                &#39;Hippocampus&#39;: &#39;pink&#39;,
+
+                &#39;Subcortex&#39;: &#39;orange&#39;,
+                &#39;Caudate+Putamen&#39;: &#39;orange&#39;,
+                &#39;Striatum&#39;: &#39;orange&#39;,
+
+                &#39;Diencephalon&#39;: &#39;orange&#39;,
+                &#39;Hypothalamus&#39;: &#39;orange&#39;,
+                &#39;Thalamus&#39;: &#39;orange&#39;,
+
+                &#39;Midbrain&#39;: &#39;green&#39;,
+                &#39;Midbrain dorsal&#39;: &#39;green&#39;,
+                &#39;Midbrain ventral&#39;: &#39;green&#39;,
+
+                &#39;Hindbrain&#39;: &#39;magenta&#39;,
+                &#39;Cerebellum&#39;: &#39;magenta&#39;,
+                &#39;Pons&#39;: &#39;magenta&#39;,
+                &#39;Medulla&#39;: &#39;blue&#39;
+        }, labels, subtrees)
+        plot_auto_annotation(axes[8], ann_names, ann_post, labels, subtrees)
+        plot_genes(axes[9], markers, mean_x, genes, labels, subtrees, enriched_genes)
+        fig.tight_layout(pad=0, h_pad=0, w_pad=0)
+
+        if save:
+                plt.savefig(self.export_dir / (ws._name + self.filename), dpi=300, bbox_inches=&#39;tight&#39;)
+                plt.close()</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="cytograph.visualization" href="index.html">cytograph.visualization</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="cytograph.visualization.plot_overview.indices_to_order_a_like_b" href="#cytograph.visualization.plot_overview.indices_to_order_a_like_b">indices_to_order_a_like_b</a></code></li>
+<li><code><a title="cytograph.visualization.plot_overview.plot_ages" href="#cytograph.visualization.plot_overview.plot_ages">plot_ages</a></code></li>
+<li><code><a title="cytograph.visualization.plot_overview.plot_auto_annotation" href="#cytograph.visualization.plot_overview.plot_auto_annotation">plot_auto_annotation</a></code></li>
+<li><code><a title="cytograph.visualization.plot_overview.plot_dendrogram" href="#cytograph.visualization.plot_overview.plot_dendrogram">plot_dendrogram</a></code></li>
+<li><code><a title="cytograph.visualization.plot_overview.plot_genes" href="#cytograph.visualization.plot_overview.plot_genes">plot_genes</a></code></li>
+<li><code><a title="cytograph.visualization.plot_overview.plot_regions" href="#cytograph.visualization.plot_overview.plot_regions">plot_regions</a></code></li>
+<li><code><a title="cytograph.visualization.plot_overview.sparkline" href="#cytograph.visualization.plot_overview.sparkline">sparkline</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="cytograph.visualization.plot_overview.PlotOverview" href="#cytograph.visualization.plot_overview.PlotOverview">PlotOverview</a></code></h4>
+<ul class="">
+<li><code><a title="cytograph.visualization.plot_overview.PlotOverview.fit" href="#cytograph.visualization.plot_overview.PlotOverview.fit">fit</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.8.4</a>.</p>
+</footer>
+</body>
+</html>

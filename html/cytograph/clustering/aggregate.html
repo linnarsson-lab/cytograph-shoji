@@ -32,8 +32,12 @@ import numpy as np
 from cytograph import Module
 
 
+def indices_to_order_a_like_b(a, b):
+        return a.argsort()[b.argsort().argsort()]
+
+
 class Aggregate(Module):
-        def __init__(self, tensor: str, using: str, into: str, by: str = &#34;Clusters&#34;, newdim: str = &#34;clusters&#34;, **kwargs) -&gt; None:
+        def __init__(self, tensor: str, using: str, into: str, by: str = &#34;Clusters&#34;, orderby: str = &#34;ClusterID&#34;, newdim: str = &#34;clusters&#34;, **kwargs) -&gt; None:
                 &#34;&#34;&#34;
                 Aggregate tensors by cluster ID (as given by the Clusters tensor)
 
@@ -42,23 +46,26 @@ class Aggregate(Module):
                         using:  The aggregation function (&#34;sum&#34;, &#34;count&#34;, &#34;first&#34;, &#34;nnz&#34;, &#34;mean&#34;, &#34;variance&#34;, or &#34;sd&#34;)
                         into:   The name of the newly created aggregate tensor
                         by:     Optionally, the name of the tensor to group by when aggregating (default: &#39;Clusters&#39;)
-                        newdim: Optionlly, the name of the newly created (or existing) dimension (default: &#39;clusters&#39;)
+                        newdim: Optionally, the name of the newly created (or existing) dimension (default: &#39;clusters&#39;)
                 
                 Remarks:
                         Groups a tensor by the values of another tensor, while applying an aggregation function. For example,
                         to calculate the mean expression by cluster:
 
-                        Aggregate{tensor: Expression, using: mean, into: MeanExpression}
+                                Aggregate: {tensor: Expression, using: mean, into: MeanExpression}
                 &#34;&#34;&#34;
                 super().__init__(**kwargs)
                 self.tensor = tensor
                 self.using = using
                 self.by = by
+                self.orderby = orderby
                 self.into = into
                 self.newdim = newdim
 
         def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; np.ndarray:
                 logging.info(f&#34; Aggregate: Grouping by &#39;{self.by}&#39; using &#39;{self.using}&#39;&#34;)
+                assert self.by in ws, f&#34;Required tensor &#39;{self.by}&#39; is missing&#34;
+                assert self.tensor in ws, f&#34;Required tensor &#39;{self.tensor}&#39; is missing&#34;
                 grouped = ws[:].groupby(self.by)
                 tensor = ws._get_tensor(self.tensor)
                 if self.using == &#34;sum&#34;:
@@ -78,12 +85,17 @@ class Aggregate(Module):
                 else:
                         raise ValueError(f&#34;Invalid aggregation function &#39;{self.using}&#39;&#34;)
 
-                result = result[1][np.argsort(result[0])]
+                # If the orderby tensor is not in the workspace, create it from the keys
+                # Create the dimension if needed
+                if self.newdim not in ws:
+                        logging.info(f&#34; Aggregate: Creating dimension &#39;{self.newdim}&#39;&#34;)
+                        ws[self.newdim] = shoji.Dimension(shape=result[1].shape[0])
+                if self.orderby not in ws:
+                        ws[self.orderby] = shoji.Tensor(dtype=&#34;uint32&#34;, dims=(self.newdim,), inits=result[0].astype(&#34;uint32&#34;))
+                # The groups are not in the same order as in the database, so we need to reorder the result
+                ordering = indices_to_order_a_like_b(result[0], ws[self.orderby][:])
+                result = result[1][ordering]
                 if save:
-                        # Create the dimension if needed
-                        if self.newdim not in ws:
-                                logging.info(f&#34; Aggregate: Creating dimension &#39;{self.newdim}&#39;&#34;)
-                                ws[self.newdim] = shoji.Dimension(shape=result.shape[0])
                         ws[self.into] = shoji.Tensor(result.dtype.name, (self.newdim,) + tensor.dims[1:], inits=result)
 
                 return result</code></pre>
@@ -94,13 +106,29 @@ class Aggregate(Module):
 <section>
 </section>
 <section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="cytograph.clustering.aggregate.indices_to_order_a_like_b"><code class="name flex">
+<span>def <span class="ident">indices_to_order_a_like_b</span></span>(<span>a, b)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def indices_to_order_a_like_b(a, b):
+        return a.argsort()[b.argsort().argsort()]</code></pre>
+</details>
+</dd>
+</dl>
 </section>
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
 <dt id="cytograph.clustering.aggregate.Aggregate"><code class="flex name class">
 <span>class <span class="ident">Aggregate</span></span>
-<span>(</span><span>tensor: str, using: str, into: str, by: str = 'Clusters', newdim: str = 'clusters', **kwargs)</span>
+<span>(</span><span>tensor: str, using: str, into: str, by: str = 'Clusters', orderby: str = 'ClusterID', newdim: str = 'clusters', **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Aggregate tensors by cluster ID (as given by the Clusters tensor)</p>
@@ -117,18 +145,19 @@ class Aggregate(Module):
 <p>Optionally, the name of the tensor to group by when aggregating (default: 'Clusters')</p>
 </dd>
 <dt><strong><code>newdim</code></strong></dt>
-<dd>Optionlly, the name of the newly created (or existing) dimension (default: 'clusters')</dd>
+<dd>Optionally, the name of the newly created (or existing) dimension (default: 'clusters')</dd>
 </dl>
 <h2 id="remarks">Remarks</h2>
 <p>Groups a tensor by the values of another tensor, while applying an aggregation function. For example,
 to calculate the mean expression by cluster:</p>
-<p>Aggregate{tensor: Expression, using: mean, into: MeanExpression}</p></div>
+<pre><code>    Aggregate: {tensor: Expression, using: mean, into: MeanExpression}
+</code></pre></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Aggregate(Module):
-        def __init__(self, tensor: str, using: str, into: str, by: str = &#34;Clusters&#34;, newdim: str = &#34;clusters&#34;, **kwargs) -&gt; None:
+        def __init__(self, tensor: str, using: str, into: str, by: str = &#34;Clusters&#34;, orderby: str = &#34;ClusterID&#34;, newdim: str = &#34;clusters&#34;, **kwargs) -&gt; None:
                 &#34;&#34;&#34;
                 Aggregate tensors by cluster ID (as given by the Clusters tensor)
 
@@ -137,23 +166,26 @@ to calculate the mean expression by cluster:</p>
                         using:  The aggregation function (&#34;sum&#34;, &#34;count&#34;, &#34;first&#34;, &#34;nnz&#34;, &#34;mean&#34;, &#34;variance&#34;, or &#34;sd&#34;)
                         into:   The name of the newly created aggregate tensor
                         by:     Optionally, the name of the tensor to group by when aggregating (default: &#39;Clusters&#39;)
-                        newdim: Optionlly, the name of the newly created (or existing) dimension (default: &#39;clusters&#39;)
+                        newdim: Optionally, the name of the newly created (or existing) dimension (default: &#39;clusters&#39;)
                 
                 Remarks:
                         Groups a tensor by the values of another tensor, while applying an aggregation function. For example,
                         to calculate the mean expression by cluster:
 
-                        Aggregate{tensor: Expression, using: mean, into: MeanExpression}
+                                Aggregate: {tensor: Expression, using: mean, into: MeanExpression}
                 &#34;&#34;&#34;
                 super().__init__(**kwargs)
                 self.tensor = tensor
                 self.using = using
                 self.by = by
+                self.orderby = orderby
                 self.into = into
                 self.newdim = newdim
 
         def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; np.ndarray:
                 logging.info(f&#34; Aggregate: Grouping by &#39;{self.by}&#39; using &#39;{self.using}&#39;&#34;)
+                assert self.by in ws, f&#34;Required tensor &#39;{self.by}&#39; is missing&#34;
+                assert self.tensor in ws, f&#34;Required tensor &#39;{self.tensor}&#39; is missing&#34;
                 grouped = ws[:].groupby(self.by)
                 tensor = ws._get_tensor(self.tensor)
                 if self.using == &#34;sum&#34;:
@@ -173,12 +205,17 @@ to calculate the mean expression by cluster:</p>
                 else:
                         raise ValueError(f&#34;Invalid aggregation function &#39;{self.using}&#39;&#34;)
 
-                result = result[1][np.argsort(result[0])]
+                # If the orderby tensor is not in the workspace, create it from the keys
+                # Create the dimension if needed
+                if self.newdim not in ws:
+                        logging.info(f&#34; Aggregate: Creating dimension &#39;{self.newdim}&#39;&#34;)
+                        ws[self.newdim] = shoji.Dimension(shape=result[1].shape[0])
+                if self.orderby not in ws:
+                        ws[self.orderby] = shoji.Tensor(dtype=&#34;uint32&#34;, dims=(self.newdim,), inits=result[0].astype(&#34;uint32&#34;))
+                # The groups are not in the same order as in the database, so we need to reorder the result
+                ordering = indices_to_order_a_like_b(result[0], ws[self.orderby][:])
+                result = result[1][ordering]
                 if save:
-                        # Create the dimension if needed
-                        if self.newdim not in ws:
-                                logging.info(f&#34; Aggregate: Creating dimension &#39;{self.newdim}&#39;&#34;)
-                                ws[self.newdim] = shoji.Dimension(shape=result.shape[0])
                         ws[self.into] = shoji.Tensor(result.dtype.name, (self.newdim,) + tensor.dims[1:], inits=result)
 
                 return result</code></pre>
@@ -200,6 +237,8 @@ to calculate the mean expression by cluster:</p>
 </summary>
 <pre><code class="python">def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; np.ndarray:
         logging.info(f&#34; Aggregate: Grouping by &#39;{self.by}&#39; using &#39;{self.using}&#39;&#34;)
+        assert self.by in ws, f&#34;Required tensor &#39;{self.by}&#39; is missing&#34;
+        assert self.tensor in ws, f&#34;Required tensor &#39;{self.tensor}&#39; is missing&#34;
         grouped = ws[:].groupby(self.by)
         tensor = ws._get_tensor(self.tensor)
         if self.using == &#34;sum&#34;:
@@ -219,12 +258,17 @@ to calculate the mean expression by cluster:</p>
         else:
                 raise ValueError(f&#34;Invalid aggregation function &#39;{self.using}&#39;&#34;)
 
-        result = result[1][np.argsort(result[0])]
+        # If the orderby tensor is not in the workspace, create it from the keys
+        # Create the dimension if needed
+        if self.newdim not in ws:
+                logging.info(f&#34; Aggregate: Creating dimension &#39;{self.newdim}&#39;&#34;)
+                ws[self.newdim] = shoji.Dimension(shape=result[1].shape[0])
+        if self.orderby not in ws:
+                ws[self.orderby] = shoji.Tensor(dtype=&#34;uint32&#34;, dims=(self.newdim,), inits=result[0].astype(&#34;uint32&#34;))
+        # The groups are not in the same order as in the database, so we need to reorder the result
+        ordering = indices_to_order_a_like_b(result[0], ws[self.orderby][:])
+        result = result[1][ordering]
         if save:
-                # Create the dimension if needed
-                if self.newdim not in ws:
-                        logging.info(f&#34; Aggregate: Creating dimension &#39;{self.newdim}&#39;&#34;)
-                        ws[self.newdim] = shoji.Dimension(shape=result.shape[0])
                 ws[self.into] = shoji.Tensor(result.dtype.name, (self.newdim,) + tensor.dims[1:], inits=result)
 
         return result</code></pre>
@@ -244,6 +288,11 @@ to calculate the mean expression by cluster:</p>
 <li><h3>Super-module</h3>
 <ul>
 <li><code><a title="cytograph.clustering" href="index.html">cytograph.clustering</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="cytograph.clustering.aggregate.indices_to_order_a_like_b" href="#cytograph.clustering.aggregate.indices_to_order_a_like_b">indices_to_order_a_like_b</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>

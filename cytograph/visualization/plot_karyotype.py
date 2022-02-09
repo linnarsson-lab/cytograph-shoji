@@ -1,4 +1,4 @@
-from cytograph import Module, requires
+from cytograph import Algorithm, requires
 from .scatter import scatterc, scattern
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
@@ -6,7 +6,7 @@ import numpy as np
 import shoji
 
 
-class PlotKaryotype(Module):
+class PlotKaryotype(Algorithm):
 	def __init__(self, filename: str = "karyotype.png", **kwargs) -> None:
 		super().__init__(**kwargs)
 		self.filename = filename

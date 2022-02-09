@@ -1,13 +1,13 @@
 import logging
 import shoji
 import numpy as np
-from cytograph import creates, requires, Module
+from cytograph import creates, requires, Algorithm
 from cytograph.pipeline import Config
 from scipy.cluster.hierarchy import cut_tree
 from typing import Dict
 
 
-class CutDendrogram(Module):
+class CutDendrogram(Algorithm):
 	"""
 	Cut the dendrogram and create punchcards for subtrees
 	"""

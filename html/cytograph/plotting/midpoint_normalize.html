@@ -54,25 +54,27 @@ class MidpointNormalize(Normalize):
 <span>(</span><span>vmin: float = None, vmax: float = None, midpoint: float = None, clip: bool = False)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>A class which, when called, can normalize data into
-the <code>[0.0, 1.0]</code> interval.</p>
-<p>If <em>vmin</em> or <em>vmax</em> is not given, they are initialized from the
-minimum and maximum value respectively of the first input
-processed.
-That is, <em><strong>call</strong>(A)</em> calls <em>autoscale_None(A)</em>.
-If <em>clip</em> is <em>True</em> and the given value falls outside the range,
-the returned value will be 0 or 1, whichever is closer.
-Returns 0 if ::</p>
-<pre><code>vmin==vmax
-</code></pre>
-<p>Works with scalars or arrays, including masked arrays.
-If
-<em>clip</em> is <em>True</em>, masked values are set to 1; otherwise they
-remain masked.
-Clipping silently defeats the purpose of setting
-the over, under, and masked colors in the colormap, so it is
-likely to lead to surprises; therefore the default is
-<em>clip</em> = <em>False</em>.</p></div>
+<div class="desc"><p>A class which, when called, linearly normalizes data into the
+<code>[0.0, 1.0]</code> interval.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>vmin</code></strong>, <strong><code>vmax</code></strong> :&ensp;<code>float</code> or <code>None</code></dt>
+<dd>If <em>vmin</em> and/or <em>vmax</em> is not given, they are initialized from the
+minimum and maximum value, respectively, of the first input
+processed; i.e., <code>__call__(A)</code> calls <code>autoscale_None(A)</code>.</dd>
+<dt><strong><code>clip</code></strong> :&ensp;<code>bool</code>, default<code>: False</code></dt>
+<dd>
+<p>If <code>True</code> values falling outside the range <code>[vmin, vmax]</code>,
+are mapped to 0 or 1, whichever is closer, and masked values are
+set to 1.
+If <code>False</code> masked values remain masked.</p>
+<p>Clipping silently defeats the purpose of setting the over, under,
+and masked colors in a colormap, so it is likely to lead to
+surprises; therefore the default is <code>clip=False</code>.</p>
+</dd>
+</dl>
+<h2 id="notes">Notes</h2>
+<p>Returns 0 if <code>vmin == vmax</code>.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>

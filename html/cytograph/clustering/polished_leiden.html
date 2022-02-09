@@ -40,7 +40,10 @@ from sklearn.preprocessing import LabelEncoder
 
 
 class PolishedLeiden(Module):
-        def __init__(self, resolution: float = 1.0, method: str = &#34;modularity&#34;, max_size: int = 0, min_size: int = 25, **kwargs) -&gt; None:
+        &#34;&#34;&#34;
+        Leiden clustering with polishing
+        &#34;&#34;&#34;
+        def __init__(self, resolution: float = 1.0, method: str = &#34;modularity&#34;, max_size: int = 0, min_size: int = 10, **kwargs) -&gt; None:
                 &#34;&#34;&#34;
                 Find clusters on the manifold using the Leiden algorithm, then polish clusters on the embedding.
 
@@ -48,7 +51,7 @@ class PolishedLeiden(Module):
                         resolution: The resolution parameter (typically 0.01 - 1; default: 1)
                         method:     The partitioning method (&#34;modularity&#34;, &#34;cpm&#34;, &#34;surprise&#34;, &#34;rb&#34;, &#34;rber&#34;, or &#34;significance&#34;; default: &#34;modularity&#34;)
                         max_size:   The maximum size of clusters (default: 0, i.e. no limit)
-                        min_size:   The minimum size of clusters (default: 25)
+                        min_size:   The minimum size of clusters (default: 10)
 
                 Remarks:
                         The default method, &#34;modularity&#34;, is equivalent to Louvain clustering but the Leiden algorithm is faster
@@ -151,10 +154,11 @@ class PolishedLeiden(Module):
                 labels = clusterer.fit_predict(xy)
 
                 # Assign each outlier to the same cluster as the nearest non-outlier
-                nn = NearestNeighbors(n_neighbors=50, algorithm=&#34;ball_tree&#34;)
-                nn.fit(xy[labels &gt;= 0])
-                nearest = nn.kneighbors(xy[labels == -1], n_neighbors=1, return_distance=False)
-                labels[labels == -1] = labels[labels &gt;= 0][nearest.flat[:]]
+                if (labels == -1).sum() &gt; 0:
+                        nn = NearestNeighbors(n_neighbors=50, algorithm=&#34;ball_tree&#34;)
+                        nn.fit(xy[labels &gt;= 0])
+                        nearest = nn.kneighbors(xy[labels == -1], n_neighbors=1, return_distance=False)
+                        labels[labels == -1] = labels[labels &gt;= 0][nearest.flat[:]]
                 return labels
 
         @requires(&#34;Embedding&#34;, &#34;float32&#34;, (&#34;cells&#34;, 2))
@@ -174,12 +178,13 @@ class PolishedLeiden(Module):
                 logging.info(&#34; PolishedLeiden: Loading graph data&#34;)
                 rc = self.ManifoldIndices[:]
                 logging.info(&#34; PolishedLeiden: Constructing the graph&#34;)
-                g = igraph.Graph(ws.cells.length, list(zip(rc[:, 0].T.tolist(), rc[:, 1].T.tolist())), directed=False, edge_attrs={&#39;weight&#39;: self.ManifoldWeights[:]})
+                weights = self.ManifoldWeights[:]
+                g = igraph.Graph(ws.cells.length, list(zip(rc[:, 0].T.tolist(), rc[:, 1].T.tolist())), directed=False, edge_attrs={&#39;weight&#39;: weights})
                 logging.info(&#34; PolishedLeiden: Optimizing the graph partitioning&#34;)
                 if self.resolution != 1:
-                        labels = np.array(la.find_partition(g, self.method, weights=self.ManifoldWeights[:], max_comm_size=self.max_size, resolution_parameter=self.resolution, n_iterations=-1).membership)
+                        labels = np.array(la.find_partition(g, self.method, weights=weights, max_comm_size=self.max_size, resolution_parameter=self.resolution, n_iterations=-1).membership)
                 else:
-                        labels = np.array(la.find_partition(g, self.method, weights=self.ManifoldWeights[:], max_comm_size=self.max_size, n_iterations=-1).membership)
+                        labels = np.array(la.find_partition(g, self.method, weights=weights, max_comm_size=self.max_size, n_iterations=-1).membership)
                 logging.info(f&#34; PolishedLeiden: Found {labels.max() + 1} initial clusters&#34;)
 
                 # Break clusters based on the embedding
@@ -227,10 +232,11 @@ class PolishedLeiden(Module):
 <dl>
 <dt id="cytograph.clustering.polished_leiden.PolishedLeiden"><code class="flex name class">
 <span>class <span class="ident">PolishedLeiden</span></span>
-<span>(</span><span>resolution: float = 1.0, method: str = 'modularity', max_size: int = 0, min_size: int = 25, **kwargs)</span>
+<span>(</span><span>resolution: float = 1.0, method: str = 'modularity', max_size: int = 0, min_size: int = 10, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Find clusters on the manifold using the Leiden algorithm, then polish clusters on the embedding.</p>
+<div class="desc"><p>Leiden clustering with polishing</p>
+<p>Find clusters on the manifold using the Leiden algorithm, then polish clusters on the embedding.</p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>resolution</code></strong></dt>
@@ -242,7 +248,7 @@ class PolishedLeiden(Module):
 <dt><strong><code>max_size</code></strong></dt>
 <dd>The maximum size of clusters (default: 0, i.e. no limit)</dd>
 <dt><strong><code>min_size</code></strong></dt>
-<dd>The minimum size of clusters (default: 25)</dd>
+<dd>The minimum size of clusters (default: 10)</dd>
 </dl>
 <h2 id="remarks">Remarks</h2>
 <p>The default method, "modularity", is equivalent to Louvain clustering but the Leiden algorithm is faster
@@ -259,7 +265,10 @@ to the nearest not-too-small cluster on the embedding. Not that this can result 
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class PolishedLeiden(Module):
-        def __init__(self, resolution: float = 1.0, method: str = &#34;modularity&#34;, max_size: int = 0, min_size: int = 25, **kwargs) -&gt; None:
+        &#34;&#34;&#34;
+        Leiden clustering with polishing
+        &#34;&#34;&#34;
+        def __init__(self, resolution: float = 1.0, method: str = &#34;modularity&#34;, max_size: int = 0, min_size: int = 10, **kwargs) -&gt; None:
                 &#34;&#34;&#34;
                 Find clusters on the manifold using the Leiden algorithm, then polish clusters on the embedding.
 
@@ -267,7 +276,7 @@ to the nearest not-too-small cluster on the embedding. Not that this can result 
                         resolution: The resolution parameter (typically 0.01 - 1; default: 1)
                         method:     The partitioning method (&#34;modularity&#34;, &#34;cpm&#34;, &#34;surprise&#34;, &#34;rb&#34;, &#34;rber&#34;, or &#34;significance&#34;; default: &#34;modularity&#34;)
                         max_size:   The maximum size of clusters (default: 0, i.e. no limit)
-                        min_size:   The minimum size of clusters (default: 25)
+                        min_size:   The minimum size of clusters (default: 10)
 
                 Remarks:
                         The default method, &#34;modularity&#34;, is equivalent to Louvain clustering but the Leiden algorithm is faster
@@ -370,10 +379,11 @@ to the nearest not-too-small cluster on the embedding. Not that this can result 
                 labels = clusterer.fit_predict(xy)
 
                 # Assign each outlier to the same cluster as the nearest non-outlier
-                nn = NearestNeighbors(n_neighbors=50, algorithm=&#34;ball_tree&#34;)
-                nn.fit(xy[labels &gt;= 0])
-                nearest = nn.kneighbors(xy[labels == -1], n_neighbors=1, return_distance=False)
-                labels[labels == -1] = labels[labels &gt;= 0][nearest.flat[:]]
+                if (labels == -1).sum() &gt; 0:
+                        nn = NearestNeighbors(n_neighbors=50, algorithm=&#34;ball_tree&#34;)
+                        nn.fit(xy[labels &gt;= 0])
+                        nearest = nn.kneighbors(xy[labels == -1], n_neighbors=1, return_distance=False)
+                        labels[labels == -1] = labels[labels &gt;= 0][nearest.flat[:]]
                 return labels
 
         @requires(&#34;Embedding&#34;, &#34;float32&#34;, (&#34;cells&#34;, 2))
@@ -393,12 +403,13 @@ to the nearest not-too-small cluster on the embedding. Not that this can result 
                 logging.info(&#34; PolishedLeiden: Loading graph data&#34;)
                 rc = self.ManifoldIndices[:]
                 logging.info(&#34; PolishedLeiden: Constructing the graph&#34;)
-                g = igraph.Graph(ws.cells.length, list(zip(rc[:, 0].T.tolist(), rc[:, 1].T.tolist())), directed=False, edge_attrs={&#39;weight&#39;: self.ManifoldWeights[:]})
+                weights = self.ManifoldWeights[:]
+                g = igraph.Graph(ws.cells.length, list(zip(rc[:, 0].T.tolist(), rc[:, 1].T.tolist())), directed=False, edge_attrs={&#39;weight&#39;: weights})
                 logging.info(&#34; PolishedLeiden: Optimizing the graph partitioning&#34;)
                 if self.resolution != 1:
-                        labels = np.array(la.find_partition(g, self.method, weights=self.ManifoldWeights[:], max_comm_size=self.max_size, resolution_parameter=self.resolution, n_iterations=-1).membership)
+                        labels = np.array(la.find_partition(g, self.method, weights=weights, max_comm_size=self.max_size, resolution_parameter=self.resolution, n_iterations=-1).membership)
                 else:
-                        labels = np.array(la.find_partition(g, self.method, weights=self.ManifoldWeights[:], max_comm_size=self.max_size, n_iterations=-1).membership)
+                        labels = np.array(la.find_partition(g, self.method, weights=weights, max_comm_size=self.max_size, n_iterations=-1).membership)
                 logging.info(f&#34; PolishedLeiden: Found {labels.max() + 1} initial clusters&#34;)
 
                 # Break clusters based on the embedding
@@ -474,12 +485,13 @@ def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; np.ndarray:
         logging.info(&#34; PolishedLeiden: Loading graph data&#34;)
         rc = self.ManifoldIndices[:]
         logging.info(&#34; PolishedLeiden: Constructing the graph&#34;)
-        g = igraph.Graph(ws.cells.length, list(zip(rc[:, 0].T.tolist(), rc[:, 1].T.tolist())), directed=False, edge_attrs={&#39;weight&#39;: self.ManifoldWeights[:]})
+        weights = self.ManifoldWeights[:]
+        g = igraph.Graph(ws.cells.length, list(zip(rc[:, 0].T.tolist(), rc[:, 1].T.tolist())), directed=False, edge_attrs={&#39;weight&#39;: weights})
         logging.info(&#34; PolishedLeiden: Optimizing the graph partitioning&#34;)
         if self.resolution != 1:
-                labels = np.array(la.find_partition(g, self.method, weights=self.ManifoldWeights[:], max_comm_size=self.max_size, resolution_parameter=self.resolution, n_iterations=-1).membership)
+                labels = np.array(la.find_partition(g, self.method, weights=weights, max_comm_size=self.max_size, resolution_parameter=self.resolution, n_iterations=-1).membership)
         else:
-                labels = np.array(la.find_partition(g, self.method, weights=self.ManifoldWeights[:], max_comm_size=self.max_size, n_iterations=-1).membership)
+                labels = np.array(la.find_partition(g, self.method, weights=weights, max_comm_size=self.max_size, n_iterations=-1).membership)
         logging.info(f&#34; PolishedLeiden: Found {labels.max() + 1} initial clusters&#34;)
 
         # Break clusters based on the embedding

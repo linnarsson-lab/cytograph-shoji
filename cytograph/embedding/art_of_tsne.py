@@ -1,12 +1,12 @@
 import logging
 from typing import Callable, Union
-from cytograph import requires, creates, Module
+from cytograph import requires, creates, Algorithm
 import numpy as np
 from openTSNE import TSNEEmbedding, affinity, initialization
 import shoji
 
 
-class ArtOfTsne(Module):
+class ArtOfTsne(Algorithm):
 	"""
 	t-Stochastic Neighborhood Embedding (TSNE)
 	"""

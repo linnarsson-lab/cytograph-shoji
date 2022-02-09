@@ -5,11 +5,11 @@ from matplotlib.colors import hsv_to_rgb
 import numpy as np
 
 import shoji
-from cytograph import Module, requires, div0
+from cytograph import Algorithm, requires, div0
 import numpy_groupies as npg
 
 
-class PlotAge(Module):
+class PlotAge(Algorithm):
 	def __init__(self, filename: str = "age.png", **kwargs) -> None:
 		super().__init__(**kwargs)
 		self.filename = filename

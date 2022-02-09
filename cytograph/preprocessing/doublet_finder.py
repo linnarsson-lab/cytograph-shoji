@@ -32,13 +32,13 @@ from sklearn.decomposition import PCA
 from sklearn.neighbors import NearestNeighbors
 import shoji
 from cytograph.enrichment import FeatureSelectionByVariance
-from cytograph import requires, creates, Module
+from cytograph import requires, creates, Algorithm
 from sklearn.neighbors import KernelDensity
 from sklearn.cluster import KMeans
 from unidip import UniDip
 
 
-class DoubletFinder(Module):
+class DoubletFinder(Algorithm):
 	def __init__(self, proportion_artificial: float = 0.2, fixed_threshold: float = None, max_threshold: float = 1, k: int = None, **kwargs) -> None:
 		"""
 		Find doublets using the doublet-finder algorithm.

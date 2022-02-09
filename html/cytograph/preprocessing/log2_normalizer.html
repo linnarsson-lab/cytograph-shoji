@@ -45,9 +45,15 @@ class Log2Normalizer(Module):
                 
                 Args:
                         level                   The level to which each cell should be normalized (or 0 to use the median)
-                
+
+                Creates:
+                        Log2Level:              The level to which all cells should be normalized
+                        Log2Mean:               The mean of the log2-transformed values
+
                 Remarks:
-                        Requires the tensors TotalUMIs, MeanExpression and StdevExpression
+                        The normalization is not saved to the workspace. Instead, Log2Level and Log2Mean
+                        are saved, which can be used later to transform expression data. To transform
+                        new data using an existing transform, use Log2Normalizer.load()
                 &#34;&#34;&#34;
                 super().__init__(**kwargs)
                 self.log2_mu = None  # type: np.ndarray
@@ -74,14 +80,15 @@ class Log2Normalizer(Module):
                         self.log2_mu[ix: ix + 1000] = np.mean(vals, axis=1)
                 return (self.level, self.log2_mu)
 
-        def load(self, ws: shoji.WorkspaceManager) -&gt; &#34;Log2Normalizer&#34;:
+        @classmethod
+        def load(ws: shoji.WorkspaceManager) -&gt; &#34;Log2Normalizer&#34;:
                 &#34;&#34;&#34;
                 Load a previoulsy stored normalization from the workspace
                 &#34;&#34;&#34;
-                self.level = ws[:].Log2Level
-                self.totals = ws[:].TotalUMIs
-                self.log2_mu = ws[:].Log2Mean
-                return self
+                nn = Log2Normalizer(ws.Log2Level[:])
+                nn.totals = ws.TotalUMIs[:]
+                nn.log2_mu = ws.Log2Mean[:]
+                return nn
 
         def transform(self, vals: np.ndarray, cells: np.ndarray = None) -&gt; np.ndarray:
                 &#34;&#34;&#34;
@@ -129,8 +136,15 @@ with edge cases such as division by zero.</p>
 <h2 id="args">Args</h2>
 <p>level
 The level to which each cell should be normalized (or 0 to use the median)</p>
+<h2 id="creates">Creates</h2>
+<p>Log2Level:
+The level to which all cells should be normalized
+Log2Mean:
+The mean of the log2-transformed values</p>
 <h2 id="remarks">Remarks</h2>
-<p>Requires the tensors TotalUMIs, MeanExpression and StdevExpression</p></div>
+<p>The normalization is not saved to the workspace. Instead, Log2Level and Log2Mean
+are saved, which can be used later to transform expression data. To transform
+new data using an existing transform, use Log2Normalizer.load()</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -146,9 +160,15 @@ The level to which each cell should be normalized (or 0 to use the median)</p>
                 
                 Args:
                         level                   The level to which each cell should be normalized (or 0 to use the median)
-                
+
+                Creates:
+                        Log2Level:              The level to which all cells should be normalized
+                        Log2Mean:               The mean of the log2-transformed values
+
                 Remarks:
-                        Requires the tensors TotalUMIs, MeanExpression and StdevExpression
+                        The normalization is not saved to the workspace. Instead, Log2Level and Log2Mean
+                        are saved, which can be used later to transform expression data. To transform
+                        new data using an existing transform, use Log2Normalizer.load()
                 &#34;&#34;&#34;
                 super().__init__(**kwargs)
                 self.log2_mu = None  # type: np.ndarray
@@ -175,14 +195,15 @@ The level to which each cell should be normalized (or 0 to use the median)</p>
                         self.log2_mu[ix: ix + 1000] = np.mean(vals, axis=1)
                 return (self.level, self.log2_mu)
 
-        def load(self, ws: shoji.WorkspaceManager) -&gt; &#34;Log2Normalizer&#34;:
+        @classmethod
+        def load(ws: shoji.WorkspaceManager) -&gt; &#34;Log2Normalizer&#34;:
                 &#34;&#34;&#34;
                 Load a previoulsy stored normalization from the workspace
                 &#34;&#34;&#34;
-                self.level = ws[:].Log2Level
-                self.totals = ws[:].TotalUMIs
-                self.log2_mu = ws[:].Log2Mean
-                return self
+                nn = Log2Normalizer(ws.Log2Level[:])
+                nn.totals = ws.TotalUMIs[:]
+                nn.log2_mu = ws.Log2Mean[:]
+                return nn
 
         def transform(self, vals: np.ndarray, cells: np.ndarray = None) -&gt; np.ndarray:
                 &#34;&#34;&#34;
@@ -213,6 +234,29 @@ The level to which each cell should be normalized (or 0 to use the median)</p>
 <ul class="hlist">
 <li><a title="cytograph.module.Module" href="../module.html#cytograph.module.Module">Module</a></li>
 </ul>
+<h3>Static methods</h3>
+<dl>
+<dt id="cytograph.preprocessing.log2_normalizer.Log2Normalizer.load"><code class="name flex">
+<span>def <span class="ident">load</span></span>(<span>) ‑> <a title="cytograph.preprocessing.log2_normalizer.Log2Normalizer" href="#cytograph.preprocessing.log2_normalizer.Log2Normalizer">Log2Normalizer</a></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Load a previoulsy stored normalization from the workspace</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@classmethod
+def load(ws: shoji.WorkspaceManager) -&gt; &#34;Log2Normalizer&#34;:
+        &#34;&#34;&#34;
+        Load a previoulsy stored normalization from the workspace
+        &#34;&#34;&#34;
+        nn = Log2Normalizer(ws.Log2Level[:])
+        nn.totals = ws.TotalUMIs[:]
+        nn.log2_mu = ws.Log2Mean[:]
+        return nn</code></pre>
+</details>
+</dd>
+</dl>
 <h3>Methods</h3>
 <dl>
 <dt id="cytograph.preprocessing.log2_normalizer.Log2Normalizer.fit"><code class="name flex">
@@ -257,25 +301,6 @@ def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; Tuple[int, n
 <pre><code class="python">def fit_transform(self, ws: shoji.WorkspaceManager, vals: np.ndarray, cells: np.ndarray = None) -&gt; np.ndarray:
         self.fit(ws)
         return self.transform(vals, cells)</code></pre>
-</details>
-</dd>
-<dt id="cytograph.preprocessing.log2_normalizer.Log2Normalizer.load"><code class="name flex">
-<span>def <span class="ident">load</span></span>(<span>self, ws: shoji.workspace.WorkspaceManager) ‑> <a title="cytograph.preprocessing.log2_normalizer.Log2Normalizer" href="#cytograph.preprocessing.log2_normalizer.Log2Normalizer">Log2Normalizer</a></span>
-</code></dt>
-<dd>
-<div class="desc"><p>Load a previoulsy stored normalization from the workspace</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def load(self, ws: shoji.WorkspaceManager) -&gt; &#34;Log2Normalizer&#34;:
-        &#34;&#34;&#34;
-        Load a previoulsy stored normalization from the workspace
-        &#34;&#34;&#34;
-        self.level = ws[:].Log2Level
-        self.totals = ws[:].TotalUMIs
-        self.log2_mu = ws[:].Log2Mean
-        return self</code></pre>
 </details>
 </dd>
 <dt id="cytograph.preprocessing.log2_normalizer.Log2Normalizer.transform"><code class="name flex">

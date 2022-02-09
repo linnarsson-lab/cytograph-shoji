@@ -4,10 +4,10 @@ from hashlib import sha1
 import numpy as np
 import shoji
 
-from ..module import Module, creates, requires
+from ..algorithm import Algorithm, creates, requires
 
 
-class ComputeCellHashes(Module):
+class ComputeCellHashes(Algorithm):
 	"""
 	Compute invariant cell hashes based on the expression matrix. Cell hashes can be used to
 	identify cells from different analysis runs.

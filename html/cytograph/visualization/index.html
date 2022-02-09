@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.8.4" />
 <title>cytograph.visualization API documentation</title>
-<meta name="description" content="" />
+<meta name="description" content="Algorithms for visualization" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/github.min.css" crossorigin>
@@ -22,13 +22,30 @@
 <h1 class="title">Module <code>cytograph.visualization</code></h1>
 </header>
 <section id="section-intro">
+<p>Algorithms for visualization</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">from .colors import colors75, colorize
+<pre><code class="python">&#34;&#34;&#34;
+Algorithms for visualization
+&#34;&#34;&#34;
+from .colors import colors75, colorize
 from .dendrogram import dendrogram
-from .heatmap import Heatmap</code></pre>
+from .heatmap import Heatmap
+from .scatter import scatterc, scattern
+from .plot_qc import PlotQC
+from .plot_batches import PlotBatches
+from .plot_manifold import PlotManifold
+from .plot_scatter import NumericalScatterplot, CategoricalScatterplot
+from .plot_age import PlotAge
+from .plot_region import PlotRegion
+from .plot_subregion import PlotSubregion
+from .plot_cell_cycle import PlotCellCycle
+from .plot_markers import PlotMarkers
+from .plot_karyotype import PlotKaryotype
+from .plot_droplet_classes import PlotDropletClasses
+from .plot_overview import PlotOverview</code></pre>
 </details>
 </section>
 <section>
@@ -43,6 +60,58 @@ from .heatmap import Heatmap</code></pre>
 <div class="desc"></div>
 </dd>
 <dt><code class="name"><a title="cytograph.visualization.heatmap" href="heatmap.html">cytograph.visualization.heatmap</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="cytograph.visualization.plot_age" href="plot_age.html">cytograph.visualization.plot_age</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="cytograph.visualization.plot_batches" href="plot_batches.html">cytograph.visualization.plot_batches</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="cytograph.visualization.plot_cell_cycle" href="plot_cell_cycle.html">cytograph.visualization.plot_cell_cycle</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="cytograph.visualization.plot_droplet_classes" href="plot_droplet_classes.html">cytograph.visualization.plot_droplet_classes</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="cytograph.visualization.plot_karyotype" href="plot_karyotype.html">cytograph.visualization.plot_karyotype</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="cytograph.visualization.plot_manifold" href="plot_manifold.html">cytograph.visualization.plot_manifold</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="cytograph.visualization.plot_markers" href="plot_markers.html">cytograph.visualization.plot_markers</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="cytograph.visualization.plot_overview" href="plot_overview.html">cytograph.visualization.plot_overview</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="cytograph.visualization.plot_qc" href="plot_qc.html">cytograph.visualization.plot_qc</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="cytograph.visualization.plot_region" href="plot_region.html">cytograph.visualization.plot_region</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="cytograph.visualization.plot_scatter" href="plot_scatter.html">cytograph.visualization.plot_scatter</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="cytograph.visualization.plot_subregion" href="plot_subregion.html">cytograph.visualization.plot_subregion</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="cytograph.visualization.scatter" href="scatter.html">cytograph.visualization.scatter</a></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -71,6 +140,19 @@ from .heatmap import Heatmap</code></pre>
 <li><code><a title="cytograph.visualization.colors" href="colors.html">cytograph.visualization.colors</a></code></li>
 <li><code><a title="cytograph.visualization.dendrogram" href="dendrogram.html">cytograph.visualization.dendrogram</a></code></li>
 <li><code><a title="cytograph.visualization.heatmap" href="heatmap.html">cytograph.visualization.heatmap</a></code></li>
+<li><code><a title="cytograph.visualization.plot_age" href="plot_age.html">cytograph.visualization.plot_age</a></code></li>
+<li><code><a title="cytograph.visualization.plot_batches" href="plot_batches.html">cytograph.visualization.plot_batches</a></code></li>
+<li><code><a title="cytograph.visualization.plot_cell_cycle" href="plot_cell_cycle.html">cytograph.visualization.plot_cell_cycle</a></code></li>
+<li><code><a title="cytograph.visualization.plot_droplet_classes" href="plot_droplet_classes.html">cytograph.visualization.plot_droplet_classes</a></code></li>
+<li><code><a title="cytograph.visualization.plot_karyotype" href="plot_karyotype.html">cytograph.visualization.plot_karyotype</a></code></li>
+<li><code><a title="cytograph.visualization.plot_manifold" href="plot_manifold.html">cytograph.visualization.plot_manifold</a></code></li>
+<li><code><a title="cytograph.visualization.plot_markers" href="plot_markers.html">cytograph.visualization.plot_markers</a></code></li>
+<li><code><a title="cytograph.visualization.plot_overview" href="plot_overview.html">cytograph.visualization.plot_overview</a></code></li>
+<li><code><a title="cytograph.visualization.plot_qc" href="plot_qc.html">cytograph.visualization.plot_qc</a></code></li>
+<li><code><a title="cytograph.visualization.plot_region" href="plot_region.html">cytograph.visualization.plot_region</a></code></li>
+<li><code><a title="cytograph.visualization.plot_scatter" href="plot_scatter.html">cytograph.visualization.plot_scatter</a></code></li>
+<li><code><a title="cytograph.visualization.plot_subregion" href="plot_subregion.html">cytograph.visualization.plot_subregion</a></code></li>
+<li><code><a title="cytograph.visualization.scatter" href="scatter.html">cytograph.visualization.scatter</a></code></li>
 </ul>
 </li>
 </ul>

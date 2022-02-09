@@ -3,7 +3,7 @@ from typing import Tuple
 import leidenalg as la
 import igraph
 import numpy as np
-from cytograph import requires, creates, Module
+from cytograph import requires, creates, Algorithm
 import shoji
 from sklearn.neighbors import NearestNeighbors
 from sklearn.cluster import DBSCAN
@@ -14,7 +14,7 @@ from sklearn.calibration import CalibratedClassifierCV
 from sklearn.linear_model import SGDClassifier
 
 
-class MorePolishedLeiden(Module):
+class MorePolishedLeiden(Algorithm):
 	"""
 	Leiden clustering with some post-processing
 	"""
