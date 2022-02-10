@@ -5,6 +5,7 @@ import numpy as np
 from cytograph import creates, requires, Algorithm
 import scipy.cluster.hierarchy as hc
 from scipy.spatial.distance import pdist
+from sklearn.preprocessing import scale
 import fastcluster
 
 
@@ -44,6 +45,7 @@ class Dendrogram(Algorithm):
 		x = self.MeanExpression[:]
 		totals = x.sum(axis=1)
 		x = np.log2((x.T / totals * np.median(totals)).T + 1)[:, selected]
+		x = scale(x)
 
 		logging.info(" Dendrogram: Computing Ward's linkage")
 		D = pdist(x, 'correlation')
