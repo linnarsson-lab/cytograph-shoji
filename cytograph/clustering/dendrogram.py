@@ -25,6 +25,9 @@ class Dendrogram(Algorithm):
 			Mean expression values are normalized to the median total UMIs, and `log2(x + 1)` transformed.
 
 			The returned Clusters and ClusterID are renumbered and correspond to the linkage ordering.
+
+			If the tensors are saved to the workspace (save == True), then all the aggregated tensors
+			(i.e. those on the 'clusters' dimension) are also reordered in cluster order.
 		"""
 		super().__init__(**kwargs)
 
@@ -56,20 +59,24 @@ class Dendrogram(Algorithm):
 				Z[i, 1] = np.where(Z[i, 1] == ordering)[0]
 
 		# Renumber the clusters according to the new ordering
-		clusters = self.Clusters[:]
 		cluster_ids = np.zeros(ws.clusters.length, dtype="uint32")
 		new_clusters = np.zeros(ws.cells.length, dtype="uint32")
 		for i in range(ws.clusters.length):
-			selection = clusters == ordering[i]
-			new_clusters[selection] = i
 			cluster_ids[ordering[i]] = i
+		clusters = self.Clusters[:]
+		old_cluster_ids = self.ClusterID[:]
+		for i, j in zip(old_cluster_ids, cluster_ids):
+			new_clusters[clusters == i] = j
 
-		# Reorder the aggregated tensors to match the numbering
-		logging.info(" Dendrogram: Reordering aggregated tensors")
-		ordering = np.argsort(cluster_ids)
-		for tname in ws._tensors():
-			tensor = ws[tname]
-			if tensor.rank >= 1 and tensor.dims[0] == "clusters":
-				ws[tname] = shoji.Tensor(tensor.dtype, tensor.dims, chunks=tensor.chunks, inits=tensor[:][ordering])
+		if save:
+			# Reorder the aggregated tensors to match the numbering
+			ordering = np.argsort(cluster_ids)
+			logging.info(" Dendrogram: Reordering aggregated tensors")
+			for tname in ws._tensors():
+				tensor = ws[tname]
+				if tensor.rank >= 1 and tensor.dims[0] == "clusters":
+					ws[tname] = shoji.Tensor(tensor.dtype, tensor.dims, chunks=tensor.chunks, inits=tensor[:][ordering])
 
-		return Z, cluster_ids[ordering], new_clusters
+			return Z, cluster_ids[ordering], new_clusters
+		else:
+			return Z, cluster_ids, new_clusters
