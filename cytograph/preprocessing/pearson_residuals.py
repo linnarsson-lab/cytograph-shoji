@@ -20,7 +20,7 @@ class PearsonResiduals(Algorithm):
 	@requires("GeneTotalUMIs", "uint32", ("genes",))
 	@requires("OverallTotalUMIs", "uint64", ())
 	@creates("PearsonResiduals", "float32", ("cells", "genes"))
-	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> Tuple[np.ndarray, np.ndarray]:
+	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> np.ndarray:
 		logging.info(" PearsonResiduals: Loading gene and cell totals")
 		n_cells = ws.cells.length
 		totals = self.TotalUMIs[:].astype("float32")

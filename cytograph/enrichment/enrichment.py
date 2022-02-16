@@ -19,30 +19,25 @@ class Enrichment(Algorithm):
 		"""
 		super().__init__(**kwargs)
 
-	def enrichment_by_clusters(self, ws: shoji.WorkspaceManager) -> np.ndarray:
-		"""
-		Compute gene enrichment on already aggregated data, by cluster
-
-		Args:
-			ws		The workspace
-		
-		Returns:
-			enrichment		A (n_clusters, n_genes) matrix of gene enrichment scores
-		"""
-		n_clusters = ws.clusters.length
-		x = self.MeanExpression[:]
-		totals = x.sum(axis=1)
-		x_norm = (x.T / totals * np.median(totals)).T
-		gene_sums = x_norm.sum(axis=0)
-		enrichment = np.zeros_like(x_norm)
-		for j in range(n_clusters):
-			enrichment[j, :] = (x_norm[j, :] + 0.01) / (((gene_sums - x_norm[j, :]) / (n_clusters - 1)) + 0.01)
-		return enrichment
-
 	@requires("MeanExpression", None, ("clusters", "genes"))
+	@requires("NCells", "uint64", ("clusters",))
+	@requires("Nonzeros", "uint64", ("clusters", "genes"))
 	@creates("Enrichment", "float32", ("clusters", "genes"))
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> Tuple[np.ndarray, np.ndarray]:
+		logging.info(" Enrichment: Computing enrichment by cluster")
 
-		logging.info(" Enrichment: Computing enrichment at cluster leaves")
-		enr = self.enrichment_by_clusters(ws)
-		return enr
+		n_clusters = ws.clusters.length
+		cluster_size = self.NCells[:]
+		x = self.MeanExpression[:]
+		totals = x.sum(axis=1)
+		means = (x.T / totals * np.median(totals)).T
+		nnz = self.Nonzeros[:]
+		f_nnz = nnz / cluster_size
+		enrichment = np.zeros_like(means)
+		for j in range(n_clusters):
+			ix = np.arange(n_clusters) != j
+			weights = cluster_size[ix] / cluster_size[ix].sum()
+			means_other = np.average(means[:, ix], weights=weights, axis=1)
+			f_nnz_other = np.average(f_nnz[:, ix], weights=weights, axis=1)
+			enrichment[:, j] = (f_nnz[:, j] + 0.1) / (f_nnz_other + 0.1) * (means[:, j] + 0.01) / (means_other + 0.01)
+		return enrichment
