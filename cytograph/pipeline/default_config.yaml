@@ -1,38 +1,49 @@
+workspaces:
+  samples: "samples"  # This is a shoji workspace path from the root to the samples workspace, under which raw samples are stored
+  builds_root: "builds.$$BUILDNAME$$"  # This is the shoji workspace path from the root to the builds workspace, under which build results are stored
+
 recipes:
-  qc:
+  qc:  # This recipe is used for the 'cytograph qc' command. It executes in the workspace of each sample (doesn't make a new workspace)
     - DetectSpecies: {}
     - CellSummaryStatistics: {}
     - GeneSummaryStatistics: {}
     - DoubletFinder: {}
-    - QualityControl: {min_umis: 1000, min_unspliced_fraction: 0.1, min_fraction_good_cells: 0.6}
-
-  punchcard:
-    - InitializeWorkspace: {from_workspace: "samples.TenX204_1", tensors: [Gene, Accession, Chromosome, Strand, Start, End]}
-    - LoadSampleMetadata: {db: "/Users/stelin/sqlite3_chromium.db", tensors: [Age, AgeUnit, AgeText, Donor, Chemistry, Sex, Tissue, Roi, Name]}
-    - CollectCells: {tensors: [Expression, Age, CellCycleFraction, Chemistry, Donor, DoubletFlag, DoubletScore, Expression, MitoFraction, NGenes, Name, Sex, Spliced, Tissue, TotalUMIs, Unspliced, UnsplicedFraction, ValidCells]}
+    - ClassifyDroplets: {}
+    - PearsonResidualsVariance: {}
+    - FeatureSelectionByPearsonResiduals: {n_genes: 1000, mask: [cellcycle, ieg, mt]}
+    - IncrementalResidualsPCA: {n_factors: 50}
+    - ArtOfTsne: {metric: euclidean}
+    - PlotQC: {}  # These plots will end up in the .../exported/qc/ folder
+    - PlotDropletClasses: {}
+  example:  # This is an example of a recipe that can be used from punchcards
+    # This algorithm step creates a workspace for the vuild, and loads the indicated tensors from the indicated source workspace. Typically used
+    # to initialize the genes metadata from one of your samples. Make sure the order and number of rows matches 
+    # those of your other samples.
+    - InitializeWorkspace: {from_workspace: "samples.TenX89_1", tensors: [Gene, Accession, Chromosome, Start, End]}
+    # This step loads the selected cells into the build workspace
+    # Note that here you can rename a tensor using the "OldName->NewName" syntax
+    - CollectCells: {tensors: [Expression, Age, CellCycleFraction, "Cellid->CellID", Chemistry, Donor, DoubletFlag, DoubletScore, DropletClass, MitoFraction, NGenes, "Name->SampleID", Sex, Tissue, TotalUMIs, Unspliced, UnsplicedFraction, ValidCells]}
     - DetectSpecies: {}
     - GeneSummaryStatistics: {}  # Must recompute this since we pooled a different set of cells
-    - DevianceStatistics: {}
-    - FeatureSelectionByDeviance: {n_genes: 2000, mask: [cellcycle, ieg, mt]}
-    - ResidualsPCA: {n_factors: 50}
+    - PearsonResidualsVariance: {}
+    - FeatureSelectionByPearsonResiduals: {n_genes: 1000, mask: [cellcycle, ieg, mt]}
+    - IncrementalResidualsPCA: {n_factors: 50}
     - Harmony: {batch_keys: [Chemistry]}
     - RnnManifold: {k: 25, metric: euclidean}
-    - ArtOfTsne: {metric: euclidean}
-    - PolishedLeiden: {}
+    - ArtOfTsne: {metric: euclidean}  # This creates the Embedding tensor
+    - UMAP: {density_regularization: 1, creates: {Embedding: UMAP}}  # To avoid overwriting the Embedding, we rename the output to UMAP
+    - MorePolishedLeiden: {method: modularity, min_size: 25}
     - Aggregate: {tensor: Expression, using: mean, into: MeanExpression}
-    - Aggregate: {tensor: Clusters, using: first, into: ClusterID}
+    - Aggregate: {tensor: Expression, using: nnz, into: Nonzeros}
     - Aggregate: {tensor: Clusters, using: count, into: NCells}
+    - Aggregate: {tensor: Age, using: mean, into: MeanAge}
+    - Aggregate: {tensor: CellCycleFraction, using: mean, into: MeanCellCycle}
+    - Aggregate: {tensor: TotalUMIs, using: mean, into: MeanTotalUMI}
+    - Aggregate: {tensor: DoubletScore, using: mean, into: MeanDoubletScore}
     - Enrichment: {}
     - Dendrogram: {}
-
-paths:
-  builds: "/proj/cytograph/"  # This is a filesystem path to the builds folder, under which build results are stored
-
-workspaces:
-  samples: "samples"  # This is a shoji workspace path from the root
-  builds_root: "builds"  # This is the shoji workspace path from the root to the builds workspace, under which build results are stored
-
-resources:
-  n_cpus: -1  # -1 means "use all available CPUs"
-  n_gpus: 0
-  memory: 128  # Gigabytes
+    - PlotBatches: {}  # These plots will end up in the .../exported/<punchcard>/ folder
+    - PlotManifold: {}
+    - PlotQC: {}
+    - Heatmap: {genes_per_cluster: 1}
+  # You can add more recipes here

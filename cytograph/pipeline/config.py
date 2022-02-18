@@ -67,9 +67,9 @@ class Config:
 		if Config._singleton is None:
 			config = Config()
 			# Load the default settings
-			config._load_and_merge(Path(__file__).resolve().parent / "default_config.yaml")
+#			config._load_and_merge(Path(__file__).resolve().parent / "default_config.yaml")
 			# Home directory
-			config._load_and_merge(Path.home() / ".cytograph")
+#			config._load_and_merge(Path.home() / ".cytograph")
 			# Load config from current folder
 			config._load_and_merge(Path.cwd() / "config.yaml")
 		else:

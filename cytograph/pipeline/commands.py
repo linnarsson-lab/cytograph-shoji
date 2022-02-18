@@ -1,5 +1,6 @@
 import logging
 import sys
+import shutil
 from pathlib import Path
 from typing import List, Optional, Set
 import click
@@ -57,6 +58,77 @@ def build(engine: str, dryrun: bool) -> None:
 		# Execute the build
 		assert(execution_engine is not None)
 		execution_engine.execute()
+	except Exception as e:
+		logging.exception(f"'build' command failed: {e}")
+
+
+def query_yes_no(question, default="yes"):
+	"""Ask a yes/no question via raw_input() and return their answer.
+
+	"question" is a string that is presented to the user.
+	"default" is the presumed answer if the user just hits <Enter>.
+			It must be "yes" (the default), "no" or None (meaning
+			an answer is required of the user).
+
+	The "answer" return value is True for "yes" or False for "no".
+	"""
+	valid = {"yes": True, "y": True, "ye": True, "no": False, "n": False}
+	if default is None:
+		prompt = " [y/n] "
+	elif default == "yes":
+		prompt = " [Y/n] "
+	elif default == "no":
+		prompt = " [y/N] "
+	else:
+		raise ValueError("invalid default answer: '%s'" % default)
+
+	while True:
+		sys.stdout.write(question + prompt)
+		choice = input().lower()
+		if default is not None and choice == "":
+			return valid[default]
+		elif choice in valid:
+			return valid[choice]
+		else:
+			sys.stdout.write("Please respond with 'yes' or 'no' " "(or 'y' or 'n').\n")
+
+@cli.command()
+def init() -> None:
+	"""
+	Initialize a build folder with default config and sub-folders.
+	"""
+	try:
+		logging.info("Initializing build folder")
+		cwd = Path().cwd()
+		parent = cwd.parent
+		if Path('/proj/cytograph') not in parent.parents:
+			logging.error(f"WARNING: build folder {parent} is not a subdirectory of '/proj/cytograph'")
+			if not query_yes_no("Do you want to proceed anyway?"):
+				sys.exit(1)
+
+		(cwd / "punchcards").mkdir(exist_ok=True)
+		(cwd / "exported").mkdir(exist_ok=True)
+		(cwd / "logs").mkdir(exist_ok=True)
+		shutil.copyfile(Path(__file__).resolve().parent / "default_config.yaml", cwd / "config.yaml")
+		with open(Path(__file__).resolve().parent / "default_config.yaml") as fin:
+			with open(cwd / "config.yaml", "w") as fout:
+				fout.write(fin.read().replace("$$BUILDNAME$$", parent.name))
+		logging.info(f"Created default config file and folders")
+
+		db = shoji.connect()
+		config = Config.load()
+		build_root_parts = config.workspaces.builds_root_workspace_name.split(".")
+		ws = db
+		for part in build_root_parts:
+			if part not in ws:
+				ws[part] = shoji.Workspace()
+			ws = ws[part]
+		logging.info(f"Created build workspace '{config.workspaces.builds_root_workspace_name}' in Shoji")
+
+		shutil.copyfile(Path(__file__).resolve().parent / "default_punchcard.yaml", cwd / "punchcards" / "Example.yaml")
+		logging.info(f"Created example punchcard")
+
+		logging.info(f"Done; build folder is '{config.path}'.")
 	except Exception as e:
 		logging.exception(f"'build' command failed: {e}")
 

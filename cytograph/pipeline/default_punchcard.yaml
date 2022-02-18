@@ -1,0 +1,10 @@
+sources: [TenX89_1, TenX89_2]
+
+onlyif: "ws.ValidCells == True"
+
+recipe: example
+
+resources:
+  n_cpus: 2
+  n_gpus: 0
+  memory: 10
