@@ -34,11 +34,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import shoji
-from cytograph import Module, requires
+from cytograph import Algorithm, requires
 from .scatter import scatterc
 
 
-class PlotManifold(Module):
+class PlotManifold(Algorithm):
         def __init__(self, filename: str = &#34;manifold.png&#34;, **kwargs) -&gt; None:
                 super().__init__(**kwargs)
                 self.filename = filename
@@ -111,7 +111,7 @@ class PlotManifold(Module):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class PlotManifold(Module):
+<pre><code class="python">class PlotManifold(Algorithm):
         def __init__(self, filename: str = &#34;manifold.png&#34;, **kwargs) -&gt; None:
                 super().__init__(**kwargs)
                 self.filename = filename
@@ -166,7 +166,7 @@ class PlotManifold(Module):
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="cytograph.module.Module" href="../module.html#cytograph.module.Module">Module</a></li>
+<li><a title="cytograph.algorithm.Algorithm" href="../algorithm.html#cytograph.algorithm.Algorithm">Algorithm</a></li>
 </ul>
 <h3>Methods</h3>
 <dl>

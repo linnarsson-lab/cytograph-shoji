@@ -33,11 +33,11 @@ import matplotlib.patheffects as PathEffects
 import numpy as np
 
 import shoji
-from cytograph import Module, requires, div0
+from cytograph import Algorithm, requires, div0
 import numpy_groupies as npg
 
 
-class PlotCellCycle(Module):
+class PlotCellCycle(Algorithm):
         def __init__(self, filename: str = &#34;cellcycle.png&#34;, **kwargs) -&gt; None:
                 super().__init__(**kwargs)
                 self.filename = filename
@@ -110,7 +110,7 @@ class PlotCellCycle(Module):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class PlotCellCycle(Module):
+<pre><code class="python">class PlotCellCycle(Algorithm):
         def __init__(self, filename: str = &#34;cellcycle.png&#34;, **kwargs) -&gt; None:
                 super().__init__(**kwargs)
                 self.filename = filename
@@ -165,7 +165,7 @@ class PlotCellCycle(Module):
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="cytograph.module.Module" href="../module.html#cytograph.module.Module">Module</a></li>
+<li><a title="cytograph.algorithm.Algorithm" href="../algorithm.html#cytograph.algorithm.Algorithm">Algorithm</a></li>
 </ul>
 <h3>Methods</h3>
 <dl>

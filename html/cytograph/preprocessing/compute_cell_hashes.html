@@ -32,10 +32,10 @@ from hashlib import sha1
 import numpy as np
 import shoji
 
-from ..module import Module, creates, requires
+from ..algorithm import Algorithm, creates, requires
 
 
-class ComputeCellHashes(Module):
+class ComputeCellHashes(Algorithm):
         &#34;&#34;&#34;
         Compute invariant cell hashes based on the expression matrix. Cell hashes can be used to
         identify cells from different analysis runs.
@@ -77,7 +77,7 @@ identify cells from different analysis runs.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class ComputeCellHashes(Module):
+<pre><code class="python">class ComputeCellHashes(Algorithm):
         &#34;&#34;&#34;
         Compute invariant cell hashes based on the expression matrix. Cell hashes can be used to
         identify cells from different analysis runs.
@@ -100,7 +100,7 @@ identify cells from different analysis runs.</p></div>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="cytograph.module.Module" href="../module.html#cytograph.module.Module">Module</a></li>
+<li><a title="cytograph.algorithm.Algorithm" href="../algorithm.html#cytograph.algorithm.Algorithm">Algorithm</a></li>
 </ul>
 <h3>Methods</h3>
 <dl>

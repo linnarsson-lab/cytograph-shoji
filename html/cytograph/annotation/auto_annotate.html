@@ -31,7 +31,7 @@ import os
 import re
 from typing import List, Tuple
 
-from cytograph import creates, requires, Module
+from cytograph import creates, requires, Algorithm
 
 import numpy as np
 import yaml
@@ -78,7 +78,7 @@ class Annotation:
                 return temp
 
 
-class AutoAnnotate(Module):
+class AutoAnnotate(Algorithm):
         &#34;&#34;&#34;
         Auto-annotate clusters based on marker genes
         &#34;&#34;&#34;
@@ -226,7 +226,7 @@ class AutoAnnotate(Module):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class AutoAnnotate(Module):
+<pre><code class="python">class AutoAnnotate(Algorithm):
         &#34;&#34;&#34;
         Auto-annotate clusters based on marker genes
         &#34;&#34;&#34;
@@ -294,7 +294,7 @@ class AutoAnnotate(Module):
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="cytograph.module.Module" href="../module.html#cytograph.module.Module">Module</a></li>
+<li><a title="cytograph.algorithm.Algorithm" href="../algorithm.html#cytograph.algorithm.Algorithm">Algorithm</a></li>
 </ul>
 <h3>Methods</h3>
 <dl>

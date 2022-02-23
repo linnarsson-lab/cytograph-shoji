@@ -30,12 +30,12 @@
 
 import numpy as np
 from sklearn.decomposition import IncrementalPCA
-from ..module import creates, requires, Module
+from ..algorithm import creates, requires, Algorithm
 import shoji
 import logging
 
 
-class IncrementalResidualsPCA(Module):
+class IncrementalResidualsPCA(Algorithm):
         &#34;&#34;&#34;
         Project a dataset into a reduced feature space using PCA on Pearson residuals.
         See https://www.biorxiv.org/content/10.1101/2020.12.01.405886v1.full.pdf
@@ -122,7 +122,7 @@ See <a href="https://www.biorxiv.org/content/10.1101/2020.12.01.405886v1.full.pd
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class IncrementalResidualsPCA(Module):
+<pre><code class="python">class IncrementalResidualsPCA(Algorithm):
         &#34;&#34;&#34;
         Project a dataset into a reduced feature space using PCA on Pearson residuals.
         See https://www.biorxiv.org/content/10.1101/2020.12.01.405886v1.full.pdf
@@ -181,7 +181,7 @@ See <a href="https://www.biorxiv.org/content/10.1101/2020.12.01.405886v1.full.pd
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="cytograph.module.Module" href="../module.html#cytograph.module.Module">Module</a></li>
+<li><a title="cytograph.algorithm.Algorithm" href="../algorithm.html#cytograph.algorithm.Algorithm">Algorithm</a></li>
 </ul>
 <h3>Methods</h3>
 <dl>

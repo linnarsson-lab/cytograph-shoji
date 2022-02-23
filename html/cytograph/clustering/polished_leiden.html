@@ -31,7 +31,7 @@
 import leidenalg as la
 import igraph
 import numpy as np
-from cytograph import requires, creates, Module
+from cytograph import requires, creates, Algorithm
 import shoji
 from sklearn.neighbors import NearestNeighbors
 from sklearn.cluster import DBSCAN
@@ -39,7 +39,7 @@ from sklearn.decomposition import PCA
 from sklearn.preprocessing import LabelEncoder
 
 
-class PolishedLeiden(Module):
+class PolishedLeiden(Algorithm):
         &#34;&#34;&#34;
         Leiden clustering with polishing
         &#34;&#34;&#34;
@@ -264,7 +264,7 @@ to the nearest not-too-small cluster on the embedding. Not that this can result 
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class PolishedLeiden(Module):
+<pre><code class="python">class PolishedLeiden(Algorithm):
         &#34;&#34;&#34;
         Leiden clustering with polishing
         &#34;&#34;&#34;
@@ -447,7 +447,7 @@ to the nearest not-too-small cluster on the embedding. Not that this can result 
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="cytograph.module.Module" href="../module.html#cytograph.module.Module">Module</a></li>
+<li><a title="cytograph.algorithm.Algorithm" href="../algorithm.html#cytograph.algorithm.Algorithm">Algorithm</a></li>
 </ul>
 <h3>Methods</h3>
 <dl>

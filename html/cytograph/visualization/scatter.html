@@ -41,7 +41,9 @@ def _draw_edges(ax: plt.Axes, pos: np.ndarray, g: np.ndarray, gcolor: str, galph
 
 def scatterc(xy: np.ndarray, *, c: np.ndarray, legend: Optional[str] = &#34;outside&#34;, g: np.ndarray = None, gcolor: str = &#34;thistle&#34;, galpha: float = 0.1, glinewidths: float = 0.25, **kwargs) -&gt; None:
         n_cells = xy.shape[0]
-        marker_size = 100_000 / n_cells
+        fig = plt.gcf()
+        area = np.prod(fig.get_size_inches())
+        marker_size = 100_000 / n_cells * (area / 25)
 
         ordering = np.random.permutation(xy.shape[0])
         c = c[ordering]
@@ -62,7 +64,9 @@ def scatterc(xy: np.ndarray, *, c: np.ndarray, legend: Optional[str] = &#34;outs
 
 def scattern(xy: np.ndarray, *, c: np.ndarray, zinf: bool = True, g: np.ndarray = None, gcolor: str = &#34;thistle&#34;, galpha: float = 0.1, glinewidths: float = 0.25, **kwargs) -&gt; None:
         n_cells = xy.shape[0]
-        marker_size = 100_000 / n_cells
+        fig = plt.gcf()
+        area = np.prod(fig.get_size_inches())
+        marker_size = 100_000 / n_cells * (area / 25)
 
         ordering = np.random.permutation(xy.shape[0])
         color = c[ordering]
@@ -98,7 +102,9 @@ def scattern(xy: np.ndarray, *, c: np.ndarray, zinf: bool = True, g: np.ndarray 
 </summary>
 <pre><code class="python">def scatterc(xy: np.ndarray, *, c: np.ndarray, legend: Optional[str] = &#34;outside&#34;, g: np.ndarray = None, gcolor: str = &#34;thistle&#34;, galpha: float = 0.1, glinewidths: float = 0.25, **kwargs) -&gt; None:
         n_cells = xy.shape[0]
-        marker_size = 100_000 / n_cells
+        fig = plt.gcf()
+        area = np.prod(fig.get_size_inches())
+        marker_size = 100_000 / n_cells * (area / 25)
 
         ordering = np.random.permutation(xy.shape[0])
         c = c[ordering]
@@ -129,7 +135,9 @@ def scattern(xy: np.ndarray, *, c: np.ndarray, zinf: bool = True, g: np.ndarray 
 </summary>
 <pre><code class="python">def scattern(xy: np.ndarray, *, c: np.ndarray, zinf: bool = True, g: np.ndarray = None, gcolor: str = &#34;thistle&#34;, galpha: float = 0.1, glinewidths: float = 0.25, **kwargs) -&gt; None:
         n_cells = xy.shape[0]
-        marker_size = 100_000 / n_cells
+        fig = plt.gcf()
+        area = np.prod(fig.get_size_inches())
+        marker_size = 100_000 / n_cells * (area / 25)
 
         ordering = np.random.permutation(xy.shape[0])
         color = c[ordering]

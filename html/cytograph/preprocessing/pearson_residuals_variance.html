@@ -28,12 +28,12 @@
 </summary>
 <pre><code class="python">import shoji
 import numpy as np
-from cytograph import requires, creates, Module
+from cytograph import requires, creates, Algorithm
 from ..utils import div0
 import logging
 
 
-class PearsonResidualsVariance(Module):
+class PearsonResidualsVariance(Algorithm):
         def __init__(self, **kwargs) -&gt; None:
                 &#34;&#34;&#34;
                 Calculate the variance of the Pearson residuals for each gene
@@ -94,7 +94,7 @@ Residuals variance per gene across cells</p>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class PearsonResidualsVariance(Module):
+<pre><code class="python">class PearsonResidualsVariance(Algorithm):
         def __init__(self, **kwargs) -&gt; None:
                 &#34;&#34;&#34;
                 Calculate the variance of the Pearson residuals for each gene
@@ -132,7 +132,7 @@ Residuals variance per gene across cells</p>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="cytograph.module.Module" href="../module.html#cytograph.module.Module">Module</a></li>
+<li><a title="cytograph.algorithm.Algorithm" href="../algorithm.html#cytograph.algorithm.Algorithm">Algorithm</a></li>
 </ul>
 <h3>Methods</h3>
 <dl>

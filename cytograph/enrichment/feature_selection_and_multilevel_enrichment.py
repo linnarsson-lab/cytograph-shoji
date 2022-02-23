@@ -91,8 +91,6 @@ class FeatureSelectionAndMultilevelEnrichment(Algorithm):
 			The number of genes selected will depend on the number of clusters as follows. The dendrogram is
 			cut at n = 2, 4, 8, ... (for n <= n_clusters // 2) clusters and the most enriched n_genes are selected for each cluster
 			(without replacement). Finally, the most enriched gene in each cluster is selected (without replacement) and added to the list.
-
-			Note that this algorithm requires aggregate tensors (MeanExpression, NCells)
 		"""
 		# Create symbolic names for the required tensors, which might be renamed by the user
 		logging.info(" FeatureSelectionAndMultilevelEnrichment: Selecting features at 2, 4, 8, ... cluster levels")

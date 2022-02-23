@@ -30,11 +30,11 @@
 import shoji
 import numpy as np
 import cytograph as cg
-from cytograph import requires, creates, Module
+from cytograph import requires, creates, Algorithm
 import logging
 
 
-class CellSummaryStatistics(Module):
+class CellSummaryStatistics(Algorithm):
         def __init__(self, **kwargs) -&gt; None:
                 &#34;&#34;&#34;
                 Calculate summary statistics for each cell
@@ -135,7 +135,7 @@ If species is None, cell cycle scores are set to 0</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class CellSummaryStatistics(Module):
+<pre><code class="python">class CellSummaryStatistics(Algorithm):
         def __init__(self, **kwargs) -&gt; None:
                 &#34;&#34;&#34;
                 Calculate summary statistics for each cell
@@ -204,7 +204,7 @@ If species is None, cell cycle scores are set to 0</p></div>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="cytograph.module.Module" href="../module.html#cytograph.module.Module">Module</a></li>
+<li><a title="cytograph.algorithm.Algorithm" href="../algorithm.html#cytograph.algorithm.Algorithm">Algorithm</a></li>
 </ul>
 <h3>Methods</h3>
 <dl>

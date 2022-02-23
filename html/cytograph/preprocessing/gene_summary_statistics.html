@@ -30,11 +30,11 @@
 import shoji
 import numpy as np
 import cytograph as cg
-from cytograph import requires, creates, Module
+from cytograph import requires, creates, Algorithm
 import logging
 
 
-class GeneSummaryStatistics(Module):
+class GeneSummaryStatistics(Algorithm):
         def __init__(self, **kwargs) -&gt; None:
                 &#34;&#34;&#34;
                 Calculate summary statistics for each gene
@@ -102,7 +102,7 @@ Bool array indicating genes with nnz &gt; 10</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class GeneSummaryStatistics(Module):
+<pre><code class="python">class GeneSummaryStatistics(Algorithm):
         def __init__(self, **kwargs) -&gt; None:
                 &#34;&#34;&#34;
                 Calculate summary statistics for each gene
@@ -141,7 +141,7 @@ Bool array indicating genes with nnz &gt; 10</p></div>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="cytograph.module.Module" href="../module.html#cytograph.module.Module">Module</a></li>
+<li><a title="cytograph.algorithm.Algorithm" href="../algorithm.html#cytograph.algorithm.Algorithm">Algorithm</a></li>
 </ul>
 <h3>Methods</h3>
 <dl>

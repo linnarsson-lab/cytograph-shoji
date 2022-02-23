@@ -30,9 +30,10 @@
 from numpy.core.numeric import indices
 import shoji
 import numpy as np
-from cytograph import creates, requires, Module
+from cytograph import creates, requires, Algorithm
 import scipy.cluster.hierarchy as hc
 from scipy.spatial.distance import pdist
+from sklearn.preprocessing import scale
 import fastcluster
 
 
@@ -40,7 +41,7 @@ def indices_to_order_a_like_b(a, b):
         return a.argsort()[b.argsort().argsort()]
 
 
-class Dendrogram(Module):
+class Dendrogram(Algorithm):
         &#34;&#34;&#34;
         Compute a dendrogram of clusters
         &#34;&#34;&#34;
@@ -53,6 +54,9 @@ class Dendrogram(Module):
                         Mean expression values are normalized to the median total UMIs, and `log2(x + 1)` transformed.
 
                         The returned Clusters and ClusterID are renumbered and correspond to the linkage ordering.
+
+                        If the tensors are saved to the workspace (save == True), then all the aggregated tensors
+                        (i.e. those on the &#39;clusters&#39; dimension) are also reordered in cluster order.
                 &#34;&#34;&#34;
                 super().__init__(**kwargs)
 
@@ -69,6 +73,7 @@ class Dendrogram(Module):
                 x = self.MeanExpression[:]
                 totals = x.sum(axis=1)
                 x = np.log2((x.T / totals * np.median(totals)).T + 1)[:, selected]
+                x = scale(x)
 
                 logging.info(&#34; Dendrogram: Computing Ward&#39;s linkage&#34;)
                 D = pdist(x, &#39;correlation&#39;)
@@ -84,23 +89,27 @@ class Dendrogram(Module):
                                 Z[i, 1] = np.where(Z[i, 1] == ordering)[0]
 
                 # Renumber the clusters according to the new ordering
-                clusters = self.Clusters[:]
                 cluster_ids = np.zeros(ws.clusters.length, dtype=&#34;uint32&#34;)
                 new_clusters = np.zeros(ws.cells.length, dtype=&#34;uint32&#34;)
                 for i in range(ws.clusters.length):
-                        selection = clusters == ordering[i]
-                        new_clusters[selection] = i
                         cluster_ids[ordering[i]] = i
+                clusters = self.Clusters[:]
+                old_cluster_ids = self.ClusterID[:]
+                for i, j in zip(old_cluster_ids, cluster_ids):
+                        new_clusters[clusters == i] = j
 
-                # # Reorder the aggregated tensors to match the numbering
-                # logging.info(&#34; Dendrogram: Reordering aggregated tensors&#34;)
-                # ordering = np.argsort(cluster_ids)
-                # for tname in ws._tensors():
-                #       tensor = ws[tname]
-                #       if tensor.rank &gt;= 1 and tensor.dims[0] == &#34;clusters&#34;:
-                #               ws[tname] = shoji.Tensor(tensor.dtype, tensor.dims, chunks=tensor.chunks, inits=tensor[:][ordering])
+                if save:
+                        # Reorder the aggregated tensors to match the numbering
+                        ordering = np.argsort(cluster_ids)
+                        logging.info(&#34; Dendrogram: Reordering aggregated tensors&#34;)
+                        for tname in ws._tensors():
+                                tensor = ws[tname]
+                                if tensor.rank &gt;= 1 and tensor.dims[0] == &#34;clusters&#34;:
+                                        ws[tname] = shoji.Tensor(tensor.dtype, tensor.dims, chunks=tensor.chunks, inits=tensor[:][ordering])
 
-                return Z, cluster_ids[ordering], new_clusters</code></pre>
+                        return Z, cluster_ids[ordering], new_clusters
+                else:
+                        return Z, cluster_ids, new_clusters</code></pre>
 </details>
 </section>
 <section>
@@ -138,12 +147,14 @@ class Dendrogram(Module):
 <h2 id="remarks">Remarks</h2>
 <p>Agglomeration using Ward's linkage on the normalized mean expression per cluster.
 Mean expression values are normalized to the median total UMIs, and <code>log2(x + 1)</code> transformed.</p>
-<p>The returned Clusters and ClusterID are renumbered and correspond to the linkage ordering.</p></div>
+<p>The returned Clusters and ClusterID are renumbered and correspond to the linkage ordering.</p>
+<p>If the tensors are saved to the workspace (save == True), then all the aggregated tensors
+(i.e. those on the 'clusters' dimension) are also reordered in cluster order.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class Dendrogram(Module):
+<pre><code class="python">class Dendrogram(Algorithm):
         &#34;&#34;&#34;
         Compute a dendrogram of clusters
         &#34;&#34;&#34;
@@ -156,6 +167,9 @@ Mean expression values are normalized to the median total UMIs, and <code>log2(x
                         Mean expression values are normalized to the median total UMIs, and `log2(x + 1)` transformed.
 
                         The returned Clusters and ClusterID are renumbered and correspond to the linkage ordering.
+
+                        If the tensors are saved to the workspace (save == True), then all the aggregated tensors
+                        (i.e. those on the &#39;clusters&#39; dimension) are also reordered in cluster order.
                 &#34;&#34;&#34;
                 super().__init__(**kwargs)
 
@@ -172,6 +186,7 @@ Mean expression values are normalized to the median total UMIs, and <code>log2(x
                 x = self.MeanExpression[:]
                 totals = x.sum(axis=1)
                 x = np.log2((x.T / totals * np.median(totals)).T + 1)[:, selected]
+                x = scale(x)
 
                 logging.info(&#34; Dendrogram: Computing Ward&#39;s linkage&#34;)
                 D = pdist(x, &#39;correlation&#39;)
@@ -187,27 +202,31 @@ Mean expression values are normalized to the median total UMIs, and <code>log2(x
                                 Z[i, 1] = np.where(Z[i, 1] == ordering)[0]
 
                 # Renumber the clusters according to the new ordering
-                clusters = self.Clusters[:]
                 cluster_ids = np.zeros(ws.clusters.length, dtype=&#34;uint32&#34;)
                 new_clusters = np.zeros(ws.cells.length, dtype=&#34;uint32&#34;)
                 for i in range(ws.clusters.length):
-                        selection = clusters == ordering[i]
-                        new_clusters[selection] = i
                         cluster_ids[ordering[i]] = i
+                clusters = self.Clusters[:]
+                old_cluster_ids = self.ClusterID[:]
+                for i, j in zip(old_cluster_ids, cluster_ids):
+                        new_clusters[clusters == i] = j
 
-                # # Reorder the aggregated tensors to match the numbering
-                # logging.info(&#34; Dendrogram: Reordering aggregated tensors&#34;)
-                # ordering = np.argsort(cluster_ids)
-                # for tname in ws._tensors():
-                #       tensor = ws[tname]
-                #       if tensor.rank &gt;= 1 and tensor.dims[0] == &#34;clusters&#34;:
-                #               ws[tname] = shoji.Tensor(tensor.dtype, tensor.dims, chunks=tensor.chunks, inits=tensor[:][ordering])
+                if save:
+                        # Reorder the aggregated tensors to match the numbering
+                        ordering = np.argsort(cluster_ids)
+                        logging.info(&#34; Dendrogram: Reordering aggregated tensors&#34;)
+                        for tname in ws._tensors():
+                                tensor = ws[tname]
+                                if tensor.rank &gt;= 1 and tensor.dims[0] == &#34;clusters&#34;:
+                                        ws[tname] = shoji.Tensor(tensor.dtype, tensor.dims, chunks=tensor.chunks, inits=tensor[:][ordering])
 
-                return Z, cluster_ids[ordering], new_clusters</code></pre>
+                        return Z, cluster_ids[ordering], new_clusters
+                else:
+                        return Z, cluster_ids, new_clusters</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="cytograph.module.Module" href="../module.html#cytograph.module.Module">Module</a></li>
+<li><a title="cytograph.algorithm.Algorithm" href="../algorithm.html#cytograph.algorithm.Algorithm">Algorithm</a></li>
 </ul>
 <h3>Methods</h3>
 <dl>
@@ -233,6 +252,7 @@ def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; np.ndarray:
         x = self.MeanExpression[:]
         totals = x.sum(axis=1)
         x = np.log2((x.T / totals * np.median(totals)).T + 1)[:, selected]
+        x = scale(x)
 
         logging.info(&#34; Dendrogram: Computing Ward&#39;s linkage&#34;)
         D = pdist(x, &#39;correlation&#39;)
@@ -248,23 +268,27 @@ def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; np.ndarray:
                         Z[i, 1] = np.where(Z[i, 1] == ordering)[0]
 
         # Renumber the clusters according to the new ordering
-        clusters = self.Clusters[:]
         cluster_ids = np.zeros(ws.clusters.length, dtype=&#34;uint32&#34;)
         new_clusters = np.zeros(ws.cells.length, dtype=&#34;uint32&#34;)
         for i in range(ws.clusters.length):
-                selection = clusters == ordering[i]
-                new_clusters[selection] = i
                 cluster_ids[ordering[i]] = i
+        clusters = self.Clusters[:]
+        old_cluster_ids = self.ClusterID[:]
+        for i, j in zip(old_cluster_ids, cluster_ids):
+                new_clusters[clusters == i] = j
 
-        # # Reorder the aggregated tensors to match the numbering
-        # logging.info(&#34; Dendrogram: Reordering aggregated tensors&#34;)
-        # ordering = np.argsort(cluster_ids)
-        # for tname in ws._tensors():
-        #       tensor = ws[tname]
-        #       if tensor.rank &gt;= 1 and tensor.dims[0] == &#34;clusters&#34;:
-        #               ws[tname] = shoji.Tensor(tensor.dtype, tensor.dims, chunks=tensor.chunks, inits=tensor[:][ordering])
+        if save:
+                # Reorder the aggregated tensors to match the numbering
+                ordering = np.argsort(cluster_ids)
+                logging.info(&#34; Dendrogram: Reordering aggregated tensors&#34;)
+                for tname in ws._tensors():
+                        tensor = ws[tname]
+                        if tensor.rank &gt;= 1 and tensor.dims[0] == &#34;clusters&#34;:
+                                ws[tname] = shoji.Tensor(tensor.dtype, tensor.dims, chunks=tensor.chunks, inits=tensor[:][ordering])
 
-        return Z, cluster_ids[ordering], new_clusters</code></pre>
+                return Z, cluster_ids[ordering], new_clusters
+        else:
+                return Z, cluster_ids, new_clusters</code></pre>
 </details>
 </dd>
 </dl>

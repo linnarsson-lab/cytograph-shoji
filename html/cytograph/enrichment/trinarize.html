@@ -28,12 +28,12 @@
 </summary>
 <pre><code class="python">from math import exp, lgamma, log
 from scipy.special import betainc, betaln
-from cytograph import requires, creates, Module
+from cytograph import requires, creates, Algorithm
 import numpy as np
 import shoji
 
 
-class Trinarize(Module):
+class Trinarize(Algorithm):
         &#34;&#34;&#34;
         Compute trinarization probability per cluster
         &#34;&#34;&#34;
@@ -131,7 +131,7 @@ and the observed number of non-zero values.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class Trinarize(Module):
+<pre><code class="python">class Trinarize(Algorithm):
         &#34;&#34;&#34;
         Compute trinarization probability per cluster
         &#34;&#34;&#34;
@@ -201,7 +201,7 @@ and the observed number of non-zero values.</p></div>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="cytograph.module.Module" href="../module.html#cytograph.module.Module">Module</a></li>
+<li><a title="cytograph.algorithm.Algorithm" href="../algorithm.html#cytograph.algorithm.Algorithm">Algorithm</a></li>
 </ul>
 <h3>Methods</h3>
 <dl>

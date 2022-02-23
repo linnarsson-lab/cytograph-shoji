@@ -34,7 +34,7 @@ from matplotlib.colors import to_rgb
 from numpy_groupies.aggregate_numpy import aggregate
 from sklearn.preprocessing import LabelEncoder, OrdinalEncoder
 from scipy.cluster.hierarchy import cut_tree
-from cytograph import Module, requires
+from cytograph import Algorithm, requires
 import logging
 import shoji
 
@@ -183,7 +183,7 @@ def plot_dendrogram(ax, n_clusters, linkage, labels, subtrees):
         ax.axis(&#34;off&#34;)
 
 
-class PlotOverview(Module):
+class PlotOverview(Algorithm):
         def __init__(self, filename: str = None, **kwargs) -&gt; None:
                 super().__init__(**kwargs)
                 self.filename = filename if filename is not None else &#34;_overview.png&#34;
@@ -532,7 +532,7 @@ class PlotOverview(Module):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class PlotOverview(Module):
+<pre><code class="python">class PlotOverview(Algorithm):
         def __init__(self, filename: str = None, **kwargs) -&gt; None:
                 super().__init__(**kwargs)
                 self.filename = filename if filename is not None else &#34;_overview.png&#34;
@@ -653,7 +653,7 @@ class PlotOverview(Module):
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="cytograph.module.Module" href="../module.html#cytograph.module.Module">Module</a></li>
+<li><a title="cytograph.algorithm.Algorithm" href="../algorithm.html#cytograph.algorithm.Algorithm">Algorithm</a></li>
 </ul>
 <h3>Methods</h3>
 <dl>

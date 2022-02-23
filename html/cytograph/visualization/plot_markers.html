@@ -33,12 +33,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import shoji
-from cytograph import Module, requires
+from cytograph import Algorithm, requires
 from cytograph.pipeline import Config
 import yaml
 
 
-class PlotMarkers(Module):
+class PlotMarkers(Algorithm):
         def __init__(self, markers: str = &#34;immune&#34;, filename: str = None, **kwargs) -&gt; None:
                 super().__init__(**kwargs)
                 self.filename = filename if filename is not None else markers + &#34;.png&#34;
@@ -114,7 +114,7 @@ class PlotMarkers(Module):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class PlotMarkers(Module):
+<pre><code class="python">class PlotMarkers(Algorithm):
         def __init__(self, markers: str = &#34;immune&#34;, filename: str = None, **kwargs) -&gt; None:
                 super().__init__(**kwargs)
                 self.filename = filename if filename is not None else markers + &#34;.png&#34;
@@ -172,7 +172,7 @@ class PlotMarkers(Module):
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="cytograph.module.Module" href="../module.html#cytograph.module.Module">Module</a></li>
+<li><a title="cytograph.algorithm.Algorithm" href="../algorithm.html#cytograph.algorithm.Algorithm">Algorithm</a></li>
 </ul>
 <h3>Methods</h3>
 <dl>

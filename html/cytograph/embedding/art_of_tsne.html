@@ -28,13 +28,13 @@
 </summary>
 <pre><code class="python">import logging
 from typing import Callable, Union
-from cytograph import requires, creates, Module
+from cytograph import requires, creates, Algorithm
 import numpy as np
 from openTSNE import TSNEEmbedding, affinity, initialization
 import shoji
 
 
-class ArtOfTsne(Module):
+class ArtOfTsne(Algorithm):
         &#34;&#34;&#34;
         t-Stochastic Neighborhood Embedding (TSNE)
         &#34;&#34;&#34;
@@ -195,7 +195,7 @@ Either 'pca', 'random', or a custom method with the same signature as initializa
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class ArtOfTsne(Module):
+<pre><code class="python">class ArtOfTsne(Algorithm):
         &#34;&#34;&#34;
         t-Stochastic Neighborhood Embedding (TSNE)
         &#34;&#34;&#34;
@@ -327,7 +327,7 @@ Either 'pca', 'random', or a custom method with the same signature as initializa
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="cytograph.module.Module" href="../module.html#cytograph.module.Module">Module</a></li>
+<li><a title="cytograph.algorithm.Algorithm" href="../algorithm.html#cytograph.algorithm.Algorithm">Algorithm</a></li>
 </ul>
 <h3>Methods</h3>
 <dl>

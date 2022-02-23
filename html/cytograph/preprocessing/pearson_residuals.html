@@ -29,13 +29,13 @@
 <pre><code class="python">from typing import Tuple
 
 import numpy as np
-from ..module import creates, requires, Module
+from ..algorithm import creates, requires, Algorithm
 import shoji
 import logging
 from ..utils import div0
 
 
-class PearsonResiduals(Module):
+class PearsonResiduals(Algorithm):
         &#34;&#34;&#34;
         Compute the clipped Pearson residuals.
         See https://www.biorxiv.org/content/10.1101/2020.12.01.405886v1.full.pdf
@@ -48,7 +48,7 @@ class PearsonResiduals(Module):
         @requires(&#34;GeneTotalUMIs&#34;, &#34;uint32&#34;, (&#34;genes&#34;,))
         @requires(&#34;OverallTotalUMIs&#34;, &#34;uint64&#34;, ())
         @creates(&#34;PearsonResiduals&#34;, &#34;float32&#34;, (&#34;cells&#34;, &#34;genes&#34;))
-        def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; Tuple[np.ndarray, np.ndarray]:
+        def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; np.ndarray:
                 logging.info(&#34; PearsonResiduals: Loading gene and cell totals&#34;)
                 n_cells = ws.cells.length
                 totals = self.TotalUMIs[:].astype(&#34;float32&#34;)
@@ -91,7 +91,7 @@ See <a href="https://www.biorxiv.org/content/10.1101/2020.12.01.405886v1.full.pd
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class PearsonResiduals(Module):
+<pre><code class="python">class PearsonResiduals(Algorithm):
         &#34;&#34;&#34;
         Compute the clipped Pearson residuals.
         See https://www.biorxiv.org/content/10.1101/2020.12.01.405886v1.full.pdf
@@ -104,7 +104,7 @@ See <a href="https://www.biorxiv.org/content/10.1101/2020.12.01.405886v1.full.pd
         @requires(&#34;GeneTotalUMIs&#34;, &#34;uint32&#34;, (&#34;genes&#34;,))
         @requires(&#34;OverallTotalUMIs&#34;, &#34;uint64&#34;, ())
         @creates(&#34;PearsonResiduals&#34;, &#34;float32&#34;, (&#34;cells&#34;, &#34;genes&#34;))
-        def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; Tuple[np.ndarray, np.ndarray]:
+        def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; np.ndarray:
                 logging.info(&#34; PearsonResiduals: Loading gene and cell totals&#34;)
                 n_cells = ws.cells.length
                 totals = self.TotalUMIs[:].astype(&#34;float32&#34;)
@@ -128,12 +128,12 @@ See <a href="https://www.biorxiv.org/content/10.1101/2020.12.01.405886v1.full.pd
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="cytograph.module.Module" href="../module.html#cytograph.module.Module">Module</a></li>
+<li><a title="cytograph.algorithm.Algorithm" href="../algorithm.html#cytograph.algorithm.Algorithm">Algorithm</a></li>
 </ul>
 <h3>Methods</h3>
 <dl>
 <dt id="cytograph.preprocessing.pearson_residuals.PearsonResiduals.fit"><code class="name flex">
-<span>def <span class="ident">fit</span></span>(<span>self, ws: shoji.workspace.WorkspaceManager, save: bool = False) ‑> Tuple[numpy.ndarray, numpy.ndarray]</span>
+<span>def <span class="ident">fit</span></span>(<span>self, ws: shoji.workspace.WorkspaceManager, save: bool = False) ‑> numpy.ndarray</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -146,7 +146,7 @@ See <a href="https://www.biorxiv.org/content/10.1101/2020.12.01.405886v1.full.pd
 @requires(&#34;GeneTotalUMIs&#34;, &#34;uint32&#34;, (&#34;genes&#34;,))
 @requires(&#34;OverallTotalUMIs&#34;, &#34;uint64&#34;, ())
 @creates(&#34;PearsonResiduals&#34;, &#34;float32&#34;, (&#34;cells&#34;, &#34;genes&#34;))
-def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; Tuple[np.ndarray, np.ndarray]:
+def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; np.ndarray:
         logging.info(&#34; PearsonResiduals: Loading gene and cell totals&#34;)
         n_cells = ws.cells.length
         totals = self.TotalUMIs[:].astype(&#34;float32&#34;)

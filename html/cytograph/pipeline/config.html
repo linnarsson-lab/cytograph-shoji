@@ -95,9 +95,9 @@ class Config:
                 if Config._singleton is None:
                         config = Config()
                         # Load the default settings
-                        config._load_and_merge(Path(__file__).resolve().parent / &#34;default_config.yaml&#34;)
+#                       config._load_and_merge(Path(__file__).resolve().parent / &#34;default_config.yaml&#34;)
                         # Home directory
-                        config._load_and_merge(Path.home() / &#34;.cytograph&#34;)
+#                       config._load_and_merge(Path.home() / &#34;.cytograph&#34;)
                         # Load config from current folder
                         config._load_and_merge(Path.cwd() / &#34;config.yaml&#34;)
                 else:
@@ -188,9 +188,9 @@ class Config:
                 if Config._singleton is None:
                         config = Config()
                         # Load the default settings
-                        config._load_and_merge(Path(__file__).resolve().parent / &#34;default_config.yaml&#34;)
+#                       config._load_and_merge(Path(__file__).resolve().parent / &#34;default_config.yaml&#34;)
                         # Home directory
-                        config._load_and_merge(Path.home() / &#34;.cytograph&#34;)
+#                       config._load_and_merge(Path.home() / &#34;.cytograph&#34;)
                         # Load config from current folder
                         config._load_and_merge(Path.cwd() / &#34;config.yaml&#34;)
                 else:
@@ -222,33 +222,33 @@ class Config:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@staticmethod
-def load(punchcard: Punchcard = None) -&gt; &#34;Config&#34;:
-        if Config._singleton is None:
-                config = Config()
-                # Load the default settings
-                config._load_and_merge(Path(__file__).resolve().parent / &#34;default_config.yaml&#34;)
-                # Home directory
-                config._load_and_merge(Path.home() / &#34;.cytograph&#34;)
-                # Load config from current folder
-                config._load_and_merge(Path.cwd() / &#34;config.yaml&#34;)
-        else:
-                config = Config._singleton
+<pre><code class="python">        @staticmethod
+        def load(punchcard: Punchcard = None) -&gt; &#34;Config&#34;:
+                if Config._singleton is None:
+                        config = Config()
+                        # Load the default settings
+#                       config._load_and_merge(Path(__file__).resolve().parent / &#34;default_config.yaml&#34;)
+                        # Home directory
+#                       config._load_and_merge(Path.home() / &#34;.cytograph&#34;)
+                        # Load config from current folder
+                        config._load_and_merge(Path.cwd() / &#34;config.yaml&#34;)
+                else:
+                        config = Config._singleton
 
-        # Load config from current punchcard
-        if punchcard is not None:
-                config._merge({
-                        &#34;punchcards&#34;: punchcard.sources,
-                        &#34;onlyif&#34;: punchcard.onlyif
-                })
-                if punchcard.resources is not None:
-                        config.resources.n_cpus = punchcard.resources.n_cpus
-                        config.resources.n_gpus = punchcard.resources.n_gpus
-                        config.resources.memory = punchcard.resources.memory
-                config.punchcard = punchcard
+                # Load config from current punchcard
+                if punchcard is not None:
+                        config._merge({
+                                &#34;punchcards&#34;: punchcard.sources,
+                                &#34;onlyif&#34;: punchcard.onlyif
+                        })
+                        if punchcard.resources is not None:
+                                config.resources.n_cpus = punchcard.resources.n_cpus
+                                config.resources.n_gpus = punchcard.resources.n_gpus
+                                config.resources.memory = punchcard.resources.memory
+                        config.punchcard = punchcard
 
-        Config._singleton = config
-        return config</code></pre>
+                Config._singleton = config
+                return config</code></pre>
 </details>
 </dd>
 </dl>

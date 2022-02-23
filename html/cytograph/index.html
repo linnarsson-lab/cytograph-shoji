@@ -27,7 +27,7 @@
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">from ._version import __version__
-from .module import requires, creates, Module
+from .algorithm import requires, creates, Algorithm
 from .annotation import *
 from .clustering import *
 from .decomposition import *
@@ -38,13 +38,17 @@ from .metrics import *
 from .pipeline import InitializeWorkspace, CollectCells, LoadSampleMetadata, PatchSampleMetadata, PatchGeneMetadata
 from .preprocessing import *
 from .species import *
-from .utils import *
+from .utils import div0, available_cpu_count, make_cytograph_docs
 from .visualization import *</code></pre>
 </details>
 </section>
 <section>
 <h2 class="section-title" id="header-submodules">Sub-modules</h2>
 <dl>
+<dt><code class="name"><a title="cytograph.algorithm" href="algorithm.html">cytograph.algorithm</a></code></dt>
+<dd>
+<div class="desc"><p>The Algorithm base class from which all custom algorithms must inherit.</p></div>
+</dd>
 <dt><code class="name"><a title="cytograph.annotation" href="annotation/index.html">cytograph.annotation</a></code></dt>
 <dd>
 <div class="desc"><p>Algorithms for annotating clusters</p></div>
@@ -71,15 +75,11 @@ from .visualization import *</code></pre>
 </dd>
 <dt><code class="name"><a title="cytograph.metrics" href="metrics/index.html">cytograph.metrics</a></code></dt>
 <dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="cytograph.module" href="module.html">cytograph.module</a></code></dt>
-<dd>
-<div class="desc"></div>
+<div class="desc"><p>Special metrics for use in clustering, dimensionality reduction etc.</p></div>
 </dd>
 <dt><code class="name"><a title="cytograph.pipeline" href="pipeline/index.html">cytograph.pipeline</a></code></dt>
 <dd>
-<div class="desc"><p>Algorithms for collecting cells, metadata and running the pipeline</p></div>
+<div class="desc"><p>Algorithms and utilities for collecting cells, metadata and running the pipeline</p></div>
 </dd>
 <dt><code class="name"><a title="cytograph.plotting" href="plotting/index.html">cytograph.plotting</a></code></dt>
 <dd>
@@ -118,6 +118,7 @@ from .visualization import *</code></pre>
 <ul id="index">
 <li><h3><a href="#header-submodules">Sub-modules</a></h3>
 <ul>
+<li><code><a title="cytograph.algorithm" href="algorithm.html">cytograph.algorithm</a></code></li>
 <li><code><a title="cytograph.annotation" href="annotation/index.html">cytograph.annotation</a></code></li>
 <li><code><a title="cytograph.clustering" href="clustering/index.html">cytograph.clustering</a></code></li>
 <li><code><a title="cytograph.decomposition" href="decomposition/index.html">cytograph.decomposition</a></code></li>
@@ -125,7 +126,6 @@ from .visualization import *</code></pre>
 <li><code><a title="cytograph.enrichment" href="enrichment/index.html">cytograph.enrichment</a></code></li>
 <li><code><a title="cytograph.manifold" href="manifold/index.html">cytograph.manifold</a></code></li>
 <li><code><a title="cytograph.metrics" href="metrics/index.html">cytograph.metrics</a></code></li>
-<li><code><a title="cytograph.module" href="module.html">cytograph.module</a></code></li>
 <li><code><a title="cytograph.pipeline" href="pipeline/index.html">cytograph.pipeline</a></code></li>
 <li><code><a title="cytograph.plotting" href="plotting/index.html">cytograph.plotting</a></code></li>
 <li><code><a title="cytograph.preprocessing" href="preprocessing/index.html">cytograph.preprocessing</a></code></li>

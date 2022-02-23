@@ -26,18 +26,18 @@
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">from cytograph.module import requires
+<pre><code class="python">from cytograph.algorithm import requires
 from typing import Dict
 import shoji
 import logging
 import sys
 import os
 import numpy as np
-from cytograph import Module
+from cytograph import Algorithm
 import pandas as pd
 
 
-class PatchGeneMetadata(Module):
+class PatchGeneMetadata(Algorithm):
         &#34;&#34;&#34;
         Patch gene metadata from an Excel file into an existing workspace
         &#34;&#34;&#34;
@@ -107,7 +107,7 @@ Full path to the metadata database file (a sqlite .db file)</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class PatchGeneMetadata(Module):
+<pre><code class="python">class PatchGeneMetadata(Algorithm):
         &#34;&#34;&#34;
         Patch gene metadata from an Excel file into an existing workspace
         &#34;&#34;&#34;
@@ -156,7 +156,7 @@ Full path to the metadata database file (a sqlite .db file)</p></div>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="cytograph.module.Module" href="../module.html#cytograph.module.Module">Module</a></li>
+<li><a title="cytograph.algorithm.Algorithm" href="../algorithm.html#cytograph.algorithm.Algorithm">Algorithm</a></li>
 </ul>
 <h3>Methods</h3>
 <dl>

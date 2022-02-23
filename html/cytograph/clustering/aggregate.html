@@ -29,14 +29,14 @@
 <pre><code class="python">import logging
 import shoji
 import numpy as np
-from cytograph import Module
+from cytograph import Algorithm
 
 
 def indices_to_order_a_like_b(a, b):
         return a.argsort()[b.argsort().argsort()]
 
 
-class Aggregate(Module):
+class Aggregate(Algorithm):
         def __init__(self, tensor: str, using: str, into: str, by: str = &#34;Clusters&#34;, orderby: str = &#34;ClusterID&#34;, newdim: str = &#34;clusters&#34;, **kwargs) -&gt; None:
                 &#34;&#34;&#34;
                 Aggregate tensors by cluster ID (as given by the Clusters tensor)
@@ -156,7 +156,7 @@ to calculate the mean expression by cluster:</p>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class Aggregate(Module):
+<pre><code class="python">class Aggregate(Algorithm):
         def __init__(self, tensor: str, using: str, into: str, by: str = &#34;Clusters&#34;, orderby: str = &#34;ClusterID&#34;, newdim: str = &#34;clusters&#34;, **kwargs) -&gt; None:
                 &#34;&#34;&#34;
                 Aggregate tensors by cluster ID (as given by the Clusters tensor)
@@ -222,7 +222,7 @@ to calculate the mean expression by cluster:</p>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="cytograph.module.Module" href="../module.html#cytograph.module.Module">Module</a></li>
+<li><a title="cytograph.algorithm.Algorithm" href="../algorithm.html#cytograph.algorithm.Algorithm">Algorithm</a></li>
 </ul>
 <h3>Methods</h3>
 <dl>

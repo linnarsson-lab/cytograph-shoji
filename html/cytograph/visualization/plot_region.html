@@ -33,11 +33,11 @@ from matplotlib.colors import hsv_to_rgb
 import numpy as np
 
 import shoji
-from cytograph import Module, requires, div0
+from cytograph import Algorithm, requires, div0
 import numpy_groupies as npg
 
 
-class PlotRegion(Module):
+class PlotRegion(Algorithm):
         def __init__(self, filename: str = &#34;region.png&#34;, **kwargs) -&gt; None:
                 super().__init__(**kwargs)
                 self.filename = filename
@@ -107,7 +107,7 @@ class PlotRegion(Module):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class PlotRegion(Module):
+<pre><code class="python">class PlotRegion(Algorithm):
         def __init__(self, filename: str = &#34;region.png&#34;, **kwargs) -&gt; None:
                 super().__init__(**kwargs)
                 self.filename = filename
@@ -159,7 +159,7 @@ class PlotRegion(Module):
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="cytograph.module.Module" href="../module.html#cytograph.module.Module">Module</a></li>
+<li><a title="cytograph.algorithm.Algorithm" href="../algorithm.html#cytograph.algorithm.Algorithm">Algorithm</a></li>
 </ul>
 <h3>Methods</h3>
 <dl>

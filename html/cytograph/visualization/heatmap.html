@@ -29,12 +29,12 @@
 <pre><code class="python">import matplotlib.pyplot as plt
 import numpy as np
 import shoji
-from cytograph import Module, Species, requires
+from cytograph import Algorithm, Species, requires
 from .dendrogram import dendrogram
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
 
-class Heatmap(Module):
+class Heatmap(Algorithm):
         def __init__(self, filename: str = &#34;heatmap.png&#34;, genes_per_cluster: int = 2, **kwargs) -&gt; None:
                 super().__init__(**kwargs)
                 self.filename = filename
@@ -186,7 +186,7 @@ class Heatmap(Module):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class Heatmap(Module):
+<pre><code class="python">class Heatmap(Algorithm):
         def __init__(self, filename: str = &#34;heatmap.png&#34;, genes_per_cluster: int = 2, **kwargs) -&gt; None:
                 super().__init__(**kwargs)
                 self.filename = filename
@@ -320,7 +320,7 @@ class Heatmap(Module):
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="cytograph.module.Module" href="../module.html#cytograph.module.Module">Module</a></li>
+<li><a title="cytograph.algorithm.Algorithm" href="../algorithm.html#cytograph.algorithm.Algorithm">Algorithm</a></li>
 </ul>
 <h3>Methods</h3>
 <dl>

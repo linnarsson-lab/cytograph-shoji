@@ -33,11 +33,11 @@ import matplotlib.colors as colors
 import numpy as np
 
 import shoji
-from cytograph import Module, requires
+from cytograph import Algorithm, requires
 from .scatter import scatterc, scattern
 
 
-class NumericalScatterplot(Module):
+class NumericalScatterplot(Algorithm):
         def __init__(self, tensor: str, width: float = 8, height: float = 8, cmap: str = &#34;viridis&#34;, vmin: float = None, vmax: float = None, vcenter: float = None, filename: str = &#34;scatter.png&#34;, **kwargs) -&gt; None:
                 super().__init__(**kwargs)
                 self.tensor = tensor
@@ -80,7 +80,7 @@ class NumericalScatterplot(Module):
                         pass
 
 
-class CategoricalScatterplot(Module):
+class CategoricalScatterplot(Algorithm):
         def __init__(self, tensor: str, width: float = 8, height: float = 8, legend: str = &#34;outside&#34;, filename: str = &#34;scatter.png&#34;, **kwargs) -&gt; None:
                 super().__init__(**kwargs)
                 self.tensor = tensor
@@ -135,7 +135,7 @@ class CategoricalScatterplot(Module):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class CategoricalScatterplot(Module):
+<pre><code class="python">class CategoricalScatterplot(Algorithm):
         def __init__(self, tensor: str, width: float = 8, height: float = 8, legend: str = &#34;outside&#34;, filename: str = &#34;scatter.png&#34;, **kwargs) -&gt; None:
                 super().__init__(**kwargs)
                 self.tensor = tensor
@@ -172,7 +172,7 @@ class CategoricalScatterplot(Module):
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="cytograph.module.Module" href="../module.html#cytograph.module.Module">Module</a></li>
+<li><a title="cytograph.algorithm.Algorithm" href="../algorithm.html#cytograph.algorithm.Algorithm">Algorithm</a></li>
 </ul>
 <h3>Methods</h3>
 <dl>
@@ -224,7 +224,7 @@ def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; None:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class NumericalScatterplot(Module):
+<pre><code class="python">class NumericalScatterplot(Algorithm):
         def __init__(self, tensor: str, width: float = 8, height: float = 8, cmap: str = &#34;viridis&#34;, vmin: float = None, vmax: float = None, vcenter: float = None, filename: str = &#34;scatter.png&#34;, **kwargs) -&gt; None:
                 super().__init__(**kwargs)
                 self.tensor = tensor
@@ -268,7 +268,7 @@ def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; None:
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="cytograph.module.Module" href="../module.html#cytograph.module.Module">Module</a></li>
+<li><a title="cytograph.algorithm.Algorithm" href="../algorithm.html#cytograph.algorithm.Algorithm">Algorithm</a></li>
 </ul>
 <h3>Methods</h3>
 <dl>

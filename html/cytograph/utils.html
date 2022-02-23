@@ -30,6 +30,9 @@
 import re
 import subprocess
 import numpy as np
+import inspect
+import importlib
+from .algorithm import Algorithm
 
 
 def div0(a: np.ndarray, b: np.ndarray) -&gt; np.ndarray:
@@ -138,7 +141,159 @@ def available_cpu_count():
         except OSError:
                 pass
 
-        raise Exception(&#39;Can not determine number of CPUs on this system&#39;)</code></pre>
+        raise Exception(&#39;Can not determine number of CPUs on this system&#39;)
+
+
+def get_decorators(function):
+        &#34;&#34;&#34;Returns list of decorators names
+
+        Args:
+                function (Callable): decorated method/function
+
+        Return:
+                List of decorators as strings
+
+        Example:
+                Given:
+
+                @my_decorator
+                @another_decorator
+                def decorated_function():
+                        pass
+
+                &gt;&gt;&gt; get_decorators(decorated_function)
+                [&#39;@my_decorator&#39;, &#39;@another_decorator&#39;]
+
+        &#34;&#34;&#34;
+        source = inspect.getsource(function)
+        index = source.find(&#34;def &#34;)
+        return [
+                line.strip()
+                for line in source[:index].strip().splitlines()
+                if line.strip()[0] == &#34;@&#34;
+        ]
+
+
+def deindent(s):
+        lines = s.split(&#34;\n&#34;)
+        n_tabs = 0
+        for c in lines[1]:
+                if c == &#34;\t&#34;:
+                        n_tabs += 1
+                else:
+                        break
+        return &#34;\n&#34;.join(line[n_tabs:] for line in lines)
+
+
+def make_cytograph_docs():
+        modules = {}
+        for cls in sorted(Algorithm.__subclasses__(), key=lambda cls: &#34;.&#34;.join(cls.__module__.split(&#34;.&#34;)[:2])):
+                name = &#34;.&#34;.join(cls.__module__.split(&#34;.&#34;)[:2])
+                modules.setdefault(name, [])
+                modules[name].append(cls)
+
+        aside = &#34;&#34;&#34;
+                &lt;aside class=&#34;bd-aside sticky-xl-top text-muted align-self-start mb-3 mb-xl-5 px-2&#34;&gt;
+                        &lt;h2 class=&#34;h6 pt-4 pb-3 mb-4 border-bottom&#34;&gt;Algorithms&lt;/h2&gt;
+                        &lt;nav class=&#34;small&#34; id=&#34;toc&#34;&gt;
+                                &lt;ul class=&#34;list-unstyled&#34;&gt;
+        &#34;&#34;&#34;
+        for mod, classes in modules.items():
+                aside += f&#34;&#34;&#34;
+                        &lt;li class=&#34;my-2&#34;&gt;
+                                &lt;button class=&#34;btn d-inline-flex align-items-center collapsed&#34; data-bs-toggle=&#34;collapse&#34; aria-expanded=&#34;false&#34; data-bs-target=&#34;#contents-collapse&#34; aria-controls=&#34;contents-collapse&#34;&gt;{mod}&lt;/button&gt;
+                                &lt;ul class=&#34;list-unstyled ps-3 collapse&#34; id=&#34;contents-collapse&#34;&gt;
+                &#34;&#34;&#34;
+                for cls in classes:
+                        alg = cls.__name__
+                        aside += f&#34;&#34;&#34;
+                        &lt;li&gt;&lt;a class=&#34;d-inline-flex align-items-center rounded&#34; href=&#34;#{mod}.{alg}&#34;&gt;{alg}&lt;/a&gt;&lt;/li&gt;
+                        &#34;&#34;&#34;
+                aside += &#34;&lt;/ul&gt;&lt;/li&gt;&#34;
+        aside += &#34;&lt;/ul&gt;&lt;/nav&gt;&lt;/aside&gt;&#34;
+
+        main = &#34;&#34;&#34;
+                &lt;div class=&#34;bd-cheatsheet container-fluid bg-body&#34;&gt;
+                &lt;section id=&#34;content&#34;&gt;
+        &#34;&#34;&#34;
+
+        for mod, classes in modules.items():
+                main += f&#34;&lt;h2&gt;Module &#39;{mod}&#39;&lt;/h2&gt;&#34;
+                module = importlib.import_module(&#39;cytograph.&#39; + cls.__module__.split(&#34;.&#34;)[1])
+                if module.__doc__ is not None:
+                        main += &#34;&lt;p&gt;&#34; + deindent(module.__doc__) + &#34;&lt;/p&gt;&#34;
+
+                for cls in classes:
+                        alg = cls.__name__
+                        main += f&#34;&lt;h3 style=&#39;color: rgb(25, 118, 210)&#39;&gt;&lt;a id=&#39;{mod}.{alg}&#39;&gt;{alg}&lt;/a&gt;&lt;/h3&gt;&#34;
+                        if cls.__doc__ is not None:
+                                main += &#34;&lt;p&gt;&#34; + deindent(cls.__doc__) + &#34;&lt;/p&gt;&#34;
+
+                        decs = get_decorators(cls.fit)
+                        if any(&#34;@requires&#34; in d for d in decs):
+                                main += &#34;&lt;strong&gt;Required tensors&lt;/strong&gt;&#34;
+                                main += &#34;&lt;table class=&#39;table table-striped&#39;&gt;&lt;tr&gt;&lt;th&gt;&lt;/th&gt;&lt;th&gt;dtype&lt;/th&gt;&lt;th&gt;dims&lt;/th&gt;&lt;/tr&gt;&#34;
+                                for dec in decs:
+                                        if &#34;#&#34; in dec:
+                                                dec = dec[dec.rindex(&#34;#&#34;) - 1:]
+                                        if &#34;@requires&#34; in dec:
+                                                items = dec[dec.index(&#34;(&#34;):dec.rindex(&#34;)&#34;)].split(&#34;,&#34;)
+                                                main += &#34;&lt;tr&gt;&lt;td&gt;&#34; + items[0].strip(&#39;&#34;()\&#39; &#39;) + &#34;&lt;/td&gt;&lt;td&gt;&#34; + items[1].strip(&#39;&#34;()\&#39; &#39;) + &#34;&lt;/td&gt;&lt;td&gt;&#34; + dec[dec.index(&#34;,&#34;, dec.index(&#34;,&#34;) + 1):-1].strip(&#39;&#34;,\&#39; &#39;) + &#34;&lt;/td&gt;&lt;tr/&gt;&#34;
+                                main += &#34;&lt;/table&gt;&#34;
+
+                        if any(&#34;@creates&#34; in d for d in decs):
+                                main += &#34;&lt;strong&gt;Created tensors&lt;/strong&gt;&#34;
+                                main += &#34;&lt;table class=&#39;table table-striped&#39;&gt;&lt;tr&gt;&lt;th&gt;&lt;/th&gt;&lt;th&gt;dtype&lt;/th&gt;&lt;th&gt;dims&lt;/th&gt;&lt;/tr&gt;&#34;
+                                for dec in decs:
+                                        if &#34;#&#34; in dec:
+                                                dec = dec[dec.rindex(&#34;#&#34;) - 1:]
+                                        if &#34;, indices=True&#34; in dec:
+                                                dec = dec[:dec.index(&#34;, indices=True&#34;)]
+                                        if &#34;@creates&#34; in dec:
+                                                items = dec[dec.index(&#34;(&#34;):dec.rindex(&#34;)&#34;) + 1].split(&#34;,&#34;)
+                                                main += &#34;&lt;tr&gt;&lt;td&gt;&#34; + items[0].strip(&#39;&#34;()\&#39; &#39;) + &#34;&lt;/td&gt;&lt;td&gt;&#34; + items[1].strip(&#39;&#34;()\&#39; &#39;) + &#34;&lt;/td&gt;&lt;td&gt;&#34; + dec[dec.index(&#34;,&#34;, dec.index(&#34;,&#34;) + 1):-1].strip(&#39;&#34;,\&#39; &#39;) + &#34;&lt;/td&gt;&lt;tr/&gt;&#34;
+                                main += &#34;&lt;/table&gt;&#34;
+
+                        main += f&#34;Recipe: &lt;strong&gt;{alg}&lt;/strong&gt;:&#34; + &#34; {&#34;
+                        main += &#34;, &#34;.join([f&#34;&lt;strong&gt;{parm.name}&lt;/strong&gt;: {str(parm).split(&#39;:&#39;)[1] if &#39;:&#39; in str(parm) else &#39;Any&#39;}&#34; for name, parm in inspect.signature(cls.__init__).parameters.items() if name not in (&#34;self&#34;, &#34;args&#34;, &#34;kwargs&#34;)])
+                        main += &#34;}&lt;br/&gt;&#34;
+                        main += &#34;&lt;p&gt;&amp;nbsp;&lt;/p&gt;&#34;
+
+                        if cls.__init__.__doc__ is not None:
+                                main += &#34;&lt;pre&gt;&#34; + deindent(cls.__init__.__doc__) + &#34;&lt;/pre&gt;&#34;
+                        main += &#34;&lt;p&gt;&amp;nbsp;&lt;/p&gt;&#34;
+                        main += &#34;&lt;p&gt;&amp;nbsp;&lt;/p&gt;&#34;
+
+        main += &#34;&lt;/section&gt;&lt;/div&gt;&#34;
+        return &#34;&#34;&#34;
+                &lt;!doctype html&gt;
+                &lt;html lang=&#34;en&#34;&gt;
+                        &lt;head&gt;
+                                &lt;meta charset=&#34;utf-8&#34;&gt;
+                                &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1&#34;&gt;
+                                &lt;meta name=&#34;author&#34; content=&#34;Sten Linnarsson&#34;&gt;
+                                &lt;title&gt;Cytograph algorithms&lt;/title&gt;
+                                &lt;link href=&#34;https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css&#34; rel=&#34;stylesheet&#34; integrity=&#34;sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3&#34; crossorigin=&#34;anonymous&#34;&gt;
+                                &lt;script src=&#34;https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js&#34; integrity=&#34;sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p&#34; crossorigin=&#34;anonymous&#34;&gt;&lt;/script&gt;
+                                &lt;style&gt;
+                                        body {
+                                                display: grid;
+                                                gap: 1rem;
+                                                grid-template-columns: 4fr 1fr;
+                                                grid-template-rows: auto;
+                                        }
+                                        .bd-aside {
+                                                padding-top: 4rem;
+                                                grid-area: 1 / 2;
+                                                scroll-margin-top: 4rem;
+                                        }
+                                &lt;/style&gt;
+                        &lt;/head&gt;
+                &lt;/html&gt;
+                &lt;body class=&#39;bg-light&#39;&gt;
+        &#34;&#34;&#34; + aside + main + &#34;&#34;&#34;
+                &lt;/body&gt;&lt;/html&gt;
+        &#34;&#34;&#34;</code></pre>
 </details>
 </section>
 <section>
@@ -260,6 +415,26 @@ userspace-only program</p></div>
         raise Exception(&#39;Can not determine number of CPUs on this system&#39;)</code></pre>
 </details>
 </dd>
+<dt id="cytograph.utils.deindent"><code class="name flex">
+<span>def <span class="ident">deindent</span></span>(<span>s)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def deindent(s):
+        lines = s.split(&#34;\n&#34;)
+        n_tabs = 0
+        for c in lines[1]:
+                if c == &#34;\t&#34;:
+                        n_tabs += 1
+                else:
+                        break
+        return &#34;\n&#34;.join(line[n_tabs:] for line in lines)</code></pre>
+</details>
+</dd>
 <dt id="cytograph.utils.div0"><code class="name flex">
 <span>def <span class="ident">div0</span></span>(<span>a: numpy.ndarray, b: numpy.ndarray) ‑> numpy.ndarray</span>
 </code></dt>
@@ -275,6 +450,181 @@ userspace-only program</p></div>
                 c = np.true_divide(a, b)
                 c[~np.isfinite(c)] = 0  # -inf inf NaN
         return c</code></pre>
+</details>
+</dd>
+<dt id="cytograph.utils.get_decorators"><code class="name flex">
+<span>def <span class="ident">get_decorators</span></span>(<span>function)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Returns list of decorators names</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>function</code></strong> :&ensp;<code>Callable</code></dt>
+<dd>decorated method/function</dd>
+</dl>
+<h2 id="return">Return</h2>
+<p>List of decorators as strings</p>
+<h2 id="example">Example</h2>
+<p>Given:</p>
+<p>@my_decorator
+@another_decorator
+def decorated_function():
+pass</p>
+<pre><code class="python">&gt;&gt;&gt; get_decorators(decorated_function)
+['@my_decorator', '@another_decorator']
+</code></pre></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_decorators(function):
+        &#34;&#34;&#34;Returns list of decorators names
+
+        Args:
+                function (Callable): decorated method/function
+
+        Return:
+                List of decorators as strings
+
+        Example:
+                Given:
+
+                @my_decorator
+                @another_decorator
+                def decorated_function():
+                        pass
+
+                &gt;&gt;&gt; get_decorators(decorated_function)
+                [&#39;@my_decorator&#39;, &#39;@another_decorator&#39;]
+
+        &#34;&#34;&#34;
+        source = inspect.getsource(function)
+        index = source.find(&#34;def &#34;)
+        return [
+                line.strip()
+                for line in source[:index].strip().splitlines()
+                if line.strip()[0] == &#34;@&#34;
+        ]</code></pre>
+</details>
+</dd>
+<dt id="cytograph.utils.make_cytograph_docs"><code class="name flex">
+<span>def <span class="ident">make_cytograph_docs</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def make_cytograph_docs():
+        modules = {}
+        for cls in sorted(Algorithm.__subclasses__(), key=lambda cls: &#34;.&#34;.join(cls.__module__.split(&#34;.&#34;)[:2])):
+                name = &#34;.&#34;.join(cls.__module__.split(&#34;.&#34;)[:2])
+                modules.setdefault(name, [])
+                modules[name].append(cls)
+
+        aside = &#34;&#34;&#34;
+                &lt;aside class=&#34;bd-aside sticky-xl-top text-muted align-self-start mb-3 mb-xl-5 px-2&#34;&gt;
+                        &lt;h2 class=&#34;h6 pt-4 pb-3 mb-4 border-bottom&#34;&gt;Algorithms&lt;/h2&gt;
+                        &lt;nav class=&#34;small&#34; id=&#34;toc&#34;&gt;
+                                &lt;ul class=&#34;list-unstyled&#34;&gt;
+        &#34;&#34;&#34;
+        for mod, classes in modules.items():
+                aside += f&#34;&#34;&#34;
+                        &lt;li class=&#34;my-2&#34;&gt;
+                                &lt;button class=&#34;btn d-inline-flex align-items-center collapsed&#34; data-bs-toggle=&#34;collapse&#34; aria-expanded=&#34;false&#34; data-bs-target=&#34;#contents-collapse&#34; aria-controls=&#34;contents-collapse&#34;&gt;{mod}&lt;/button&gt;
+                                &lt;ul class=&#34;list-unstyled ps-3 collapse&#34; id=&#34;contents-collapse&#34;&gt;
+                &#34;&#34;&#34;
+                for cls in classes:
+                        alg = cls.__name__
+                        aside += f&#34;&#34;&#34;
+                        &lt;li&gt;&lt;a class=&#34;d-inline-flex align-items-center rounded&#34; href=&#34;#{mod}.{alg}&#34;&gt;{alg}&lt;/a&gt;&lt;/li&gt;
+                        &#34;&#34;&#34;
+                aside += &#34;&lt;/ul&gt;&lt;/li&gt;&#34;
+        aside += &#34;&lt;/ul&gt;&lt;/nav&gt;&lt;/aside&gt;&#34;
+
+        main = &#34;&#34;&#34;
+                &lt;div class=&#34;bd-cheatsheet container-fluid bg-body&#34;&gt;
+                &lt;section id=&#34;content&#34;&gt;
+        &#34;&#34;&#34;
+
+        for mod, classes in modules.items():
+                main += f&#34;&lt;h2&gt;Module &#39;{mod}&#39;&lt;/h2&gt;&#34;
+                module = importlib.import_module(&#39;cytograph.&#39; + cls.__module__.split(&#34;.&#34;)[1])
+                if module.__doc__ is not None:
+                        main += &#34;&lt;p&gt;&#34; + deindent(module.__doc__) + &#34;&lt;/p&gt;&#34;
+
+                for cls in classes:
+                        alg = cls.__name__
+                        main += f&#34;&lt;h3 style=&#39;color: rgb(25, 118, 210)&#39;&gt;&lt;a id=&#39;{mod}.{alg}&#39;&gt;{alg}&lt;/a&gt;&lt;/h3&gt;&#34;
+                        if cls.__doc__ is not None:
+                                main += &#34;&lt;p&gt;&#34; + deindent(cls.__doc__) + &#34;&lt;/p&gt;&#34;
+
+                        decs = get_decorators(cls.fit)
+                        if any(&#34;@requires&#34; in d for d in decs):
+                                main += &#34;&lt;strong&gt;Required tensors&lt;/strong&gt;&#34;
+                                main += &#34;&lt;table class=&#39;table table-striped&#39;&gt;&lt;tr&gt;&lt;th&gt;&lt;/th&gt;&lt;th&gt;dtype&lt;/th&gt;&lt;th&gt;dims&lt;/th&gt;&lt;/tr&gt;&#34;
+                                for dec in decs:
+                                        if &#34;#&#34; in dec:
+                                                dec = dec[dec.rindex(&#34;#&#34;) - 1:]
+                                        if &#34;@requires&#34; in dec:
+                                                items = dec[dec.index(&#34;(&#34;):dec.rindex(&#34;)&#34;)].split(&#34;,&#34;)
+                                                main += &#34;&lt;tr&gt;&lt;td&gt;&#34; + items[0].strip(&#39;&#34;()\&#39; &#39;) + &#34;&lt;/td&gt;&lt;td&gt;&#34; + items[1].strip(&#39;&#34;()\&#39; &#39;) + &#34;&lt;/td&gt;&lt;td&gt;&#34; + dec[dec.index(&#34;,&#34;, dec.index(&#34;,&#34;) + 1):-1].strip(&#39;&#34;,\&#39; &#39;) + &#34;&lt;/td&gt;&lt;tr/&gt;&#34;
+                                main += &#34;&lt;/table&gt;&#34;
+
+                        if any(&#34;@creates&#34; in d for d in decs):
+                                main += &#34;&lt;strong&gt;Created tensors&lt;/strong&gt;&#34;
+                                main += &#34;&lt;table class=&#39;table table-striped&#39;&gt;&lt;tr&gt;&lt;th&gt;&lt;/th&gt;&lt;th&gt;dtype&lt;/th&gt;&lt;th&gt;dims&lt;/th&gt;&lt;/tr&gt;&#34;
+                                for dec in decs:
+                                        if &#34;#&#34; in dec:
+                                                dec = dec[dec.rindex(&#34;#&#34;) - 1:]
+                                        if &#34;, indices=True&#34; in dec:
+                                                dec = dec[:dec.index(&#34;, indices=True&#34;)]
+                                        if &#34;@creates&#34; in dec:
+                                                items = dec[dec.index(&#34;(&#34;):dec.rindex(&#34;)&#34;) + 1].split(&#34;,&#34;)
+                                                main += &#34;&lt;tr&gt;&lt;td&gt;&#34; + items[0].strip(&#39;&#34;()\&#39; &#39;) + &#34;&lt;/td&gt;&lt;td&gt;&#34; + items[1].strip(&#39;&#34;()\&#39; &#39;) + &#34;&lt;/td&gt;&lt;td&gt;&#34; + dec[dec.index(&#34;,&#34;, dec.index(&#34;,&#34;) + 1):-1].strip(&#39;&#34;,\&#39; &#39;) + &#34;&lt;/td&gt;&lt;tr/&gt;&#34;
+                                main += &#34;&lt;/table&gt;&#34;
+
+                        main += f&#34;Recipe: &lt;strong&gt;{alg}&lt;/strong&gt;:&#34; + &#34; {&#34;
+                        main += &#34;, &#34;.join([f&#34;&lt;strong&gt;{parm.name}&lt;/strong&gt;: {str(parm).split(&#39;:&#39;)[1] if &#39;:&#39; in str(parm) else &#39;Any&#39;}&#34; for name, parm in inspect.signature(cls.__init__).parameters.items() if name not in (&#34;self&#34;, &#34;args&#34;, &#34;kwargs&#34;)])
+                        main += &#34;}&lt;br/&gt;&#34;
+                        main += &#34;&lt;p&gt;&amp;nbsp;&lt;/p&gt;&#34;
+
+                        if cls.__init__.__doc__ is not None:
+                                main += &#34;&lt;pre&gt;&#34; + deindent(cls.__init__.__doc__) + &#34;&lt;/pre&gt;&#34;
+                        main += &#34;&lt;p&gt;&amp;nbsp;&lt;/p&gt;&#34;
+                        main += &#34;&lt;p&gt;&amp;nbsp;&lt;/p&gt;&#34;
+
+        main += &#34;&lt;/section&gt;&lt;/div&gt;&#34;
+        return &#34;&#34;&#34;
+                &lt;!doctype html&gt;
+                &lt;html lang=&#34;en&#34;&gt;
+                        &lt;head&gt;
+                                &lt;meta charset=&#34;utf-8&#34;&gt;
+                                &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1&#34;&gt;
+                                &lt;meta name=&#34;author&#34; content=&#34;Sten Linnarsson&#34;&gt;
+                                &lt;title&gt;Cytograph algorithms&lt;/title&gt;
+                                &lt;link href=&#34;https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css&#34; rel=&#34;stylesheet&#34; integrity=&#34;sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3&#34; crossorigin=&#34;anonymous&#34;&gt;
+                                &lt;script src=&#34;https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js&#34; integrity=&#34;sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p&#34; crossorigin=&#34;anonymous&#34;&gt;&lt;/script&gt;
+                                &lt;style&gt;
+                                        body {
+                                                display: grid;
+                                                gap: 1rem;
+                                                grid-template-columns: 4fr 1fr;
+                                                grid-template-rows: auto;
+                                        }
+                                        .bd-aside {
+                                                padding-top: 4rem;
+                                                grid-area: 1 / 2;
+                                                scroll-margin-top: 4rem;
+                                        }
+                                &lt;/style&gt;
+                        &lt;/head&gt;
+                &lt;/html&gt;
+                &lt;body class=&#39;bg-light&#39;&gt;
+        &#34;&#34;&#34; + aside + main + &#34;&#34;&#34;
+                &lt;/body&gt;&lt;/html&gt;
+        &#34;&#34;&#34;</code></pre>
 </details>
 </dd>
 </dl>
@@ -296,7 +646,10 @@ userspace-only program</p></div>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
 <li><code><a title="cytograph.utils.available_cpu_count" href="#cytograph.utils.available_cpu_count">available_cpu_count</a></code></li>
+<li><code><a title="cytograph.utils.deindent" href="#cytograph.utils.deindent">deindent</a></code></li>
 <li><code><a title="cytograph.utils.div0" href="#cytograph.utils.div0">div0</a></code></li>
+<li><code><a title="cytograph.utils.get_decorators" href="#cytograph.utils.get_decorators">get_decorators</a></code></li>
+<li><code><a title="cytograph.utils.make_cytograph_docs" href="#cytograph.utils.make_cytograph_docs">make_cytograph_docs</a></code></li>
 </ul>
 </li>
 </ul>

@@ -31,12 +31,12 @@
 import numpy as np
 import scipy.cluster.hierarchy as hc
 import logging
-from cytograph import requires, creates, Module
+from cytograph import requires, creates, Algorithm
 import cytograph as cg
 import shoji
 
 
-class FeatureSelectionAndMultilevelEnrichment(Module):
+class FeatureSelectionAndMultilevelEnrichment(Algorithm):
         def __init__(self, n_genes_per_group: int = 1, mask: List[str] = None, **kwargs) -&gt; None:
                 &#34;&#34;&#34;
                 Args:
@@ -119,8 +119,6 @@ class FeatureSelectionAndMultilevelEnrichment(Module):
                         The number of genes selected will depend on the number of clusters as follows. The dendrogram is
                         cut at n = 2, 4, 8, ... (for n &lt;= n_clusters // 2) clusters and the most enriched n_genes are selected for each cluster
                         (without replacement). Finally, the most enriched gene in each cluster is selected (without replacement) and added to the list.
-
-                        Note that this module requires aggregate tensors (MeanExpression, NCells)
                 &#34;&#34;&#34;
                 # Create symbolic names for the required tensors, which might be renamed by the user
                 logging.info(&#34; FeatureSelectionAndMultilevelEnrichment: Selecting features at 2, 4, 8, ... cluster levels&#34;)
@@ -189,7 +187,7 @@ Optional list indicating categories of genes that should not be selected</p></di
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class FeatureSelectionAndMultilevelEnrichment(Module):
+<pre><code class="python">class FeatureSelectionAndMultilevelEnrichment(Algorithm):
         def __init__(self, n_genes_per_group: int = 1, mask: List[str] = None, **kwargs) -&gt; None:
                 &#34;&#34;&#34;
                 Args:
@@ -272,8 +270,6 @@ Optional list indicating categories of genes that should not be selected</p></di
                         The number of genes selected will depend on the number of clusters as follows. The dendrogram is
                         cut at n = 2, 4, 8, ... (for n &lt;= n_clusters // 2) clusters and the most enriched n_genes are selected for each cluster
                         (without replacement). Finally, the most enriched gene in each cluster is selected (without replacement) and added to the list.
-
-                        Note that this module requires aggregate tensors (MeanExpression, NCells)
                 &#34;&#34;&#34;
                 # Create symbolic names for the required tensors, which might be renamed by the user
                 logging.info(&#34; FeatureSelectionAndMultilevelEnrichment: Selecting features at 2, 4, 8, ... cluster levels&#34;)
@@ -320,7 +316,7 @@ Optional list indicating categories of genes that should not be selected</p></di
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="cytograph.module.Module" href="../module.html#cytograph.module.Module">Module</a></li>
+<li><a title="cytograph.algorithm.Algorithm" href="../algorithm.html#cytograph.algorithm.Algorithm">Algorithm</a></li>
 </ul>
 <h3>Methods</h3>
 <dl>
@@ -425,8 +421,7 @@ Enrichment scores</p>
 <h2 id="remarks">Remarks</h2>
 <p>The number of genes selected will depend on the number of clusters as follows. The dendrogram is
 cut at n = 2, 4, 8, &hellip; (for n &lt;= n_clusters // 2) clusters and the most enriched n_genes are selected for each cluster
-(without replacement). Finally, the most enriched gene in each cluster is selected (without replacement) and added to the list.</p>
-<p>Note that this module requires aggregate tensors (MeanExpression, NCells)</p></div>
+(without replacement). Finally, the most enriched gene in each cluster is selected (without replacement) and added to the list.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -454,8 +449,6 @@ def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -&gt; Tuple[np.nda
                 The number of genes selected will depend on the number of clusters as follows. The dendrogram is
                 cut at n = 2, 4, 8, ... (for n &lt;= n_clusters // 2) clusters and the most enriched n_genes are selected for each cluster
                 (without replacement). Finally, the most enriched gene in each cluster is selected (without replacement) and added to the list.
-
-                Note that this module requires aggregate tensors (MeanExpression, NCells)
         &#34;&#34;&#34;
         # Create symbolic names for the required tensors, which might be renamed by the user
         logging.info(&#34; FeatureSelectionAndMultilevelEnrichment: Selecting features at 2, 4, 8, ... cluster levels&#34;)

@@ -30,7 +30,7 @@
 import numpy as np
 from scipy.stats import multivariate_normal
 import shoji
-from cytograph import requires, creates, Module
+from cytograph import requires, creates, Algorithm
 import logging
 
 
@@ -56,7 +56,7 @@ class GaussianMLE(object):
                 return multivariate_normal.pdf(x, self.mu, self.sigma)
 
 
-class ClassifyDroplets(Module):
+class ClassifyDroplets(Algorithm):
         &#34;&#34;&#34;
         Classify droplets based on total UMI count and unspliced fraction
         &#34;&#34;&#34;
@@ -166,7 +166,7 @@ Max allowed mitochondrial UMI fraction for valid cells</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class ClassifyDroplets(Module):
+<pre><code class="python">class ClassifyDroplets(Algorithm):
         &#34;&#34;&#34;
         Classify droplets based on total UMI count and unspliced fraction
         &#34;&#34;&#34;
@@ -243,7 +243,7 @@ Max allowed mitochondrial UMI fraction for valid cells</p></div>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="cytograph.module.Module" href="../module.html#cytograph.module.Module">Module</a></li>
+<li><a title="cytograph.algorithm.Algorithm" href="../algorithm.html#cytograph.algorithm.Algorithm">Algorithm</a></li>
 </ul>
 <h3>Methods</h3>
 <dl>

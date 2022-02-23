@@ -31,12 +31,12 @@
 import numpy as np
 from sklearn.decomposition import PCA
 from ..utils import div0
-from ..module import creates, requires, Module
+from ..algorithm import creates, requires, Algorithm
 import shoji
 import logging
 
 
-class ResidualsPCA(Module):
+class ResidualsPCA(Algorithm):
         &#34;&#34;&#34;
         Project a dataset into a reduced feature space using PCA on Pearson residuals.
         See https://www.biorxiv.org/content/10.1101/2020.12.01.405886v1.full.pdf
@@ -110,7 +110,7 @@ a large amount of memory</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class ResidualsPCA(Module):
+<pre><code class="python">class ResidualsPCA(Algorithm):
         &#34;&#34;&#34;
         Project a dataset into a reduced feature space using PCA on Pearson residuals.
         See https://www.biorxiv.org/content/10.1101/2020.12.01.405886v1.full.pdf
@@ -155,7 +155,7 @@ a large amount of memory</p></div>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="cytograph.module.Module" href="../module.html#cytograph.module.Module">Module</a></li>
+<li><a title="cytograph.algorithm.Algorithm" href="../algorithm.html#cytograph.algorithm.Algorithm">Algorithm</a></li>
 </ul>
 <h3>Methods</h3>
 <dl>

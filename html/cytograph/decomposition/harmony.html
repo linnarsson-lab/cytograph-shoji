@@ -31,12 +31,12 @@
 import numpy as np
 import pandas as pd
 from harmony import harmonize
-from cytograph import creates, requires, Module
+from cytograph import creates, requires, Algorithm
 import shoji
 import logging
 
 
-class Harmony(Module):
+class Harmony(Algorithm):
         &#34;&#34;&#34;
         Remove batch effects
         &#34;&#34;&#34;
@@ -50,7 +50,7 @@ class Harmony(Module):
                 Remarks:
                         Uses harmony-pytorch (https://github.com/lilab-bcb/harmony-pytorch)
 
-                        By default, this module will overwrite the existing Factors tensor. If you
+                        By default, this algorithm will overwrite the existing Factors tensor. If you
                         want to keep the original factors, use `creates: {Factors: MyFactors}` in the
                         recipe to rename the output.
                 &#34;&#34;&#34;
@@ -93,14 +93,14 @@ class Harmony(Module):
 </dl>
 <h2 id="remarks">Remarks</h2>
 <p>Uses harmony-pytorch (<a href="https://github.com/lilab-bcb/harmony-pytorch">https://github.com/lilab-bcb/harmony-pytorch</a>)</p>
-<p>By default, this module will overwrite the existing Factors tensor. If you
+<p>By default, this algorithm will overwrite the existing Factors tensor. If you
 want to keep the original factors, use <code>creates: {Factors: MyFactors}</code> in the
 recipe to rename the output.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class Harmony(Module):
+<pre><code class="python">class Harmony(Algorithm):
         &#34;&#34;&#34;
         Remove batch effects
         &#34;&#34;&#34;
@@ -114,7 +114,7 @@ recipe to rename the output.</p></div>
                 Remarks:
                         Uses harmony-pytorch (https://github.com/lilab-bcb/harmony-pytorch)
 
-                        By default, this module will overwrite the existing Factors tensor. If you
+                        By default, this algorithm will overwrite the existing Factors tensor. If you
                         want to keep the original factors, use `creates: {Factors: MyFactors}` in the
                         recipe to rename the output.
                 &#34;&#34;&#34;
@@ -135,7 +135,7 @@ recipe to rename the output.</p></div>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="cytograph.module.Module" href="../module.html#cytograph.module.Module">Module</a></li>
+<li><a title="cytograph.algorithm.Algorithm" href="../algorithm.html#cytograph.algorithm.Algorithm">Algorithm</a></li>
 </ul>
 <h3>Methods</h3>
 <dl>

@@ -26,7 +26,7 @@
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">from cytograph import Module, requires
+<pre><code class="python">from cytograph import Algorithm, requires
 from .scatter import scatterc, scattern
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
@@ -34,7 +34,7 @@ import numpy as np
 import shoji
 
 
-class PlotKaryotype(Module):
+class PlotKaryotype(Algorithm):
         def __init__(self, filename: str = &#34;karyotype.png&#34;, **kwargs) -&gt; None:
                 super().__init__(**kwargs)
                 self.filename = filename
@@ -129,7 +129,7 @@ class PlotKaryotype(Module):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class PlotKaryotype(Module):
+<pre><code class="python">class PlotKaryotype(Algorithm):
         def __init__(self, filename: str = &#34;karyotype.png&#34;, **kwargs) -&gt; None:
                 super().__init__(**kwargs)
                 self.filename = filename
@@ -206,7 +206,7 @@ class PlotKaryotype(Module):
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="cytograph.module.Module" href="../module.html#cytograph.module.Module">Module</a></li>
+<li><a title="cytograph.algorithm.Algorithm" href="../algorithm.html#cytograph.algorithm.Algorithm">Algorithm</a></li>
 </ul>
 <h3>Methods</h3>
 <dl>

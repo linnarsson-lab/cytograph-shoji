@@ -29,11 +29,11 @@
 <pre><code class="python">from typing import Dict
 import shoji
 import numpy as np
-from cytograph import requires, creates, Module
+from cytograph import requires, creates, Algorithm
 import logging
 
 
-class DetectSpecies(Module):
+class DetectSpecies(Algorithm):
         &#34;&#34;&#34;
         Use gene names to detect the species
         &#34;&#34;&#34;
@@ -81,7 +81,7 @@ class DetectSpecies(Module):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class DetectSpecies(Module):
+<pre><code class="python">class DetectSpecies(Algorithm):
         &#34;&#34;&#34;
         Use gene names to detect the species
         &#34;&#34;&#34;
@@ -111,7 +111,7 @@ class DetectSpecies(Module):
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="cytograph.module.Module" href="../module.html#cytograph.module.Module">Module</a></li>
+<li><a title="cytograph.algorithm.Algorithm" href="../algorithm.html#cytograph.algorithm.Algorithm">Algorithm</a></li>
 </ul>
 <h3>Methods</h3>
 <dl>
