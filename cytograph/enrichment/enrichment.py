@@ -19,7 +19,7 @@ class Enrichment(Algorithm):
 		"""
 		super().__init__(**kwargs)
 
-	@requires("MeanExpression", None, ("clusters", "genes"))
+	@requires("MeanExpression", "float64", ("clusters", "genes"))
 	@requires("NCells", "uint64", ("clusters",))
 	@requires("Nonzeros", "uint64", ("clusters", "genes"))
 	@creates("Enrichment", "float32", ("clusters", "genes"))
@@ -28,9 +28,9 @@ class Enrichment(Algorithm):
 
 		n_clusters = ws.clusters.length
 		cluster_size = self.NCells[:]
-		x = self.MeanExpression[:]
-		totals = x.sum(axis=1)
-		means = (x.T / totals * np.median(totals)).T
+		means = self.MeanExpression[:]
+		# totals = x.sum(axis=1)
+		# means = (x.T / totals * np.median(totals)).T
 		nnz = self.Nonzeros[:]
 		f_nnz = nnz / cluster_size
 		enrichment = np.zeros_like(means)

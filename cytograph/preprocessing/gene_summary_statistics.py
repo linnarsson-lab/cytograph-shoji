@@ -14,7 +14,7 @@ class GeneSummaryStatistics(Algorithm):
 		Creates:
 			MeanExpression		Mean expression per gene
 			StdevExpression		Standard deviation of expression per gene
-			Nonzeros			Nonzero count per gene
+			GeneNonzeros		Nonzero count per gene
 			GeneTotalUMIs		Total UMIs per gene
 			ValidGenes			Bool array indicating genes with nnz > 10
 		"""
@@ -24,7 +24,7 @@ class GeneSummaryStatistics(Algorithm):
 	@requires("TotalUMIs", "uint32", ("cells",))
 	@creates("MeanExpression", "float32", ("genes",))
 	@creates("StdevExpression", "float32", ("genes",))
-	@creates("Nonzeros", "uint32", ("genes",))
+	@creates("GeneNonzeros", "uint32", ("genes",))
 	@creates("GeneTotalUMIs", "uint32", ("genes",))
 	@creates("ValidGenes", "bool", ("genes",))
 	@creates("OverallTotalUMIs", "uint64", ())
