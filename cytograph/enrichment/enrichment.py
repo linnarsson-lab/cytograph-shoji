@@ -28,10 +28,10 @@ class Enrichment(Algorithm):
 
 		n_clusters = ws.clusters.length
 		cluster_size = self.NCells[:]
-		means = self.MeanExpression[:]
+		means = self.MeanExpression[:].T
 		# totals = x.sum(axis=1)
 		# means = (x.T / totals * np.median(totals)).T
-		nnz = self.Nonzeros[:]
+		nnz = self.Nonzeros[:].T
 		f_nnz = nnz / cluster_size
 		enrichment = np.zeros_like(means)
 		for j in range(n_clusters):
@@ -40,4 +40,5 @@ class Enrichment(Algorithm):
 			means_other = np.average(means[:, ix], weights=weights, axis=1)
 			f_nnz_other = np.average(f_nnz[:, ix], weights=weights, axis=1)
 			enrichment[:, j] = (f_nnz[:, j] + 0.1) / (f_nnz_other + 0.1) * (means[:, j] + 0.01) / (means_other + 0.01)
+		enrichment = enrichment.T
 		return enrichment
