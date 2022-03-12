@@ -69,13 +69,21 @@ class CollectCells(Algorithm):
 				logging.info(f" CollectCells: Keeping only cells that have auto-annotation '{punchcard.with_annotation}'")
 				if "AnnotationPosterior" not in source_ws:
 					raise ValueError(f"Punchcard uses 'with_annotation' but source '{source}' lacks auto-annotation")
-				pp = source_ws.AnnotationPosterior[:, source_ws.AnnotationName == punchcard.with_annotation]
-				keep_clusters = source_ws.ClusterID[pp > 0.95]
 				labels = source_ws.Clusters[:]
-				aa_indices = np.array([], dtype="uint32")
-				for cluster in keep_clusters:
-					aa_indices = np.union1d(aa_indices, np.where(labels == cluster)[0])
-				indices = np.intersect1d(indices, aa_indices)
+				keep_indices = np.array([], dtype="uint32")
+				for clause in punchcard.with_annotation.split("|"):
+					clause = clause.strip()
+					keep_clusters = source_ws.ClusterID[:]
+					for ann in clause.split(" "):
+						ann = ann.strip()
+						if ann.startswith("~"):
+							pp = 1 - source_ws.AnnotationPosterior[:, source_ws.AnnotationName == ann[1:]]
+						else:
+							pp = source_ws.AnnotationPosterior[:, source_ws.AnnotationName == ann]
+						keep_clusters = np.intersect1d(keep_clusters, source_ws.ClusterID[pp > 0.95])
+					for cluster in keep_clusters:
+						keep_indices = np.union1d(keep_indices, np.where(labels == cluster)[0])
+				indices = np.intersect1d(indices, keep_indices)
 				logging.info(f" CollectCells: Keeping {indices.shape[0]} cells from {keep_clusters.shape[0]} clusters with '{punchcard.with_annotation}'")
 			batch_size = 5_000
 			for start in range(0, indices.shape[0], batch_size):
