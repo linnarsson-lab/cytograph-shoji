@@ -32,6 +32,7 @@ class Species:
 				"Macrophages": ["AIF1", "HEXB", "MRC1"],
 				"Fibroblasts": ["LUM", "DCN", "COL1A1"],
 				"Endothelial": ["CLDN5"],
+				"Erythrocyte": ["HBB"],
 				"VSMC": ["ACTA2", "TAGLN"],
 				"Ependymal": ["TMEM212", "FOXJ1"],
 				"Choroid": ["TTR"],
