@@ -107,7 +107,7 @@ class BackSPAN(Algorithm):
 	@creates("Clusters", "uint32", ("cells",))
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> np.ndarray:
 		logging.info(" BackSPAN: Loading expression matrix")
-		data = ws.Expression.sparse(cols=ws.ValidGenes[:]).tocsc()
+		data = ws.Expression.sparse(cols=ws.ValidGenes[:]).tocsr()
 
 		# if self.batch_keys is not None and len(self.batch_keys) > 0:
 		# 	logging.info(f" BackSPAN: Preparing batch labels {self.batch_keys}")
