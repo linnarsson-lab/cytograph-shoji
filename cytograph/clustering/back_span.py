@@ -29,7 +29,7 @@ def newman_girvan_modularity(b, labels):
 	return Q.item()  # Q is a matrix of a scalar, so we must unbox it
 
 
-def split(x, n_genes=500, min_modularity=0, keys_df: pd.DataFrame = None):
+def split(data, n_genes=500, min_modularity=0, keys_df: pd.DataFrame = None):
 	"""
 	Computing an optimal normalized cut using SPAN, but in a subspace defined by pearson residuals variance
 	
@@ -41,25 +41,25 @@ def split(x, n_genes=500, min_modularity=0, keys_df: pd.DataFrame = None):
 	Returns:
 		labels:           Vector (ndarray) of 1s and 0s indicating the cut
 	"""
-	assert isinstance(x, sparse.csr_matrix), " BackSPAN: input matrix x must be sparse.csr_matrix"
-	bcoo = x.tocoo()
-	n_cells, _ = bcoo.shape
+	assert isinstance(data, sparse.csr_matrix), " BackSPAN: input matrix x must be sparse.csr_matrix"
+	n_cells, _ = data.shape
+	x = data.tocoo()
 	
 	# Positive pearson residuals for non-zero elements only
-	cell_totals = bcoo.sum(axis=1).A1
-	gene_totals = bcoo.sum(axis=0).A1
+	cell_totals = x.sum(axis=1).A1
+	gene_totals = x.sum(axis=0).A1
 	overall_totals = cell_totals.sum()
-	expected = cell_totals[bcoo.row] * gene_totals[bcoo.col] / overall_totals
-	residuals = div0((bcoo.data - expected),  np.sqrt(expected + np.power(expected, 2) / 100))
+	expected = cell_totals[x.row] * gene_totals[x.col] / overall_totals
+	residuals = div0((x.data - expected), np.sqrt(expected + np.power(expected, 2) / 100))
 	residuals = np.clip(residuals, 0, np.sqrt(n_cells))
-	bcoo.data = residuals
+	xcsc = sparse.csc_matrix((residuals, (x.row, x.col)), dtype="float32")
 
 	# Select genes by residuals variance
-	var, _ = mean_variance_axis(bcoo.tocsr(), axis=0)
+	var, _ = mean_variance_axis(xcsc, axis=0)
 	genes = np.argsort(-var)[:n_genes]
 
 	# Start the SPAN calculation
-	b = bcoo.tocsc()[:, genes]  # corresponds to B2 in the SPAN paper, but we use Pearson residuals instead of tf-idf
+	b = xcsc[:, genes]  # corresponds to B2 in the SPAN paper, but we use Pearson residuals instead of tf-idf
 	
 	# TODO: Harmonize here
 	einv = 1 / sparse.linalg.norm(b, axis=1)
@@ -84,8 +84,8 @@ def split(x, n_genes=500, min_modularity=0, keys_df: pd.DataFrame = None):
 		return np.zeros_like(labels)
 	else:
 		logging.info(f" BackSPAN: Splitting {n_cells} -> ({(labels == 0).sum()}, {(labels == 1).sum()}) with Q == {Q:.2} > {min_modularity:.2}")
-		left_labels = split(x[labels == 0], n_genes=n_genes, min_modularity=min_modularity)
-		right_labels = split(x[labels == 1], n_genes=n_genes, min_modularity=min_modularity)
+		left_labels = split(data[labels == 0], n_genes=n_genes, min_modularity=min_modularity)
+		right_labels = split(data[labels == 1], n_genes=n_genes, min_modularity=min_modularity)
 		right_labels += left_labels.max() + 1
 		indices = labels == 0
 		labels[indices] = left_labels
@@ -109,17 +109,17 @@ class BackSPAN(Algorithm):
 		logging.info(" BackSPAN: Loading expression matrix")
 		BATCH_SIZE = self.Expression.chunks[0]
 		valid = self.ValidGenes[:]
-		temp = sparse.lil_matrix((ws.cells.length, valid.sum()))
+		temp = sparse.lil_matrix((ws.cells.length, valid.sum()), dtype="float32")
 		for ix in range(0, ws.cells.length, BATCH_SIZE):
 			temp[ix: ix + BATCH_SIZE] = self.Expression[ix:ix + BATCH_SIZE, valid]
 		data = temp.tocsr()
 
-		if self.batch_keys is not None and len(self.batch_keys) > 0:
-			logging.info(f" BackSPAN: Preparing batch labels {self.batch_keys}")
-			keys_df = pd.DataFrame.from_dict({k: ws[k][:] for k in self.batch_keys})
-			# transformed = harmonize(self.Factors[:], keys_df, batch_key=self.batch_keys, tol_harmony=1e-5)
-		else:
-			keys_df = None
+		# if self.batch_keys is not None and len(self.batch_keys) > 0:
+		# 	logging.info(f" BackSPAN: Preparing batch labels {self.batch_keys}")
+		# 	keys_df = pd.DataFrame.from_dict({k: ws[k][:] for k in self.batch_keys})
+		# 	# transformed = harmonize(self.Factors[:], keys_df, batch_key=self.batch_keys, tol_harmony=1e-5)
+		# else:
+		# 	keys_df = None
 
 		logging.info(" BackSPAN: Recursively computing normalized cuts")
 		return split(data, self.n_genes, self.min_modularity)

@@ -66,7 +66,7 @@ class Workflow:
 		logdir.mkdir(exist_ok=True)
 		assert self.config.workspaces.build is not None
 		ws = self.config.workspaces.build[self.punchcard.name]
-		logging.info(f"Running recipe '{self.punchcard.recipe}' for '{self.punchcard.name}'")
+		logging.info(f"Running recipe '{self.punchcard.recipe}' for '{self.punchcard.name}'")
 		recipe = self.config.recipes[self.punchcard.recipe][resume_at:]
 		start_all = datetime.now()
 		for step in recipe:
