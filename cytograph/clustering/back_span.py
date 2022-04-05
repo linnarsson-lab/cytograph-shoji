@@ -28,6 +28,27 @@ def newman_girvan_modularity(b, labels):
 	return Q.item()  # Q is a matrix of a scalar, so we must unbox it
 
 
+def insert_node(btree, n):
+	if btree == []:
+		return [n, n + 1]
+	a, b = btree
+	if isinstance(a, list):
+		a = insert_node(a, n)
+	else:
+		if a > n:
+			a += 1
+		elif a == n:
+			a = [n, n + 1]
+	if isinstance(b, list):
+		b = insert_node(b, n)
+	else:
+		if b > n:
+			b += 1
+		elif b == n:
+			b = [n, n + 1]
+	return [a, b]
+
+
 class BackSPAN(Algorithm):
 	def __init__(self, n_genes: int = 500, min_modularity: float = 0, batch_keys: List[str] = None, **kwargs) -> None:
 		super().__init__(**kwargs)
@@ -37,7 +58,7 @@ class BackSPAN(Algorithm):
 		
 		self.data: sparse.csr_matrix = None
 		self.labels: np.ndarray = None
-		self.graph: np.ndarray = None
+		self.linkage = []
 		self.stack = []
 
 	def split(self, label_to_split):
@@ -64,7 +85,9 @@ class BackSPAN(Algorithm):
 
 		# TODO: Harmonize here
 		einv = 1 / sparse.linalg.norm(b, axis=1)
-		assert np.all(np.isfinite(einv)), " BackSPAN: Some cells are all-zero (to fix, increase n_genes or remove all-zero cells)"
+		if not np.all(np.isfinite(einv)):
+			logging.warning(" BackSPAN: Not splitting because some cells are all-zero (to fix, increase n_genes or remove all-zero cells)")
+			return
 
 		b.data *= np.take(einv, b.indices)  # b.indices are the indices of the rows
 
@@ -88,10 +111,8 @@ class BackSPAN(Algorithm):
 			self.labels[self.labels == label_to_split] = labels + label_to_split
 			self.stack.append(label_to_split)
 			self.stack.append(label_to_split + 1)
+			self.linkage = insert_node(self.linkage, label_to_split)
 			
-			self.graph[self.graph > label_to_split] += 1
-			self.graph = np.append(self.graph, ((label_to_split + 2, label_to_split, label_to_split + 1),), axis=0)
-
 	@requires("Expression", "uint16", ("cells", "genes"))
 	@requires("ValidGenes", "bool", ("genes",))
 	@creates("Clusters", "uint32", ("cells",))
@@ -102,7 +123,6 @@ class BackSPAN(Algorithm):
 		logging.info(" BackSPAN: Computing normalized cuts")
 		self.labels = np.zeros(self.data.shape[0], dtype="uint32")
 		self.stack.append(0)
-		self.graph = np.zeros((0, 3), dtype="uint32")
 		while len(self.stack) > 0:
 			self.split(self.stack.pop())
 		return self.labels
