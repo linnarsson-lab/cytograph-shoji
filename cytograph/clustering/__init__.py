@@ -7,4 +7,4 @@ from .dendrogram import Dendrogram
 from .polished_leiden import PolishedLeiden
 from .more_polished_leiden import MorePolishedLeiden
 from .cut_dendrogram import CutDendrogram
-from .back_span import BackSPAN
+from .stockholm import Stockholm
