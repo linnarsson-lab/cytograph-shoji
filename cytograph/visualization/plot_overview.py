@@ -245,8 +245,10 @@ class PlotOverview(Algorithm):
 			'Cortex occipital': 'red',
 			'Cortex entorhinal': 'red',
 			'Cortex frontotemporal': 'red',
+			'Cortex temporal': 'red',
+			'Cortex parietal': 'red',
+			'Cortex frontal': 'red',
 			'Cortical hem': 'red',
-
 			'Hippocampus': 'pink',
 
 			'Subcortex': 'orange',
