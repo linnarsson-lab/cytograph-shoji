@@ -131,7 +131,7 @@ class Stockholm(Algorithm):
 		Q = newman_girvan_modularity(b, labels)
 		n_clusters = self.labels.max() + 1
 		if Q <= self.min_modularity and n_clusters >= self.min_clusters:
-			logging.info(f" Stockholm: Nxot splitting {n_cells} cells with Q = {Q:.2} <= {self.min_modularity:.2}")
+			logging.info(f" Stockholm: Not splitting {n_cells} cells with Q = {Q:.2} <= {self.min_modularity:.2}")
 			return
 		else:
 			logging.info(f" Stockholm: Splitting {n_cells} -> ({(labels == 0).sum()}, {(labels == 1).sum()}) cells with Q == {Q:.2} > {self.min_modularity:.2}")
