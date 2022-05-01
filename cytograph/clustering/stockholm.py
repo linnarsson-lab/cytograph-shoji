@@ -1,4 +1,5 @@
-from typing import Tuple
+from tabnanny import verbose
+from typing import Tuple, List
 import numpy as np
 from cytograph.utils import div0
 import logging
@@ -9,6 +10,26 @@ from cytograph import requires, creates, Algorithm
 from sklearn.utils.sparsefuncs import mean_variance_axis
 from scipy.cluster.hierarchy import ClusterNode
 from copy import deepcopy
+import sys
+from sklearn.preprocessing import LabelEncoder
+import pandas as pd
+from harmony import harmonize
+
+
+# Suppressing negative residuals
+#   This makes it possible to use sparse residuals matrices (because zeros are always negative)
+# Batch-aware Poisson residuals
+# Using SPAN to compute optimal normalized cuts
+#   This uses cosine distance which now makes sense because we use residuals
+#   Exploits the fact that we now have sparse residuals
+#   Efficiently uses the (implicit) full distance matrix
+#   No need for KNN or a specific K
+#   No need for gene selection (but see below)
+# Selecting a new subspace at every branch of the SPAN algorithm
+#   Including recomputing the resdiuals because gene saliency changes
+#   Stopping when the cut is not different from a random cut
+#   Prune the clustering tree to yield different resolutions
+# Integration built-in based on Harmony (but on residuals)
 
 
 def newman_girvan_modularity(b, labels):
@@ -29,12 +50,15 @@ def newman_girvan_modularity(b, labels):
 
 
 class Stockholm(Algorithm):
-	def __init__(self, n_genes: int = 500, min_modularity: float = 0, min_cells: int = 25, min_clusters: int = 2, **kwargs) -> None:
+	def __init__(self, n_genes: int = 500, min_modularity: float = 0, min_cells: int = 30, min_clusters: int = 2, batch_keys: List[str] = None, **kwargs) -> None:
 		super().__init__(**kwargs)
 		self.n_genes = n_genes
 		self.min_modularity = min_modularity
 		self.min_cells = min_cells
+		if self.min_cells < 30 and batch_keys is not None:
+			raise ValueError("min_cells must be equal or greater than 30 if batch_keys is not None (because Harmony does not work with clusters smaller than 30 cells)")
 		self.min_clusters = min_clusters
+		self.batch_keys = batch_keys
 		
 		self.data: sparse.csr_matrix = None
 		self.labels: np.ndarray = None
@@ -50,7 +74,7 @@ class Stockholm(Algorithm):
 			else:
 				return tree
 		else:
-			left = self._insert_node(tree.left, n , Q, left_count, right_count)
+			left = self._insert_node(tree.left, n, Q, left_count, right_count)
 			right = self._insert_node(tree.right, n, Q, left_count, right_count)
 			return ClusterNode(tree.id, left, right, tree.dist, tree.count)
 
@@ -83,11 +107,11 @@ class Stockholm(Algorithm):
 
 		return np.array(linkage, dtype="float32")
 
-	def _split(self, label_to_split):
+	def _split(self, label_to_split, keys_df = None):
 		assert isinstance(self.data, sparse.csr_matrix), " Stockholm: input matrix must be sparse.csr_matrix"
 		n_cells = (self.labels == label_to_split).sum()
 		if n_cells < self.min_cells:
-			logging.info(f" Stockholm: Not splitting {n_cells} < {self.min_cells} cells ")
+			logging.info(f" Stockholm: Not splitting {n_cells} < {self.min_cells} cells ")
 			return
 		data = self.data[self.labels == label_to_split]
 		x = data.tocoo()
@@ -107,9 +131,16 @@ class Stockholm(Algorithm):
 
 		# Start the SPAN calculation
 		# https://static.googleusercontent.com/media/research.google.com/en//pubs/archive/36940.pdf
-		b = xcsc[:, genes]  # corresponds to B2 in the SPAN paper, but we use Pearson residuals instead of tf-idf
+		if keys_df is not None:
+			keys = keys_df[self.labels == label_to_split]
+			if len(np.unique(keys)) <= 1:
+				b = xcsc[:, genes]
+			else:
+				transformed = harmonize(xcsc[:, genes].toarray(), keys, batch_key=self.batch_keys, tol_harmony=1e-5, verbose=False)
+				b = sparse.csc_matrix(np.clip(transformed, 0, np.sqrt(n_cells)))
+		else:
+			b = xcsc[:, genes]  # corresponds to B2 in the SPAN paper, but we use Pearson residuals instead of tf-idf
 
-		# TODO: Harmonize here
 		einv = 1 / sparse.linalg.norm(b, axis=1)
 		if not np.all(np.isfinite(einv)):
 			logging.warning(" Stockholm: Not splitting because some cells are all-zero (to fix, increase n_genes or remove all-zero cells)")
@@ -152,9 +183,14 @@ class Stockholm(Algorithm):
 		logging.info(" Stockholm: Loading expression matrix")
 		self.data = ws.Expression.sparse(cols=ws.ValidGenes[:]).tocsr()
 
+		keys_df = None
+		if self.batch_keys is not None and len(self.batch_keys) > 0:
+			logging.info(f" Stockholm: Harmonizing based on batch keys {self.batch_keys}")
+			keys_df = pd.DataFrame.from_dict({k: ws[k][:] for k in self.batch_keys})
+
 		logging.info(" Stockholm: Computing normalized cuts")
 		self.labels = np.zeros(self.data.shape[0], dtype="uint32")
 		self.stack.append(0)
 		while len(self.stack) > 0:
-			self._split(self.stack.pop())
+			self._split(self.stack.pop(), keys_df)
 		return self.labels, self._to_linkage(self.labels.max() + 1)
