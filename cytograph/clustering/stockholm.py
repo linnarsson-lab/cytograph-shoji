@@ -10,8 +10,6 @@ from cytograph import requires, creates, Algorithm
 from sklearn.utils.sparsefuncs import mean_variance_axis
 from scipy.cluster.hierarchy import ClusterNode
 from copy import deepcopy
-import sys
-from sklearn.preprocessing import LabelEncoder
 import pandas as pd
 from harmony import harmonize
 
@@ -91,19 +89,19 @@ class Stockholm(Algorithm):
 		linkage = []
 
 		# Remove all nodes that merge two leaves, and place them on the linkage list
-		def prune(tr):
+		def merge(tr):
 			if tr.left.is_leaf() and tr.right.is_leaf():
 				linkage.append((tr.left.id, tr.right.id, tr.dist, tr.count))
 				tr.id = n_clusters + len(linkage) - 1
 				tr.left = None
 				tr.right = None
 			if tr.left is not None and not tr.left.is_leaf():
-				prune(tr.left)
+				merge(tr.left)
 			if tr.right is not None and not tr.right.is_leaf():
-				prune(tr.right)
+				merge(tr.right)
 
 		while not tree.is_leaf():
-			prune(tree)
+			merge(tree)
 
 		return np.array(linkage, dtype="float32")
 
@@ -165,6 +163,8 @@ class Stockholm(Algorithm):
 			logging.info(f" Stockholm: Not splitting {n_cells} cells with Q = {Q:.2} <= {self.min_modularity:.2}")
 			return
 		else:
+			Q = max(Q, 0)  # If we got here because min_clusters, then Q might be negative
+			# TODO: should prune instead, because min_clusters is path-dependent
 			logging.info(f" Stockholm: Splitting {n_cells} -> ({(labels == 0).sum()}, {(labels == 1).sum()}) cells with Q == {Q:.2} > {self.min_modularity:.2}")
 			self.labels[self.labels > label_to_split] += 1
 			self.labels[self.labels == label_to_split] = labels + label_to_split
