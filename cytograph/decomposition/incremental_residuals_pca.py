@@ -47,7 +47,7 @@ class IncrementalResidualsPCA(Algorithm):
 			data = ws[self.requires["Expression"]][ix:ix + batch_size, ws.SelectedFeatures == True]  # self.requires["Expression"] ensures that the user can rename the input tensor if desired
 			expected = totals[ix:ix + batch_size, None] @ (gene_totals[None, :] / overall_totals)
 			residuals = (data - expected) / np.sqrt(expected + np.power(expected, 2) / 100)
-			residuals = np.clip(residuals, -np.sqrt(n_cells), np.sqrt(n_cells))
+			residuals = np.clip(residuals, 0, np.sqrt(n_cells))
 			pca.partial_fit(residuals)
 
 		logging.info(f" ResidualsPCA: Transforming residuals incrementally in batches of {batch_size:,} cells")
@@ -56,7 +56,7 @@ class IncrementalResidualsPCA(Algorithm):
 			data = ws[self.requires["Expression"]][ix:ix + batch_size, ws.SelectedFeatures == True]  # self.requires["Expression"] ensures that the user can rename the input tensor if desired
 			expected = totals[ix:ix + batch_size, None] @ (gene_totals[None, :] / overall_totals)
 			residuals = (data - expected) / np.sqrt(expected + np.power(expected, 2) / 100)
-			residuals = np.clip(residuals, -np.sqrt(n_cells), np.sqrt(n_cells))
+			residuals = np.clip(residuals, 0, np.sqrt(n_cells))
 			factors[ix:ix + batch_size] = pca.transform(residuals)
 
 		loadings = pca.components_.T
