@@ -42,7 +42,7 @@ class PlotManifold(Algorithm):
 		plt.figure(figsize=(20, 20))
 		ax = plt.subplot(111)
 		if "ManifoldIndices" in ws:
-			edges = self.ManifoldIndices[:]
+			edges = ws.ManifoldIndices[:]
 			lc = LineCollection(zip(xy[edges[:, 0]], xy[edges[:, 1]]), linewidths=0.25, zorder=0, color='thistle', alpha=0.1)
 			ax.add_collection(lc)
 
