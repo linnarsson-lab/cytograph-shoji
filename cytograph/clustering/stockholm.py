@@ -8,7 +8,7 @@ import shoji
 from sklearn.utils.extmath import randomized_svd
 from cytograph import requires, creates, Algorithm
 from sklearn.utils.sparsefuncs import mean_variance_axis
-from scipy.cluster.hierarchy import ClusterNode
+from scipy.cluster.hierarchy import ClusterNode, cut_tree
 from copy import deepcopy
 import pandas as pd
 from harmony import harmonize
@@ -30,7 +30,7 @@ from harmony import harmonize
 # Integration built-in based on Harmony (but on residuals)
 
 
-def newman_girvan_modularity(b, labels):
+def _newman_girvan_modularity(b, labels):
 	bsum = b.T.sum(axis=1)
 	bsum0 = b[labels == 0].T.sum(axis=1)
 	bsum1 = b[labels == 1].T.sum(axis=1)
@@ -47,15 +47,23 @@ def newman_girvan_modularity(b, labels):
 	return Q.item()  # Q is a matrix of a scalar, so we must unbox it
 
 
+def newman_girvan_modularity(b, labels):
+	Q_hat = -1000
+	for _ in range(100):
+		permuted = np.random.permutation(labels)
+		Q_hat = max(Q_hat, _newman_girvan_modularity(b, permuted))
+	Q = _newman_girvan_modularity(b, labels)
+	print(f"{len(labels)} cells, {Q_hat=} {Q=}")
+	return Q
+
+
 class Stockholm(Algorithm):
-	def __init__(self, n_genes: int = 500, min_modularity: float = 0, min_cells: int = 30, min_clusters: int = 2, batch_keys: List[str] = None, **kwargs) -> None:
+	def __init__(self, n_genes: int = 500, min_cells: int = 30, batch_keys: List[str] = None, **kwargs) -> None:
 		super().__init__(**kwargs)
 		self.n_genes = n_genes
-		self.min_modularity = min_modularity
 		self.min_cells = min_cells
 		if self.min_cells < 30 and batch_keys is not None:
 			raise ValueError("min_cells must be equal or greater than 30 if batch_keys is not None (because Harmony does not work with clusters smaller than 30 cells)")
-		self.min_clusters = min_clusters
 		self.batch_keys = batch_keys
 		
 		self.data: sparse.csr_matrix = None
@@ -158,14 +166,11 @@ class Stockholm(Algorithm):
 		labels = (u.T[1] > 0).astype("uint32")  # Labels are the signs of 2nd left-singular vector
 
 		Q = newman_girvan_modularity(b, labels)
-		n_clusters = self.labels.max() + 1
-		if Q <= self.min_modularity and n_clusters >= self.min_clusters:
-			logging.info(f" Stockholm: Not splitting {n_cells} cells with Q = {Q:.2} <= {self.min_modularity:.2}")
+		if Q <= 0:
+			logging.info(f" Stockholm: Not splitting {n_cells} cells with Q = {Q:.2} <= 0")
 			return
 		else:
-			Q = max(Q, 0)  # If we got here because min_clusters, then Q might be negative
-			# TODO: should prune instead, because min_clusters is path-dependent
-			logging.info(f" Stockholm: Splitting {n_cells} -> ({(labels == 0).sum()}, {(labels == 1).sum()}) cells with Q == {Q:.2} > {self.min_modularity:.2}")
+			logging.info(f" Stockholm: Splitting {n_cells} -> ({(labels == 0).sum()}, {(labels == 1).sum()}) cells with Q == {Q:.2} > 0")
 			self.labels[self.labels > label_to_split] += 1
 			self.labels[self.labels == label_to_split] = labels + label_to_split
 			self.stack.append(label_to_split)
@@ -193,4 +198,6 @@ class Stockholm(Algorithm):
 		self.stack.append(0)
 		while len(self.stack) > 0:
 			self._split(self.stack.pop(), keys_df)
-		return self.labels, self._to_linkage(self.labels.max() + 1)
+		linkage = self._to_linkage(self.labels.max() + 1)
+
+		return self.labels, linkage
