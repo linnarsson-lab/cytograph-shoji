@@ -30,7 +30,7 @@ from harmony import harmonize
 # Integration built-in based on Harmony (but on residuals)
 
 
-def _newman_girvan_modularity(b, labels):
+def newman_girvan_modularity(b, labels):
 	bsum = b.T.sum(axis=1)
 	bsum0 = b[labels == 0].T.sum(axis=1)
 	bsum1 = b[labels == 1].T.sum(axis=1)
@@ -47,21 +47,13 @@ def _newman_girvan_modularity(b, labels):
 	return Q.item()  # Q is a matrix of a scalar, so we must unbox it
 
 
-def newman_girvan_modularity(b, labels):
-	Q_hat = -1000
-	for _ in range(100):
-		permuted = np.random.permutation(labels)
-		Q_hat = max(Q_hat, _newman_girvan_modularity(b, permuted))
-	Q = _newman_girvan_modularity(b, labels)
-	print(f"{len(labels)} cells, {Q_hat=} {Q=}")
-	return Q
-
-
 class Stockholm(Algorithm):
-	def __init__(self, n_genes: int = 500, min_cells: int = 30, batch_keys: List[str] = None, **kwargs) -> None:
+	def __init__(self, n_genes: int = 500, cut_at: float = 0.2, min_cells: int = 30, batch_keys: List[str] = None, **kwargs) -> None:
 		super().__init__(**kwargs)
 		self.n_genes = n_genes
+		self.cut_at = cut_at
 		self.min_cells = min_cells
+
 		if self.min_cells < 30 and batch_keys is not None:
 			raise ValueError("min_cells must be equal or greater than 30 if batch_keys is not None (because Harmony does not work with clusters smaller than 30 cells)")
 		self.batch_keys = batch_keys
@@ -183,7 +175,7 @@ class Stockholm(Algorithm):
 	@requires("Expression", "uint16", ("cells", "genes"))
 	@requires("ValidGenes", "bool", ("genes",))
 	@creates("Clusters", "uint32", ("cells",))
-	@creates("StockholmLinkage", "float32", (None, 4))
+#	@creates("StockholmLinkage", "float32", (None, 4))
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> Tuple[np.ndarray, np.ndarray]:
 		logging.info(" Stockholm: Loading expression matrix")
 		self.data = ws.Expression.sparse(cols=ws.ValidGenes[:]).tocsr()
@@ -200,4 +192,5 @@ class Stockholm(Algorithm):
 			self._split(self.stack.pop(), keys_df)
 		linkage = self._to_linkage(self.labels.max() + 1)
 
-		return self.labels, linkage
+		labels = cut_tree(linkage.astype("float64"), height=self.cut_at)[self.labels]
+		return labels
