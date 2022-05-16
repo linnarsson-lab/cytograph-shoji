@@ -192,5 +192,5 @@ class Stockholm(Algorithm):
 			self._split(self.stack.pop(), keys_df)
 		linkage = self._to_linkage(self.labels.max() + 1)
 
-		labels = cut_tree(linkage.astype("float64"), height=self.cut_at)[self.labels]
+		labels = cut_tree(linkage.astype("float64"), height=self.cut_at)[self.labels].flatten()  # need to flatten because it's a column vector
 		return labels
