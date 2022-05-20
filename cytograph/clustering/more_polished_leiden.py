@@ -171,25 +171,25 @@ class MorePolishedLeiden(Algorithm):
 			labels = np.array(la.find_partition(g, self.method, weights=weights, max_comm_size=self.max_size, n_iterations=-1).membership)
 		logging.info(f" MorePolishedLeiden: Found {labels.max() + 1} initial clusters")
 
-		# Break clusters based on the embedding
-		logging.info(" MorePolishedLeiden: Breaking clusters based on the embedding")
-		xy = self.Embedding[:]
-		# Only break clusters that are at least twice as large as the minimum size (note: labels are sorted by cluster size)
-		max_label = np.where(np.bincount(labels) < self.min_size * 2)[0][0]
-		next_label = 0
-		labels2 = np.copy(labels)
-		for lbl in range(max_label):
-			cluster = labels == lbl
-			if cluster.sum() < self.min_size:
-				continue
-			adjusted = self._break_cluster(xy[cluster, :])
-			new_labels = np.copy(adjusted)
-			for i in range(np.max(adjusted) + 1):
-				new_labels[adjusted == i] = i + next_label
-			next_label = next_label + np.max(adjusted) + 1
-			labels2[cluster] = new_labels
-		labels = labels2
-		logging.info(f" MorePolishedLeiden: Found {labels.max() + 1} clusters after breaking clusters on the embedding")
+		# # Break clusters based on the embedding
+		# logging.info(" MorePolishedLeiden: Breaking clusters based on the embedding")
+		# xy = self.Embedding[:]
+		# # Only break clusters that are at least twice as large as the minimum size (note: labels are sorted by cluster size)
+		# cluster_sizes = np.bincount(labels)
+		# next_label = 0
+		# labels2 = np.copy(labels)
+		# for lbl in range(max_label):
+		# 	cluster = labels == lbl
+		# 	if cluster.sum() < self.min_size:
+		# 		continue
+		# 	adjusted = self._break_cluster(xy[cluster, :])
+		# 	new_labels = np.copy(adjusted)
+		# 	for i in range(np.max(adjusted) + 1):
+		# 		new_labels[adjusted == i] = i + next_label
+		# 	next_label = next_label + np.max(adjusted) + 1
+		# 	labels2[cluster] = new_labels
+		# labels = labels2
+		# logging.info(f" MorePolishedLeiden: Found {labels.max() + 1} clusters after breaking clusters on the embedding")
 
 		# Assign each orphan cell to the same cluster as the nearest non-orphan
 		logging.info(f" MorePolishedLeiden: Removing clusters with less than {self.min_size} cells")
@@ -227,4 +227,7 @@ class MorePolishedLeiden(Algorithm):
 
 		accuracy = (predicted[~too_small] == labels[~too_small]).sum() / (~too_small).sum()
 		logging.info(f" MorePolishedLeiden: {int(accuracy * 100)}% classification accuracy on non-orphan cells")
+
+		np.save("labels_mpl.npy", labels)
+
 		return labels, secondary, predicted_proba, secondary_proba

@@ -41,7 +41,7 @@ class ResidualsPCA(Algorithm):
 		data = ws[ws.SelectedFeatures == True][self.requires["Expression"]]  # self.requires["Expression"] ensures that the user can rename the input tensor if desired
 		expected = totals[:, None] @ (gene_totals[None, :] / overall_totals)
 		residuals = (data - expected) / np.sqrt(expected + np.power(expected, 2) / 100)
-		residuals = np.clip(residuals, -np.sqrt(n_cells), np.sqrt(n_cells))
+		residuals = np.clip(residuals, 0, np.sqrt(n_cells))
 
 		logging.info(f" ResidualsPCA: Computing principal components")
 		pca = PCA(n_components=self.n_factors)

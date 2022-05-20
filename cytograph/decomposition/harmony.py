@@ -35,7 +35,7 @@ class Harmony(Algorithm):
 		if self.batch_keys is not None and len(self.batch_keys) > 0:
 			logging.info(f" Harmony: Harmonizing based on batch keys {self.batch_keys}")
 			keys_df = pd.DataFrame.from_dict({k: ws[k][:] for k in self.batch_keys})
-			transformed = harmonize(self.Factors[:], keys_df, batch_key=self.batch_keys, tol_harmony=1e-5)
+			transformed = harmonize(self.Factors[:], keys_df, batch_key=self.batch_keys, tol_harmony=1e-5, verbose=False)
 		else:
 			logging.info(" Harmony: Skipping because no batch keys were provided")
 			transformed = self.Factors[:]
