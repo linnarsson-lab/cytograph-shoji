@@ -47,17 +47,90 @@ def newman_girvan_modularity(b, labels):
 	return Q.item()  # Q is a matrix of a scalar, so we must unbox it
 
 
+def _recount(linkage):
+	n_clusters = len(linkage) + 1
+	for ix in range(len(linkage)):
+		a, b, _, _ = linkage[ix, :]
+		a = int(a)
+		b = int(b)
+		count = 0
+		if a < n_clusters:
+			count += 1
+		else:
+			count += linkage[a - n_clusters, 3]
+		if b < n_clusters:
+			count += 1
+		else:
+			count += linkage[b - n_clusters, 3]
+		linkage[ix, 3] = count
+
+
+def _pop_leaf(linkage):
+	n_clusters = len(linkage) + 1
+	nearest = np.argmin(linkage[:, 2])
+	a, b, _, _ = linkage[nearest, :]
+	linkage = np.delete(linkage, nearest, axis=0)
+	
+	linkage[:, :2][linkage[:, :2] == float(nearest + n_clusters)] = min(a, b)
+	r1 = linkage[:, :2] > max(a, b)
+	r2 = linkage[:, :2] > nearest + n_clusters
+	linkage[:, :2][r1] -= 1
+	linkage[:, :2][r2] -= 1
+
+	_recount(linkage)
+	return linkage
+
+
+def _to_linkage(tree):
+	tree = deepcopy(tree)
+	n_clusters = tree.get_count()
+
+	# Make the distances cumulative from the leaves, and assign IDs to the leaves
+	i = 0
+
+	def cumulate(tr):
+		nonlocal i
+		if tr.is_leaf():
+			tr.id = i
+			i += 1
+		else:
+			tr.dist += max(cumulate(tr.left), cumulate(tr.right))
+		return tr.dist
+	cumulate(tree)
+
+	linkage = []
+
+	# Remove all nodes that merge two leaves, and place them on the linkage list
+	def merge(tr):
+		if tr.left.is_leaf() and tr.right.is_leaf():
+			linkage.append((tr.left.id, tr.right.id, tr.dist, tr.count))
+			tr.id = n_clusters + len(linkage) - 1
+			tr.left = None
+			tr.right = None
+		if tr.left is not None and not tr.left.is_leaf():
+			merge(tr.left)
+		if tr.right is not None and not tr.right.is_leaf():
+			merge(tr.right)
+
+	while not tree.is_leaf():
+		merge(tree)
+
+	return np.array(linkage, dtype="float32")
+
+
 class Stockholm(Algorithm):
-	def __init__(self, n_genes: int = 500, cut_at: float = 0.2, min_cells: int = 30, batch_keys: List[str] = None, **kwargs) -> None:
+	def __init__(self, n_genes: int = 500, cut_at: float = 0.1, min_Q = 0.01, min_cells: int = 100, batch_keys: List[str] = None, **kwargs) -> None:
 		super().__init__(**kwargs)
 		self.n_genes = n_genes
 		self.cut_at = cut_at
+		self.min_Q = min_Q
 		self.min_cells = min_cells
 
 		if self.min_cells < 30 and batch_keys is not None:
 			raise ValueError("min_cells must be equal or greater than 30 if batch_keys is not None (because Harmony does not work with clusters smaller than 30 cells)")
 		self.batch_keys = batch_keys
-		
+		self.keys_df = None
+
 		self.data: sparse.csr_matrix = None
 		self.labels: np.ndarray = None
 		self.tree = None
@@ -76,36 +149,7 @@ class Stockholm(Algorithm):
 			right = self._insert_node(tree.right, n, Q, left_count, right_count)
 			return ClusterNode(tree.id, left, right, tree.dist, tree.count)
 
-	def _to_linkage(self, n_clusters):
-		tree = deepcopy(self.tree)
-
-		# Make the distances cumulative from the leaves
-		def cumulate(tr):
-			if not tr.is_leaf():
-				tr.dist += max(cumulate(tr.left), cumulate(tr.right))
-			return tr.dist
-		cumulate(tree)
-
-		linkage = []
-
-		# Remove all nodes that merge two leaves, and place them on the linkage list
-		def merge(tr):
-			if tr.left.is_leaf() and tr.right.is_leaf():
-				linkage.append((tr.left.id, tr.right.id, tr.dist, tr.count))
-				tr.id = n_clusters + len(linkage) - 1
-				tr.left = None
-				tr.right = None
-			if tr.left is not None and not tr.left.is_leaf():
-				merge(tr.left)
-			if tr.right is not None and not tr.right.is_leaf():
-				merge(tr.right)
-
-		while not tree.is_leaf():
-			merge(tree)
-
-		return np.array(linkage, dtype="float32")
-
-	def _split(self, label_to_split, keys_df = None):
+	def _split(self, label_to_split):
 		assert isinstance(self.data, sparse.csr_matrix), " Stockholm: input matrix must be sparse.csr_matrix"
 		n_cells = (self.labels == label_to_split).sum()
 		if n_cells < self.min_cells:
@@ -129,8 +173,8 @@ class Stockholm(Algorithm):
 
 		# Start the SPAN calculation
 		# https://static.googleusercontent.com/media/research.google.com/en//pubs/archive/36940.pdf
-		if keys_df is not None:
-			keys = keys_df[self.labels == label_to_split]
+		if self.keys_df is not None:
+			keys = self.keys_df[self.labels == label_to_split]
 			if len(np.unique(keys)) <= 1:
 				b = xcsc[:, genes]
 			else:
@@ -158,11 +202,12 @@ class Stockholm(Algorithm):
 		labels = (u.T[1] > 0).astype("uint32")  # Labels are the signs of 2nd left-singular vector
 
 		Q = newman_girvan_modularity(b, labels)
-		if Q <= 0:
-			logging.info(f" Stockholm: Not splitting {n_cells} cells with Q = {Q:.2} <= 0")
+
+		if Q <= self.min_Q:
+			logging.info(f" Stockholm: Not splitting {n_cells} cells with Q = {Q:.2} <= {self.min_Q}")
 			return
 		else:
-			logging.info(f" Stockholm: Splitting {n_cells} -> ({(labels == 0).sum()}, {(labels == 1).sum()}) cells with Q == {Q:.2} > 0")
+			logging.info(f" Stockholm: Splitting {n_cells} -> ({(labels == 0).sum()}, {(labels == 1).sum()}) cells with Q == {Q:.2} > {self.min_Q}")
 			self.labels[self.labels > label_to_split] += 1
 			self.labels[self.labels == label_to_split] = labels + label_to_split
 			self.stack.append(label_to_split)
@@ -175,22 +220,28 @@ class Stockholm(Algorithm):
 	@requires("Expression", "uint16", ("cells", "genes"))
 	@requires("ValidGenes", "bool", ("genes",))
 	@creates("Clusters", "uint32", ("cells",))
-#	@creates("StockholmLinkage", "float32", (None, 4))
+	@creates("StockholmLinkage", "float32", (None, 4))
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> Tuple[np.ndarray, np.ndarray]:
 		logging.info(" Stockholm: Loading expression matrix")
 		self.data = ws.Expression.sparse(cols=ws.ValidGenes[:]).tocsr()
 
-		keys_df = None
 		if self.batch_keys is not None and len(self.batch_keys) > 0:
-			logging.info(f" Stockholm: Harmonizing based on batch keys {self.batch_keys}")
-			keys_df = pd.DataFrame.from_dict({k: ws[k][:] for k in self.batch_keys})
+			logging.info(f" Stockholm: Will harmonize based on {self.batch_keys}")
+			self.keys_df = pd.DataFrame.from_dict({k: ws[k][:] for k in self.batch_keys})
 
 		logging.info(" Stockholm: Computing normalized cuts")
 		self.labels = np.zeros(self.data.shape[0], dtype="uint32")
 		self.stack.append(0)
 		while len(self.stack) > 0:
-			self._split(self.stack.pop(), keys_df)
-		linkage = self._to_linkage(self.labels.max() + 1)
+			self._split(self.stack.pop())
 
+		logging.info(f" Stockholm: Found {self.labels.max() + 1} preliminary clusters with min_Q={self.min_Q}")
+		linkage = _to_linkage(self.tree)
+		logging.info(f" Stockholm: Cutting dendrogram at {self.cut_at}")
 		labels = cut_tree(linkage.astype("float64"), height=self.cut_at)[self.labels].flatten()  # need to flatten because it's a column vector
-		return labels
+		logging.info(f" Stockholm: Found {labels.max() + 1} clusters")
+		original_linkage = linkage
+		while np.min(linkage[:, 2]) < self.cut_at:
+			linkage = _pop_leaf(linkage)
+
+		return labels, linkage, self.labels, original_linkage, self.tree
