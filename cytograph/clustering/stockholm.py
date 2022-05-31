@@ -221,6 +221,8 @@ class Stockholm(Algorithm):
 	@requires("ValidGenes", "bool", ("genes",))
 	@creates("Clusters", "uint32", ("cells",))
 	@creates("StockholmLinkage", "float32", (None, 4))
+	@creates("ClustersHires", "uint32", ("cells",))
+	@creates("StockholmLinkageHires", "float32", (None, 4))
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> Tuple[np.ndarray, np.ndarray]:
 		logging.info(" Stockholm: Loading expression matrix")
 		self.data = ws.Expression.sparse(cols=ws.ValidGenes[:]).tocsr()
@@ -244,4 +246,4 @@ class Stockholm(Algorithm):
 		while np.min(linkage[:, 2]) < self.cut_at:
 			linkage = _pop_leaf(linkage)
 
-		return labels, linkage, self.labels, original_linkage, self.tree
+		return labels, linkage, self.labels, original_linkage
