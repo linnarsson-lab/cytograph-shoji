@@ -155,6 +155,7 @@ class Stockholm(Algorithm):
 		if n_cells < self.min_cells:
 			logging.info(f" Stockholm: Not splitting {n_cells} < {self.min_cells} cells ")
 			return
+		n_clusters = self.labels.max() + 1
 		data = self.data[self.labels == label_to_split]
 		x = data.tocoo()
 
@@ -203,7 +204,7 @@ class Stockholm(Algorithm):
 
 		Q = newman_girvan_modularity(b, labels)
 
-		if Q <= self.min_Q:
+		if n_clusters > 8 and Q <= self.min_Q:
 			logging.info(f" Stockholm: Not splitting {n_cells} cells with Q = {Q:.2} <= {self.min_Q}")
 			return
 		else:
@@ -221,8 +222,8 @@ class Stockholm(Algorithm):
 	@requires("ValidGenes", "bool", ("genes",))
 	@creates("Clusters", "uint32", ("cells",))
 	@creates("StockholmLinkage", "float32", (None, 4))
-	@creates("ClustersHires", "uint32", ("cells",))
-	@creates("StockholmLinkageHires", "float32", (None, 4))
+	@creates("ClustersFine", "uint32", ("cells",))
+	@creates("StockholmLinkageFine", "float32", (None, 4))
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> Tuple[np.ndarray, np.ndarray]:
 		logging.info(" Stockholm: Loading expression matrix")
 		self.data = ws.Expression.sparse(cols=ws.ValidGenes[:]).tocsr()
