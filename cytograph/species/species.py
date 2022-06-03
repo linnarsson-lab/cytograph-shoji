@@ -6,7 +6,7 @@ import numpy as np
 import shoji
 from cytograph import requires, creates
 
-from .human import TFs_human, cc_genes_human, g1_human, g2m_human, s_human
+from .human import TFs_human, cc_genes_human, g1_human, g2m_human, s_human, ncRNA_human
 from .mouse import TFs_mouse, cc_genes_mouse, g1_mouse, g2m_mouse, s_mouse
 
 
@@ -23,7 +23,8 @@ class Species:
 				"s": s_human,
 				"g2m": g2m_human,
 				"ery": ["HBA-A1", "HBA-A2", "HBA-X", "HBB-BH1", "HBB-BS", "HBB-BT", "HBB-Y", "ALAS2"],
-				"mt": ['MT-CYB', 'MT-ND6', 'MT-CO3', 'MT-ND1', 'MT-ND4', 'MT-CO1', 'MT-ND2', 'MT-CO2', 'MT-ATP8', 'MT-ND4L', 'MT-ATP6', 'MT-ND5', 'MT-ND3']
+				"mt": ['MT-CYB', 'MT-ND6', 'MT-CO3', 'MT-ND1', 'MT-ND4', 'MT-CO1', 'MT-ND2', 'MT-CO2', 'MT-ATP8', 'MT-ND4L', 'MT-ATP6', 'MT-ND5', 'MT-ND3'],
+				"ncRNA": ncRNA_human
 			}
 			self.markers = {
 				"CellCycle": ["PCNA", "CDK1", "TOP2A"],
@@ -109,10 +110,12 @@ class Species:
 		Create a boolean mask that includes all genes except those that belong to any of the categories
 
 		Args:
-			categories		Any combination of "TFs", "cellcycle", "sex", "ieg", "g1", "s", "g2m"
+			categories		Any combination of "TFs", "cellcycle", "sex", "ieg", "g1", "s", "g2m", "ncRNA"
 		"""
 		mask = np.zeros(ws.genes.length, dtype=bool)
-		genes = ws[:].Gene
+		genes = ws.Gene[:]
+		accs = ws.Accession[:]
 		for cat in categories:
 			mask = mask | np.isin(genes, self.genes.__dict__[cat])
+			mask = mask | np.isin(accs, self.genes.__dict__[cat])
 		return mask
