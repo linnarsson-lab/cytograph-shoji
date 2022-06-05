@@ -6,7 +6,7 @@ import logging
 import scipy.sparse as sparse
 import shoji
 from sklearn.utils.extmath import randomized_svd
-from cytograph import requires, creates, Algorithm
+from cytograph import requires, creates, Algorithm, Species
 from sklearn.utils.sparsefuncs import mean_variance_axis
 from scipy.cluster.hierarchy import ClusterNode, cut_tree
 from copy import deepcopy
@@ -119,12 +119,14 @@ def _to_linkage(tree):
 
 
 class Stockholm(Algorithm):
-	def __init__(self, n_genes: int = 500, cut_at: float = 0.1, min_Q = 0.01, min_cells: int = 100, batch_keys: List[str] = None, **kwargs) -> None:
+	def __init__(self, n_genes: int = 500, cut_at: float = 0.1, min_Q = 0.01, min_cells: int = 100, mask: List[str] = None, batch_keys: List[str] = None, **kwargs) -> None:
 		super().__init__(**kwargs)
 		self.n_genes = n_genes
 		self.cut_at = cut_at
 		self.min_Q = min_Q
 		self.min_cells = min_cells
+		self.mask = mask if mask is not None else []
+		self.masked_genes: np.ndarray = None
 
 		if self.min_cells < 30 and batch_keys is not None:
 			raise ValueError("min_cells must be equal or greater than 30 if batch_keys is not None (because Harmony does not work with clusters smaller than 30 cells)")
@@ -170,7 +172,13 @@ class Stockholm(Algorithm):
 
 		# Select genes by residuals variance
 		var, _ = mean_variance_axis(xcsc, axis=0)
-		genes = np.argsort(-var)[:self.n_genes]
+		variable_genes = np.argsort(-var)
+		temp = []
+		ix = 0
+		while len(temp) < self.n_genes:
+			if not self.masked_genes[variable_genes[ix]]:
+				temp.append(variable_genes[ix])
+		genes = np.array(temp, dtype="uint32")
 
 		# Start the SPAN calculation
 		# https://static.googleusercontent.com/media/research.google.com/en//pubs/archive/36940.pdf
@@ -220,11 +228,15 @@ class Stockholm(Algorithm):
 
 	@requires("Expression", "uint16", ("cells", "genes"))
 	@requires("ValidGenes", "bool", ("genes",))
+	@requires("Species", "string", ())
 	@creates("Clusters", "uint32", ("cells",))
 	@creates("StockholmLinkage", "float32", (None, 4))
 	@creates("ClustersFine", "uint32", ("cells",))
 	@creates("StockholmLinkageFine", "float32", (None, 4))
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> Tuple[np.ndarray, np.ndarray]:
+		species = Species(self.Species[:])
+		self.masked_genes = species.mask(ws, self.mask)
+
 		logging.info(" Stockholm: Loading expression matrix")
 		self.data = ws.Expression.sparse(cols=ws.ValidGenes[:]).tocsr()
 

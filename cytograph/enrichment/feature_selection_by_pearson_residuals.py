@@ -29,7 +29,6 @@ class FeatureSelectionByPearsonResiduals(Algorithm):
 	@requires("ValidGenes", "bool", ("genes",))
 	@creates("SelectedFeatures", "bool", ("genes",), indices=True)
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> np.ndarray:
-		# Create symbolic names for the required tensors, which might be renamed by the user
 		species = cg.Species(self.Species[:])
 		mask_genes = species.mask(ws, self.mask)
 
