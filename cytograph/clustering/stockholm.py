@@ -1,4 +1,3 @@
-from tabnanny import verbose
 from typing import Tuple, List
 import numpy as np
 from cytograph.utils import div0
@@ -6,7 +5,8 @@ import logging
 import scipy.sparse as sparse
 import shoji
 from sklearn.utils.extmath import randomized_svd
-from cytograph import requires, creates, Algorithm, Species
+from cytograph import requires, creates, Algorithm
+from ..species import Species
 from sklearn.utils.sparsefuncs import mean_variance_axis
 from scipy.cluster.hierarchy import ClusterNode, cut_tree
 from copy import deepcopy
