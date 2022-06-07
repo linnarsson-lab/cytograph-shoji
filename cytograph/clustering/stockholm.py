@@ -178,6 +178,7 @@ class Stockholm(Algorithm):
 		while len(temp) < self.n_genes:
 			if not self.masked_genes[variable_genes[ix]]:
 				temp.append(variable_genes[ix])
+			ix += 1
 		genes = np.array(temp, dtype="uint32")
 
 		# Start the SPAN calculation
