@@ -63,6 +63,7 @@ class Aggregate(Algorithm):
 			logging.info(f" Aggregate: Creating dimension '{self.newdim}'")
 			ws[self.newdim] = shoji.Dimension(shape=result[1].shape[0])
 		if self.orderby not in ws:
+			logging.info(f" Aggregate: Creating tensor '{self.orderby}' of shape {result[0].shape}")
 			ws[self.orderby] = shoji.Tensor(dtype="uint32", dims=(self.newdim,), inits=result[0].astype("uint32"))
 		# The groups are not in the same order as in the database, so we need to reorder the result
 		ordering = indices_to_order_a_like_b(result[0], ws[self.orderby][:])

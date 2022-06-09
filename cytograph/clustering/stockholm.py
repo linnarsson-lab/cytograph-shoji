@@ -137,6 +137,7 @@ class Stockholm(Algorithm):
 		self.labels: np.ndarray = None
 		self.tree = None
 		self.stack = []
+		self.indent = 0
 
 	def _insert_node(self, tree: ClusterNode, n, Q, left_count, right_count):
 		if tree.is_leaf():
@@ -155,7 +156,8 @@ class Stockholm(Algorithm):
 		assert isinstance(self.data, sparse.csr_matrix), " Stockholm: input matrix must be sparse.csr_matrix"
 		n_cells = (self.labels == label_to_split).sum()
 		if n_cells < self.min_cells:
-			logging.info(f" Stockholm: Not splitting {n_cells} < {self.min_cells} cells ")
+			logging.info(f" Stockholm: {'│' * self.indent}└{n_cells} < {self.min_cells} cells ")
+			self.indent -= 1
 			return
 		n_clusters = self.labels.max() + 1
 		data = self.data[self.labels == label_to_split]
@@ -195,7 +197,8 @@ class Stockholm(Algorithm):
 
 		einv = 1 / sparse.linalg.norm(b, axis=1)
 		if not np.all(np.isfinite(einv)):
-			logging.warning(" Stockholm: Not splitting because some cells are all-zero (to fix, increase n_genes or remove all-zero cells)")
+			logging.warning(f" Stockholm: {'│' * self.indent}└Not splitting because some cells are all-zero (to fix, increase n_genes or remove all-zero cells)")
+			self.indent -= 1
 			return
 
 		b.data *= np.take(einv, b.indices)  # b.indices are the indices of the rows
@@ -214,10 +217,15 @@ class Stockholm(Algorithm):
 		Q = newman_girvan_modularity(b, labels)
 
 		if n_clusters > 8 and Q <= self.min_Q:
-			logging.info(f" Stockholm: Not splitting {n_cells} cells with Q = {Q:.2} <= {self.min_Q}")
+			logging.info(f" Stockholm: {'│' * self.indent}├{n_cells} | Q = {Q:.2} <= {self.min_Q}")
+			self.indent -= 1
 			return
 		else:
-			logging.info(f" Stockholm: Splitting {n_cells} -> ({(labels == 0).sum()}, {(labels == 1).sum()}) cells with Q == {Q:.2} > {self.min_Q}")
+			if n_clusters <= 8:
+				logging.info(f" Stockholm: {'│' * self.indent}├{n_cells} -> ({(labels == 0).sum()}, {(labels == 1).sum()}) | Q == {Q:.2}")
+			else:
+				logging.info(f" Stockholm: {'│' * self.indent}├{n_cells} -> ({(labels == 0).sum()}, {(labels == 1).sum()}) | Q == {Q:.2} > {self.min_Q}")
+			self.indent += 1
 			self.labels[self.labels > label_to_split] += 1
 			self.labels[self.labels == label_to_split] = labels + label_to_split
 			self.stack.append(label_to_split)

@@ -1,5 +1,4 @@
 import logging
-from numpy.core.numeric import indices
 import shoji
 import numpy as np
 from cytograph import creates, requires, Algorithm
@@ -37,7 +36,6 @@ class Dendrogram(Algorithm):
 	@requires("SelectedFeatures", "bool", ("genes",))
 	@requires("MeanExpression", "float64", ("clusters", "genes"))
 	@creates("Linkage", "float32", (None, 4))
-	@creates("OldClusterID", "uint32", ("clusters",))
 	@creates("ClusterID", "uint32", ("clusters",))
 	@creates("Clusters", "uint32", ("cells",))
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> np.ndarray:
@@ -82,4 +80,4 @@ class Dendrogram(Algorithm):
 
 			return Z, cluster_ids[ordering], new_clusters
 		else:
-			return Z, old_cluster_ids, cluster_ids, new_clusters
+			return Z, cluster_ids, new_clusters
