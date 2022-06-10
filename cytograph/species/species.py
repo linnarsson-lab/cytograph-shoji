@@ -114,7 +114,7 @@ class Species:
 		"""
 		mask = np.zeros(ws.genes.length, dtype=bool)
 		genes = ws.Gene[:]
-		accs = ws.Accession[:]
+		accs = np.array([s.split(".")[0] for s in ws.Accession[:]])
 		for cat in categories:
 			mask = mask | np.isin(genes, self.genes.__dict__[cat])
 			mask = mask | np.isin(accs, self.genes.__dict__[cat])
