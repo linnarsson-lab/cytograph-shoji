@@ -35,10 +35,11 @@ class FeatureSelectionByPearsonResiduals(Algorithm):
 		logging.info(" FeatureSelectionByPearsonResiduals: Loading residuals")
 		d = self.PearsonResidualsVariance[:]
 
-		logging.info(" FeatureSelectionByPearsonResiduals: Removing invalid and masked genes")
+		logging.info(f" FeatureSelectionByPearsonResiduals: Removing {(~mask_genes).sum()} invalid and masked genes")
 		valid = self.ValidGenes[:]
 		if self.mask is not None:
 			valid = np.logical_and(valid, np.logical_not(mask_genes))
+		logging.info(f" FeatureSelectionByPearsonResiduals: Considering {(valid).sum()} valid and unmasked genes")
 
 		temp = []
 		for gene in np.argsort(-d):
