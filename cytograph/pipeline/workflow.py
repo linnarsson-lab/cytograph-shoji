@@ -1,6 +1,6 @@
 import logging
 from typing import Dict
-import os
+import numpy as np
 import shoji
 from .config import Config
 from .punchcards import PunchcardDeck, Punchcard
@@ -66,8 +66,16 @@ class Workflow:
 		logdir.mkdir(exist_ok=True)
 		assert self.config.workspaces.build is not None
 		ws = self.config.workspaces.build[self.punchcard.name]
-		logging.info(f"Running recipe '{self.punchcard.recipe}' for '{self.punchcard.name}'")
+		if resume_at == 0:
+			logging.info(f"Running recipe '{self.punchcard.recipe}' for '{self.punchcard.name}'")
+		else:
+			logging.info(f"Resuming recipe '{self.punchcard.recipe}' from step {resume_at} for '{self.punchcard.name}'")
 		recipe = self.config.recipes[self.punchcard.recipe][resume_at:]
+		steps = np.array("\n".join([str(s) for s in recipe]), dtype=object)
+		if "Recipe" not in ws:
+			ws.Recipe = shoji.Tensor(dtype="string", dims=(), inits=steps)
+		else:
+			ws.Recipe.append({"Recipe": steps})
 		start_all = datetime.now()
 		for step in recipe:
 			for fname, args in step.items():

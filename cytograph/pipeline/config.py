@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+import os
 
 import yaml
 import shoji
@@ -67,11 +68,12 @@ class Config:
 		if Config._singleton is None:
 			config = Config()
 			# Load the default settings
-#			config._load_and_merge(Path(__file__).resolve().parent / "default_config.yaml")
+			config._load_and_merge(Path(__file__).resolve().parent / "default_config.yaml")
 			# Home directory
 #			config._load_and_merge(Path.home() / ".cytograph")
 			# Load config from current folder
-			config._load_and_merge(Path.cwd() / "config.yaml")
+			if os.path.exists(Path.cwd() / "config.yaml"):
+				config._load_and_merge(Path.cwd() / "config.yaml")
 		else:
 			config = Config._singleton
 
