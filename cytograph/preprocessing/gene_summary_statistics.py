@@ -35,7 +35,7 @@ class GeneSummaryStatistics(Algorithm):
 		sd = stats.sd()[1].flatten()
 		nnz = stats.nnz()[1].flatten()
 		s = stats.sum()[1].flatten()
-		valids = (nnz > 10)
+		valids = (nnz > ws.cells.length * 0.001)
 		logging.info(f" GeneSummaryStatistics: Average nonzero cells per gene {int(nnz.mean())}")
 		logging.info(f" GeneSummaryStatistics: Average UMIs per gene {int(s.mean())}")
 		logging.info(f" GeneSummaryStatistics: Number of valid genes {valids.sum():,} ({int(valids.sum() / ws.genes.length * 100)}%)")

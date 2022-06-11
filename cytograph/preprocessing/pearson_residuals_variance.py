@@ -35,7 +35,7 @@ class PearsonResidualsVariance(Algorithm):
 			data = self.Expression[ix: ix + batch_size, :]
 			expected = totals[ix: ix + batch_size, None] @ div0(gene_totals[None, :], self.OverallTotalUMIs[:])
 			residuals = div0((data - expected), np.sqrt(expected + np.power(expected, 2) / 100))
-			residuals = np.clip(residuals, -np.sqrt(n_cells), np.sqrt(n_cells))
+			residuals = np.clip(residuals, 0, np.sqrt(n_cells))
 			for j in range(residuals.shape[0]):
 				acc.add(residuals[j, :])
 			ix += batch_size

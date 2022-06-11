@@ -48,6 +48,7 @@ class IncrementalResidualsPCA(Algorithm):
 			expected = totals[ix:ix + batch_size, None] @ (gene_totals[None, :] / overall_totals)
 			residuals = (data - expected) / np.sqrt(expected + np.power(expected, 2) / 100)
 			residuals = np.clip(residuals, 0, np.sqrt(n_cells))
+#			residuals = np.log2(residuals + 1)
 			pca.partial_fit(residuals)
 
 		logging.info(f" ResidualsPCA: Transforming residuals incrementally in batches of {batch_size:,} cells")
@@ -57,6 +58,7 @@ class IncrementalResidualsPCA(Algorithm):
 			expected = totals[ix:ix + batch_size, None] @ (gene_totals[None, :] / overall_totals)
 			residuals = (data - expected) / np.sqrt(expected + np.power(expected, 2) / 100)
 			residuals = np.clip(residuals, 0, np.sqrt(n_cells))
+#			residuals = np.log2(residuals + 1)
 			factors[ix:ix + batch_size] = pca.transform(residuals)
 
 		loadings = pca.components_.T
