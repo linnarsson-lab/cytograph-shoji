@@ -89,5 +89,12 @@ class Config:
 				config.resources.memory = punchcard.resources.memory
 			config.punchcard = punchcard
 
+		# Load recipes from build folder
+		if os.path.exists(Path.cwd() / "recipes"):
+			for fname in os.listdir(Path.cwd() / "recipes"):
+				if fname.endswith(".yaml"):
+					with open(Path.cwd() / "recipes" / fname) as f:
+						recipe = yaml.load(f, Loader=yaml.FullLoader)
+					config.recipes[fname[:-5]] = recipe
 		Config._singleton = config
 		return config
