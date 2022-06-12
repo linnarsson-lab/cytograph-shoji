@@ -36,7 +36,7 @@ class BatchAwareFeatureSelection(Algorithm):
 		self.max_nnz_ratio = max_nnz_ratio
 
 	@requires("Species", "string", ())
-	@requires("PearsonResiduals", "float32", ("cells", "genes"))
+	@requires("PearsonResiduals", "float32", (None, "genes"))
 	@requires("ValidGenes", "bool", ("genes",))
 	@requires("PearsonResidualsVariance", "float32", ("genes",))
 	@creates("SelectedFeatures", "bool", ("genes",), indices=True)
