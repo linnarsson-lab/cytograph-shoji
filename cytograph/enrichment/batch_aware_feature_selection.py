@@ -36,6 +36,7 @@ class BatchAwareFeatureSelection(Algorithm):
 		self.max_nnz_ratio = max_nnz_ratio
 
 	@requires("Species", "string", ())
+	@requires("Expression", "uint16", ("cells", "genes"))
 	@requires("PearsonResiduals", "float32", (None, "genes"))
 	@requires("ValidGenes", "bool", ("genes",))
 	@requires("PearsonResidualsVariance", "float32", ("genes",))
@@ -65,6 +66,7 @@ class BatchAwareFeatureSelection(Algorithm):
 		temp = []
 		for gene in np.argsort(-d):
 			if valid[gene]:
+				
 				temp.append(gene)
 			if len(temp) >= self.n_genes:
 				break
