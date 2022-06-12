@@ -7,3 +7,4 @@ from .feature_selection_by_pearson_residuals import FeatureSelectionByPearsonRes
 from .gsea import GSEA
 from .enrichment import Enrichment
 from .trinarize import Trinarize
+from .batch_aware_feature_selection import BatchAwareFeatureSelection

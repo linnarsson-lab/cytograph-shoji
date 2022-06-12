@@ -1,7 +1,5 @@
 from typing import List
 import numpy as np
-from sklearn.preprocessing import LabelEncoder
-from sklearn.svm import SVR
 import cytograph as cg
 from cytograph import requires, creates, Algorithm, div0
 import shoji
