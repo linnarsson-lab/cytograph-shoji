@@ -56,6 +56,7 @@ class BatchAwarePearsonResiduals(Algorithm):
 		for ix in range(0, n_cells, batch_size):
 			residuals = np.zeros((min(batch_size, n_cells - ix), n_genes), dtype="float32")
 			for j, key in enumerate(unique_keys):
+				logging.info(f"{ix=} {j=} {key=}")
 				indices = (keys == key)[ix: ix + batch_size]
 				if indices.sum() == 0:
 					continue
@@ -64,6 +65,7 @@ class BatchAwarePearsonResiduals(Algorithm):
 				residuals[indices, :] = div0((data - expected), np.sqrt(expected + np.power(expected, 2) / 100))
 			residuals = np.clip(residuals, 0, np.sqrt(n_cells))
 			if save:
+				logging.info(f"{residuals.shape=}")
 				ws.PearsonResiduals.append(residuals)
 			for j in range(residuals.shape[0]):
 				acc.add(residuals[j, :])

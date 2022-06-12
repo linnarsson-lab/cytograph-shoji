@@ -66,10 +66,10 @@ class BatchAwareFeatureSelection(Algorithm):
 		temp = []
 		for gene in np.argsort(-d):
 			if valid[gene]:
-				
+
 				temp.append(gene)
 			if len(temp) >= self.n_genes:
 				break
-		genes = np.array(temp)
+		genes = np.sort(np.array(temp))
 		logging.info(f" FeatureSelectionByPearsonResiduals: Selected the top {len(genes)} genes")
 		return genes

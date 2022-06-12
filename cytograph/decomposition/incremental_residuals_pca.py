@@ -49,8 +49,7 @@ class IncrementalResidualsPCA(Algorithm):
 			residuals = (data - expected) / np.sqrt(expected + np.power(expected, 2) / 100)
 			residuals = np.clip(residuals, 0, np.sqrt(n_cells))
 #			residuals = np.log2(residuals + 1)
-			pca.partial_fit(residuals)
-			np.save("/Users/stelin/residuals.npy", residuals)
+			pca.partial_fit(residuals)			np.save("/Users/stelin/residuals.npy", residuals)
 			evs = ", ".join([f"{x:.2f}" for x in pca.explained_variance_ if x > 0.01]) + ", ..."
 			logging.info(f" ResidualsPCA: Explained variance ({int(pca.explained_variance_.sum() * 100)}%): {evs}")
 
