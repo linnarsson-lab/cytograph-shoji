@@ -8,6 +8,6 @@ from .gene_summary_statistics import GeneSummaryStatistics
 from .detect_species import DetectSpecies
 from .pearson_residuals_variance import PearsonResidualsVariance
 from .quality_control import QualityControl
-from .pearson_residuals import PearsonResiduals
+from .batch_aware_pearson_residuals import BatchAwarePearsonResiduals
 from .classify_droplets import ClassifyDroplets
 from .compute_cell_hashes import ComputeCellHashes

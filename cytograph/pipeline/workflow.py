@@ -67,15 +67,15 @@ class Workflow:
 		assert self.config.workspaces.build is not None
 		ws = self.config.workspaces.build[self.punchcard.name]
 		if resume_at == 0:
-			logging.info(f"Running recipe '{self.punchcard.recipe}' for '{self.punchcard.name}'")
+			logging.info(f"Running recipe '{self.punchcard.recipe}'")
 		else:
-			logging.info(f"Resuming recipe '{self.punchcard.recipe}' from step {resume_at} for '{self.punchcard.name}'")
+			logging.info(f"Resuming recipe '{self.punchcard.recipe}' from step {resume_at}")
 		recipe = self.config.recipes[self.punchcard.recipe][resume_at:]
-		steps = np.array("\n".join([str(s) for s in recipe]), dtype=object)
+		steps = np.array(["\n".join([str(s) for s in recipe])], dtype=object)
 		if "Recipe" not in ws:
-			ws.Recipe = shoji.Tensor(dtype="string", dims=(), inits=steps)
+			ws.Recipe = shoji.Tensor(dtype="string", dims=(None,), inits=steps)
 		else:
-			ws.Recipe.append({"Recipe": steps})
+			ws.Recipe.append(steps)
 		start_all = datetime.now()
 		for step in recipe:
 			for fname, args in step.items():

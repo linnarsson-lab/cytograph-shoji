@@ -1,7 +1,7 @@
 from typing import Tuple
 
 import numpy as np
-from sklearn.decomposition import IncrementalPCA
+from sklearn.decomposition import IncrementalPCA, PCA
 from ..algorithm import creates, requires, Algorithm
 import shoji
 import logging
@@ -44,17 +44,20 @@ class IncrementalResidualsPCA(Algorithm):
 		logging.info(f" ResidualsPCA: Fitting PCA on Pearson residuals incrementally in batches of {batch_size:,} cells")
 		pca = IncrementalPCA(n_components=self.n_factors)
 		for ix in range(0, n_cells, batch_size):
-			data = ws[self.requires["Expression"]][ix:ix + batch_size, ws.SelectedFeatures == True]  # self.requires["Expression"] ensures that the user can rename the input tensor if desired
+			data = self.Expression[ix:ix + batch_size, ws.SelectedFeatures == True]
 			expected = totals[ix:ix + batch_size, None] @ (gene_totals[None, :] / overall_totals)
 			residuals = (data - expected) / np.sqrt(expected + np.power(expected, 2) / 100)
 			residuals = np.clip(residuals, 0, np.sqrt(n_cells))
 #			residuals = np.log2(residuals + 1)
 			pca.partial_fit(residuals)
+			np.save("/Users/stelin/residuals.npy", residuals)
+			evs = ", ".join([f"{x:.2f}" for x in pca.explained_variance_ if x > 0.01]) + ", ..."
+			logging.info(f" ResidualsPCA: Explained variance ({int(pca.explained_variance_.sum() * 100)}%): {evs}")
 
 		logging.info(f" ResidualsPCA: Transforming residuals incrementally in batches of {batch_size:,} cells")
 		factors = np.zeros((ws.cells.length, self.n_factors), dtype="float32")
 		for ix in range(0, ws.cells.length, batch_size):
-			data = ws[self.requires["Expression"]][ix:ix + batch_size, ws.SelectedFeatures == True]  # self.requires["Expression"] ensures that the user can rename the input tensor if desired
+			data = self.Expression[ix:ix + batch_size, ws.SelectedFeatures == True]
 			expected = totals[ix:ix + batch_size, None] @ (gene_totals[None, :] / overall_totals)
 			residuals = (data - expected) / np.sqrt(expected + np.power(expected, 2) / 100)
 			residuals = np.clip(residuals, 0, np.sqrt(n_cells))
@@ -64,4 +67,5 @@ class IncrementalResidualsPCA(Algorithm):
 		loadings = pca.components_.T
 		loadings_all = np.zeros_like(loadings, shape=(ws.genes.length, self.n_factors))
 		loadings_all[ws.SelectedFeatures[:]] = loadings
+
 		return factors, loadings_all
