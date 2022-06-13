@@ -50,8 +50,6 @@ class IncrementalResidualsPCA(Algorithm):
 			residuals = np.clip(residuals, 0, np.sqrt(n_cells))
 #			residuals = np.log2(residuals + 1)
 			pca.partial_fit(residuals)
-			evs = ", ".join([f"{x:.2f}" for x in pca.explained_variance_ if x > 0.01]) + ", ..."
-			logging.info(f" ResidualsPCA: Explained variance ({int(pca.explained_variance_.sum() * 100)}%): {evs}")
 
 		logging.info(f" ResidualsPCA: Transforming residuals incrementally in batches of {batch_size:,} cells")
 		factors = np.zeros((ws.cells.length, self.n_factors), dtype="float32")
@@ -63,8 +61,14 @@ class IncrementalResidualsPCA(Algorithm):
 #			residuals = np.log2(residuals + 1)
 			factors[ix:ix + batch_size] = pca.transform(residuals)
 
-		loadings = pca.components_.T
-		loadings_all = np.zeros_like(loadings, shape=(ws.genes.length, self.n_factors))
-		loadings_all[ws.SelectedFeatures[:]] = loadings
+		evs = ", ".join([f"{x:.2f}" for x in pca.explained_variance_ratio_ if x > 0.01]) + ", ..."
+		logging.info(f" ResidualsPCA: Explained variance ({int(pca.explained_variance_ratio_.sum() * 100)}%): {evs}")
 
-		return factors, loadings_all
+		keep_factors = 50
+		if pca.explained_variance_ratio_.sum() > 0.5:
+			keep_factors = np.min(np.where(np.cumsum(pca.explained_variance_ratio_) > 0.5)[0])
+		loadings = pca.components_.T
+		loadings_all = np.zeros_like(loadings, shape=(ws.genes.length, keep_factors))
+		loadings_all[ws.SelectedFeatures[:]] = loadings[:, :keep_factors]
+
+		return factors[:, :keep_factors], loadings_all

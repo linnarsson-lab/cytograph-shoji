@@ -47,6 +47,14 @@ class ResidualsPCA(Algorithm):
 		pca = PCA(n_components=self.n_factors)
 		factors = pca.fit_transform(residuals)
 		loadings = pca.components_.T
-		loadings_all = np.zeros_like(loadings, shape=(ws.genes.length, self.n_factors))
-		loadings_all[ws.SelectedFeatures[:]] = loadings
+
+		evs = ", ".join([f"{x:.2f}" for x in pca.explained_variance_ratio_ if x > 0.01]) + ", ..."
+		logging.info(f" ResidualsPCA: Explained variance ({int(pca.explained_variance_ratio_.sum() * 100)}%): {evs}")
+
+		keep_factors = 50
+		if pca.explained_variance_ratio_.sum() > 0.5:
+			keep_factors = np.min(np.where(np.cumsum(pca.explained_variance_ratio_) > 0.5)[0])
+		loadings_all = np.zeros_like(loadings, shape=(ws.genes.length, keep_factors))
+		loadings_all[ws.SelectedFeatures[:]] = loadings[:, :keep_factors]
+		factors = factors[:, :keep_factors]
 		return factors, loadings_all

@@ -11,3 +11,4 @@ from .quality_control import QualityControl
 from .batch_aware_pearson_residuals import BatchAwarePearsonResiduals
 from .classify_droplets import ClassifyDroplets
 from .compute_cell_hashes import ComputeCellHashes
+from .pearson_residuals import PearsonResiduals

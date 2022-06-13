@@ -6,7 +6,7 @@ from ..algorithm import creates, requires, Algorithm
 from ..utils import div0
 import shoji
 import logging
-import threading
+
 
 class BatchAwarePearsonResiduals(Algorithm):
 	"""
@@ -45,8 +45,8 @@ class BatchAwarePearsonResiduals(Algorithm):
 
 		batch_size = 10_000
 		logging.info(f" PearsonResiduals: Computing Pearson residuals incrementally in batches of {batch_size:,} cells")
-		if save:
-			ws.PearsonResiduals = shoji.Tensor(dtype="float32", dims=(None, "genes"))
+		ws.PearsonResidualsTemp = shoji.Tensor(dtype="float32", dims=(None, "genes"), chunks=(32, 100))
+		ws.PearsonResiduals = shoji.Tensor(dtype="float32", dims=(None, "genes"), chunks=(32, 100))
 		if self.batch_key is not None:
 			keys = LabelEncoder().fit_transform(ws[self.batch_key])
 		else:
@@ -55,18 +55,30 @@ class BatchAwarePearsonResiduals(Algorithm):
 		acc = shoji.Accumulator()
 		for ix in range(0, n_cells, batch_size):
 			residuals = np.zeros((min(batch_size, n_cells - ix), n_genes), dtype="float32")
+			data = self.Expression[ix:ix + batch_size]
 			for j, key in enumerate(unique_keys):
-				logging.info(f"{ix=} {j=} {key=}")
 				indices = (keys == key)[ix: ix + batch_size]
 				if indices.sum() == 0:
 					continue
-				data = self.Expression[ix:ix + batch_size][indices]
+				jdata = data[indices]
 				expected = cell_totals[ix:ix + batch_size, None][indices] @ (gene_totals[j, :] / overall_totals)[None, :]
-				residuals[indices, :] = div0((data - expected), np.sqrt(expected + np.power(expected, 2) / 100))
+				residuals[indices, :] = div0((jdata - expected), np.sqrt(expected + np.power(expected, 2) / 100))
 			residuals = np.clip(residuals, 0, np.sqrt(n_cells))
-			if save:
-				logging.info(f"{residuals.shape=}")
-				ws.PearsonResiduals.append(residuals)
+			ws.PearsonResidualsTemp.append(residuals)
+		# Now rescale the residuals for each batch
+		logging.info(" PearsonResiduals: Rescaling residuals per batch and computing variance")
+		stats = ws.cells.groupby(self.batch_key).stats("PearsonResidualsTemp")
+		means = stats.mean()[1]  # shape (n_batches, n_genes)
+		size_factors = div0(means.mean(), means).astype("float32")
+		for ix in range(0, n_cells, batch_size):
+			residuals = ws.PearsonResidualsTemp[ix: ix + batch_size]
+			for j, key in enumerate(unique_keys):
+				indices = (keys == key)[ix: ix + batch_size]
+				if indices.sum() == 0:
+					continue
+				residuals[indices, :] *= size_factors[j, :]
+			ws.PearsonResiduals.append(residuals)
 			for j in range(residuals.shape[0]):
 				acc.add(residuals[j, :])
+#			del ws.PearsonResidualsTemp
 		return acc.variance

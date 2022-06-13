@@ -2,6 +2,7 @@ from typing import Tuple
 
 import numpy as np
 from sklearn.decomposition import PCA
+from sklearn.preprocessing import scale
 from ..utils import div0
 from ..algorithm import creates, requires, Algorithm
 import shoji
@@ -30,20 +31,25 @@ class PrincipalComponents(Algorithm):
 	@creates("Factors", "float32", ("cells", None))
 	@creates("Loadings", "float32", ("genes", None))
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> Tuple[np.ndarray, np.ndarray]:
-		Expression = self.requires["Expression"]
-		SelectedFeatures = self.requires["SelectedFeatures"]
-		TotalUMIs = self.requires["TotalUMIs"]
-
 		logging.info(" PrincipalComponents: Loading and normalizing data")
-		totals = ws[TotalUMIs][:].astype("float32")
+		totals = self.TotalUMIs[:].astype("float32")
 		level = np.median(totals)
-		data = ws[ws[SelectedFeatures] == True][Expression]
+		data = self.Expression[:, self.SelectedFeatures == True]
 		vals = np.log2(div0(data.T, totals) * level + 1).T  # Transposed back to (cells, genes)
+		vals = scale(vals)
 
 		logging.info(f" PrincipalComponents: Computing principal components")
 		pca = PCA(n_components=self.n_factors)
 		factors = pca.fit_transform(vals)
+
+		evs = ", ".join([f"{x:.2f}" for x in pca.explained_variance_ratio_ if x > 0.01]) + ", ..."
+		logging.info(f" PrincipalComponents: Explained variance ({int(pca.explained_variance_ratio_.sum() * 100)}%): {evs}")
+
+		keep_factors = 50
+		if pca.explained_variance_ratio_.sum() > 0.5:
+			keep_factors = np.min(np.where(np.cumsum(pca.explained_variance_ratio_) > 0.5)[0])
+		logging.info(f" PrincipalComponents: Keeping {keep_factors} components that explain {int(pca.explained_variance_ratio_[:keep_factors].sum() * 100)}% of variance")
 		loadings = pca.components_.T
-		loadings_all = np.zeros_like(loadings, shape=(ws.genes.length, self.n_factors))
-		loadings_all[ws.SelectedFeatures[:]] = loadings
-		return factors, loadings_all
+		loadings_all = np.zeros_like(loadings, shape=(ws.genes.length, keep_factors))
+		loadings_all[ws.SelectedFeatures[:]] = loadings[:, :keep_factors]
+		return factors[:, :keep_factors], loadings_all

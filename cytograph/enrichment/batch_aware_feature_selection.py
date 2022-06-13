@@ -47,22 +47,21 @@ class BatchAwareFeatureSelection(Algorithm):
 		logging.info(f" BatchAwareFeatureSelection: Masking {mask_genes.sum():,} genes in {self.mask}")
 
 		logging.info(" BatchAwareFeatureSelection: Computing non-zero ratios per batch")
-		stats = ws.cells.groupby(self.batch_key).stats(self.requires["Expression"])
+		stats = ws.cells.groupby(self.batch_key).stats(self.requires["PearsonResiduals"])
 		nnzs = stats.nnz()[1]  # shape (n_batches, n_genes)
 		counts = stats.count()[1]
 		nnz_fractions = nnzs / counts
 		nnz_ratios = div0(nnz_fractions.max(axis=0), nnz_fractions.min(axis=0))
 		nnz_masked = (nnz_ratios > self.max_nnz_ratio) | (nnz_ratios < 1 / self.max_nnz_ratio)
 		logging.info(f" BatchAwareFeatureSelection: Masking {nnz_masked.sum():,} genes with nnz ratio > {self.max_nnz_ratio}")
+		mask_genes |= nnz_masked
 		
 		# Load variance of residuals (which will be batch-corrected if they were computed using BatchAwarePearsonResiduals)
-		d = self.PearsonResidualsVariance[:]
-		mask_genes |= nnz_masked
-
 		valid = self.ValidGenes[:]
 		valid = np.logical_and(valid, np.logical_not(mask_genes))
-		logging.info(f" FeatureSelectionByPearsonResiduals: Considering {(valid).sum():,} valid and unmasked genes")
+		logging.info(f" BatchAwareFeatureSelection: Considering {(valid).sum():,} valid and unmasked genes")
 
+		d = self.PearsonResidualsVariance[:]
 		temp = []
 		for gene in np.argsort(-d):
 			if valid[gene]:
@@ -71,5 +70,5 @@ class BatchAwareFeatureSelection(Algorithm):
 			if len(temp) >= self.n_genes:
 				break
 		genes = np.sort(np.array(temp))
-		logging.info(f" FeatureSelectionByPearsonResiduals: Selected the top {len(genes)} genes")
+		logging.info(f" BatchAwareFeatureSelection: Selected the top {len(genes)} genes")
 		return genes
