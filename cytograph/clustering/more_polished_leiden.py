@@ -228,6 +228,4 @@ class MorePolishedLeiden(Algorithm):
 		accuracy = (predicted[~too_small] == labels[~too_small]).sum() / (~too_small).sum()
 		logging.info(f" MorePolishedLeiden: {int(accuracy * 100)}% classification accuracy on non-orphan cells")
 
-		np.save("labels_mpl.npy", labels)
-
 		return labels, secondary, predicted_proba, secondary_proba
