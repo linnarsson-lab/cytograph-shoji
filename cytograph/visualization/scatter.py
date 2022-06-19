@@ -12,7 +12,7 @@ def _draw_edges(ax: plt.Axes, pos: np.ndarray, g: np.ndarray, gcolor: str, galph
 	ax.add_collection(lc)
 
 
-def scatterc(xy: np.ndarray, *, c: np.ndarray, colors = None, legend: Optional[str] = "outside", g: np.ndarray = None, gcolor: str = "thistle", galpha: float = 0.1, glinewidths: float = 0.25, **kwargs) -> None:
+def scatterc(xy: np.ndarray, *, c: np.ndarray, colors = None, labels: None, legend: Optional[str] = "outside", g: np.ndarray = None, gcolor: str = "thistle", galpha: float = 0.1, glinewidths: float = 0.25, **kwargs) -> None:
 	if colors is None:
 		colorizer = Colorizer("colors75").fit(c)
 	elif isinstance(colors, str):
@@ -33,11 +33,13 @@ def scatterc(xy: np.ndarray, *, c: np.ndarray, colors = None, legend: Optional[s
 	plt.scatter(xy[:, 0], xy[:, 1], c=colorizer.transform(c), s=s, lw=lw, **kwargs)
 	ax = plt.gca()
 	if legend not in [None, False]:
-		hidden_lines = [Line2D([0], [0], color=clr, lw=4) for clr in colorizer.transform(np.unique(c))]
+		if labels is None:
+			labels = np.unique(c)
+		hidden_lines = [Line2D([0], [0], color=clr, lw=4) for clr in colorizer.transform(labels)]
 		if legend == "outside":
-			ax.legend(hidden_lines, np.unique(c), loc='center left', bbox_to_anchor=(1, 0.5))
+			ax.legend(hidden_lines, labels, loc='center left', bbox_to_anchor=(1, 0.5))
 		else:
-			ax.legend(hidden_lines, np.unique(c), loc=legend)
+			ax.legend(hidden_lines, labels, loc=legend)
 	if g is not None:
 		_draw_edges(ax, xy, g, gcolor, galpha, glinewidths)
 
