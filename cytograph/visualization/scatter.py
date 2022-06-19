@@ -12,7 +12,7 @@ def _draw_edges(ax: plt.Axes, pos: np.ndarray, g: np.ndarray, gcolor: str, galph
 	ax.add_collection(lc)
 
 
-def scatterc(xy: np.ndarray, *, c: np.ndarray, colors = None, labels: None, legend: Optional[str] = "outside", g: np.ndarray = None, gcolor: str = "thistle", galpha: float = 0.1, glinewidths: float = 0.25, **kwargs) -> None:
+def scatterc(xy: np.ndarray, *, c: np.ndarray, colors = None, labels = None, legend: Optional[str] = "outside", g: np.ndarray = None, gcolor: str = "thistle", galpha: float = 0.1, glinewidths: float = 0.25, **kwargs) -> None:
 	if colors is None:
 		colorizer = Colorizer("colors75").fit(c)
 	elif isinstance(colors, str):
