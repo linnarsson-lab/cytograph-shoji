@@ -34,6 +34,7 @@ def scatterc(xy: np.ndarray, *, c: np.ndarray, legend: Optional[str] = "outside"
 		_draw_edges(ax, xy, g, gcolor, galpha, glinewidths)
 	plt.title(f"{n_cells:,} cells")
 
+
 def scattern(xy: np.ndarray, *, c: np.ndarray, zinf: bool = True, g: np.ndarray = None, gcolor: str = "thistle", galpha: float = 0.1, glinewidths: float = 0.25, **kwargs) -> None:
 	n_cells = xy.shape[0]
 	fig = plt.gcf()

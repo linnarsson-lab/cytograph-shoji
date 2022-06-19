@@ -226,9 +226,10 @@ class Colorizer:
 	def transform(self, x: np.ndarray) -> np.ndarray:
 		return self.scheme.transform(x)
 	
-	def fit(self, x: np.ndarray) -> None:
+	def fit(self, x: np.ndarray) -> "Colorizer":
 		self.scheme.fit(x)
-	
+		return self
+
 	def fit_transform(self, x: np.ndarray) -> np.ndarray:
 		return self.scheme.fit_transform(x)
 
