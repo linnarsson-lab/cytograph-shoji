@@ -42,7 +42,7 @@ def scatterc(xy: np.ndarray, *, c: np.ndarray, colors = None, legend: Optional[s
 		_draw_edges(ax, xy, g, gcolor, galpha, glinewidths)
 
 
-def scattern(xy: np.ndarray, *, c: np.ndarray, cmap: Any = None, bgval: Any = None, g: np.ndarray = None, gcolor: str = "thistle", galpha: float = 0.1, glinewidths: float = 0.25, **kwargs) -> None:
+def scattern(xy: np.ndarray, *, c: np.ndarray, cmap: Any = "inferno_r", bgval: Any = None, g: np.ndarray = None, gcolor: str = "thistle", galpha: float = 0.1, glinewidths: float = 0.25, **kwargs) -> None:
 	n_cells = xy.shape[0]
 	fig = plt.gcf()
 	area = np.prod(fig.get_size_inches())
