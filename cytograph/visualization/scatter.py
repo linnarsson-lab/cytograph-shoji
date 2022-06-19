@@ -3,7 +3,7 @@ from matplotlib.lines import Line2D
 from matplotlib.collections import LineCollection
 import matplotlib.pyplot as plt
 import numpy as np
-from .colors import colorize
+from .colors import Colorizer
 
 
 def _draw_edges(ax: plt.Axes, pos: np.ndarray, g: np.ndarray, gcolor: str, galpha: float, glinewidths: float) -> None:
@@ -11,7 +11,14 @@ def _draw_edges(ax: plt.Axes, pos: np.ndarray, g: np.ndarray, gcolor: str, galph
 	ax.add_collection(lc)
 
 
-def scatterc(xy: np.ndarray, *, c: np.ndarray, legend: Optional[str] = "outside", g: np.ndarray = None, gcolor: str = "thistle", galpha: float = 0.1, glinewidths: float = 0.25, **kwargs) -> None:
+def scatterc(xy: np.ndarray, *, c: np.ndarray, colors = None, legend: Optional[str] = "outside", g: np.ndarray = None, gcolor: str = "thistle", galpha: float = 0.1, glinewidths: float = 0.25, **kwargs) -> None:
+	if colors is None:
+		colorizer = Colorizer("colors75").fit(c)
+	elif isinstance(colors, str):
+		colorizer = Colorizer(colors).fit(c)
+	else:
+		colorizer = colors
+
 	n_cells = xy.shape[0]
 	fig = plt.gcf()
 	area = np.prod(fig.get_size_inches())
@@ -22,20 +29,19 @@ def scatterc(xy: np.ndarray, *, c: np.ndarray, legend: Optional[str] = "outside"
 	xy = xy[ordering, :]
 	s = kwargs.pop("s", marker_size)
 	lw = kwargs.pop("lw", 0)
-	plt.scatter(xy[:, 0], xy[:, 1], c=colorize(c), s=s, lw=lw, **kwargs)
+	plt.scatter(xy[:, 0], xy[:, 1], c=colorizer.transform(c), s=s, lw=lw, **kwargs)
 	ax = plt.gca()
 	if legend not in [None, False]:
-		hidden_lines = [Line2D([0], [0], color=clr, lw=4) for clr in colorize(np.unique(c))]
+		hidden_lines = [Line2D([0], [0], color=clr, lw=4) for clr in colorizer.transform(np.unique(c))]
 		if legend == "outside":
 			ax.legend(hidden_lines, np.unique(c), loc='center left', bbox_to_anchor=(1, 0.5))
 		else:
 			ax.legend(hidden_lines, np.unique(c), loc=legend)
 	if g is not None:
 		_draw_edges(ax, xy, g, gcolor, galpha, glinewidths)
-	plt.title(f"{n_cells:,} cells")
 
 
-def scattern(xy: np.ndarray, *, c: np.ndarray, zinf: bool = True, g: np.ndarray = None, gcolor: str = "thistle", galpha: float = 0.1, glinewidths: float = 0.25, **kwargs) -> None:
+def scattern(xy: np.ndarray, *, c: np.ndarray, zinf: bool = False, g: np.ndarray = None, gcolor: str = "thistle", galpha: float = 0.1, glinewidths: float = 0.25, **kwargs) -> None:
 	n_cells = xy.shape[0]
 	fig = plt.gcf()
 	area = np.prod(fig.get_size_inches())
