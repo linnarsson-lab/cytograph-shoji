@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Any
 from matplotlib.lines import Line2D
 from matplotlib.collections import LineCollection
 import matplotlib.pyplot as plt
@@ -41,7 +41,7 @@ def scatterc(xy: np.ndarray, *, c: np.ndarray, colors = None, legend: Optional[s
 		_draw_edges(ax, xy, g, gcolor, galpha, glinewidths)
 
 
-def scattern(xy: np.ndarray, *, c: np.ndarray, zinf: bool = False, g: np.ndarray = None, gcolor: str = "thistle", galpha: float = 0.1, glinewidths: float = 0.25, **kwargs) -> None:
+def scattern(xy: np.ndarray, *, c: np.ndarray, cmap: Any = None, bgval: Any = None, g: np.ndarray = None, gcolor: str = "thistle", galpha: float = 0.1, glinewidths: float = 0.25, **kwargs) -> None:
 	n_cells = xy.shape[0]
 	fig = plt.gcf()
 	area = np.prod(fig.get_size_inches())
@@ -52,12 +52,19 @@ def scattern(xy: np.ndarray, *, c: np.ndarray, zinf: bool = False, g: np.ndarray
 	xy = xy[ordering, :]
 	s = kwargs.pop("s", marker_size)
 	lw = kwargs.pop("lw", 0)
-	if zinf:
-		cells = color > 0
-		plt.scatter(xy[:, 0], xy[:, 1], c="lightgrey", s=s, lw=lw, **kwargs)
-		plt.scatter(xy[cells, 0], xy[cells, 1], c=color[cells], s=s, lw=lw, **kwargs)
+	if cmap is not None:
+		if isinstance(cmap, str):  # Try to make a Colorizer cmap
+			try:
+				cmap = Colorizer(cmap).cmap
+			except ValueError:
+				pass
+	cmap = kwargs.pop("cmap", cmap)
+	if bgval is not None:
+		cells = color != bgval
+		plt.scatter(xy[:, 0], xy[:, 1], c="lightgrey", s=s, lw=lw, cmap=cmap, **kwargs)
+		plt.scatter(xy[cells, 0], xy[cells, 1], c=color[cells], s=s, lw=lw, cmap=cmap, **kwargs)
 	else:
-		plt.scatter(xy[:, 0], xy[:, 1], c=color, s=s, lw=lw, **kwargs)
+		plt.scatter(xy[:, 0], xy[:, 1], c=color, s=s, lw=lw, cmap=cmap, **kwargs)
 	if g is not None:
 		ax = plt.gca()
 		_draw_edges(ax, xy, g, gcolor, galpha, glinewidths)
