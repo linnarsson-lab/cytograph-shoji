@@ -232,8 +232,8 @@ class Colorizer:
 			], permute)
 		elif scheme == "classes":
 			self.scheme = NamedColorScheme(
-				['Neuron', 'Neuroblast', 'Radial glia', "Glioblast", "Oligo", "Fibroblast", "Immune", "Vascular", "Erythrocyte", '(other)'],
-				["#5698c4", "#6367ae", "#9f5bb3", "#447c69", "#9cba19", "#c48351", "#e7c31f", "#e12e12", "#ff2e56", "#9f9f9f"], permute)
+				['Neuron', 'Neuroblast', 'Radial glia', "Glioblast", "Oligo", "Fibroblast", "Immune", "Vascular", "Erythrocyte", '(other)', "Failed"],
+				["#5698c4", "#6367ae", "#9f5bb3", "#447c69", "#9cba19", "#c48351", "#e7c31f", "#e12e12", "#ff2e56", "#9f9f9f", "000000"], permute)
 		else:
 			raise ValueError(f"Unrecognized scheme '{scheme}'")
 
