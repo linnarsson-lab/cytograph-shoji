@@ -1,5 +1,6 @@
 from abc import abstractmethod
-from typing import Any
+from multiprocessing import shared_memory
+from typing import Any, Dict
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
@@ -59,6 +60,10 @@ class ColorScheme:
 		self.fit(x)
 		return self.transform(x)
 
+	@abstractmethod
+	def dict(self) -> Dict[str, str]:
+		pass
+
 
 class NamedColorScheme(ColorScheme):
 	def __init__(self, names, colors, permute: bool = False):
@@ -76,6 +81,9 @@ class NamedColorScheme(ColorScheme):
 		indices = np.nonzero(x[:, None] == self.names)[1]
 		return self.colors[indices]
 
+	def dict(self) -> Dict[str, str]:
+		return dict(zip(self.names, [matplotlib.colors.to_hex(c) for c in self.colors]))
+
 
 class DiscreteColorScheme(ColorScheme):
 	def __init__(self, colors, permute: bool = False) -> None:
@@ -92,11 +100,17 @@ class DiscreteColorScheme(ColorScheme):
 		indices = self.encoding.transform(x) % len(self.colors)
 		return self.colors[indices]
 
+	def dict(self) -> Dict[str, str]:
+		colors = [matplotlib.colors.to_hex(c) for c in self.colors]
+		return dict(zip(colors, colors))
+
 
 class Colorizer:
 	def __init__(self, scheme, permute: bool = False, interpolated: bool = False) -> None:
 		self.interpolated = interpolated
-		if scheme == "tube":
+		if isinstance(scheme, ColorScheme):
+			self.scheme = scheme
+		elif scheme == "tube":
 			self.scheme = DiscreteColorScheme([
 				"#B36305", "#E32017", "#FFD300", "#00782A",
 				"#F3A9BB", "#A0A5A9", "#9B0056", "#000000",
@@ -218,8 +232,8 @@ class Colorizer:
 			], permute)
 		elif scheme == "classes":
 			self.scheme = NamedColorScheme(
-				['Fibroblast', 'Immune', 'OPC', 'Glioblast', 'Radial glia', 'Neuroblast', 'Neuron', '(other)'],
-				["#e2975d", "#e0598b", "#74c493", "#447c69", "#e16552", "#6367ae", "#5698c4", "#9f9f9f"], permute)
+				['Erythrocyte', 'Vascular', 'Fibroblast', 'Immune', 'Oligo', 'Glioblast', 'Radial glia', 'Neuroblast', 'Neuron', '(other)'],
+				["#f9002f", "#e16552", "#e2975d", "#e0598b", "#74c493", "#447c69", "#955ba5", "#6367ae", "#5698c4", "#9f9f9f"], permute)
 		else:
 			raise ValueError(f"Unrecognized scheme '{scheme}'")
 
@@ -240,6 +254,9 @@ class Colorizer:
 		else:
 			return matplotlib.colors.ListedColormap(self.scheme.colors)
 
+	def dict(self) -> Dict[str, str]:
+		return self.scheme.dict()
+
 	def plot(self, show_labels: bool = True) -> None:
 		n_colors = len(self.scheme.colors)
 		fig = plt.figure(figsize=(15, 15))
@@ -252,9 +269,9 @@ class Colorizer:
 			ax.add_patch(rect)
 			if show_labels:
 				if type(self.scheme) is NamedColorScheme and self.scheme.names is not None:
-					plt.text(start + 0.5, y + 0.5, self.scheme.names[start], ha="center", va="center", fontsize=14)
+					plt.text(start + 0.5, y + 0.5, self.scheme.names[ix], ha="center", va="center", fontsize=14)
 				else:
-					plt.text(start + 0.5, y + 0.5, matplotlib.colors.to_hex(self.scheme.colors[start]), ha="center", va="center", fontsize=14)
+					plt.text(start + 0.5, y + 0.5, matplotlib.colors.to_hex(self.scheme.colors[ix]), ha="center", va="center", fontsize=14)
 			plt.xlim(0, min(10, n_colors))
 			plt.ylim(n_colors // 10 + 1, 0)
 		plt.axis("off")
