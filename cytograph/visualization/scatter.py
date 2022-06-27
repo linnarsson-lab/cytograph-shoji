@@ -84,8 +84,8 @@ def scatterm(xy: np.ndarray, *, c: List[np.ndarray], cmaps: List[Any], bgval: An
 	c = np.array(c)[:, ordering]
 	xy = xy[ordering, :]
 	
-	c = np.clip(div0(c.T, np.percentile(c, max_percentile, axis=1)).T, 0, 1)
 	winners = np.argmax(c, axis=0)
+	c = np.clip(div0(c.T, np.percentile(c, max_percentile, axis=1)).T, 0, 1)
 	colors = np.max(c, axis=0)
 
 	final_cmaps = []
