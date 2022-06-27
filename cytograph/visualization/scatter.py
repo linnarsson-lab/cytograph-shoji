@@ -5,6 +5,7 @@ import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import numpy as np
 from .colors import Colorizer
+from ..utils import div0
 
 
 def _draw_edges(ax: plt.Axes, pos: np.ndarray, g: np.ndarray, gcolor: str, galpha: float, glinewidths: float) -> None:
@@ -83,7 +84,7 @@ def scatterm(xy: np.ndarray, *, c: List[np.ndarray], cmaps: List[Any], bgval: An
 	c = np.array(c)[:, ordering]
 	xy = xy[ordering, :]
 	
-	c = (c.T / np.percentile(c, max_percentile, axis=1)).T
+	c = np.clip(div0(c.T, np.percentile(c, max_percentile, axis=1)).T, 0, 1)
 	winners = np.argmax(c, axis=0)
 	colors = np.max(c, axis=0)
 
