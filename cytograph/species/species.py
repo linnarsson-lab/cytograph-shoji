@@ -38,7 +38,7 @@ class Species:
 				"Ependymal": ["TMEM212", "FOXJ1"],
 				"Choroid": ["TTR"],
 				"Astrocytes": ["AQP4", "GJA1"],
-				"Neurons": ["INA"],
+				#"Neurons": ["INA"],
 				"Neuroblasts": ["NHLH1", "NHLH2"],
 				"GABAergic": ["GAD1", "GAD2", "SLC32A1"],
 				"Glycinergic": ["SLC6A5", "SLC6A9"],
