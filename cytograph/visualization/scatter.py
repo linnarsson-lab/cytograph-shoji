@@ -127,5 +127,3 @@ def scatterm(xy: np.ndarray, *, c: List[np.ndarray], cmaps: List[Any], bgval: An
 			ax.legend(hidden_lines, labels, loc='center left', bbox_to_anchor=(1, 0.5))
 		else:
 			ax.legend(hidden_lines, labels, loc=legend)
-
-
