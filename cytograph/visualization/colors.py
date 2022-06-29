@@ -1,5 +1,4 @@
 from abc import abstractmethod
-from multiprocessing import shared_memory
 from typing import Any, Dict
 import matplotlib
 import matplotlib.pyplot as plt
@@ -233,7 +232,7 @@ class Colorizer:
 		elif scheme == "classes":
 			self.scheme = NamedColorScheme(
 				['Neuron', 'Neuroblast', 'Radial glia', "Glioblast", "Oligo", "Fibroblast", "Neural crest", "Placodes", "Immune", "Vascular", "Erythrocyte", "Failed"],
-				["#5698c4", "#6367ae", "#9f5bb3", "#447c69", "#9cba19", "#c48351", "#eec79f", "#70510e",  "#e7c31f", "#e12e12", "#ff617f", "#9f9f9f"], permute)
+				["#5698c4", "#6367ae", "#9f5bb3", "#447c69", "#9cba19", "#c48351", "#eec79f", "#70510e", "#e7c31f", "#e12e12", "#ff617f", "#9f9f9f"], permute)
 		else:
 			raise ValueError(f"Unrecognized scheme '{scheme}'")
 

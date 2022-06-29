@@ -15,6 +15,7 @@ def div0(a: np.ndarray, b: np.ndarray) -> np.ndarray:
 	return c
 
 
+# https://stackoverflow.com/questions/1006289/how-to-find-out-the-number-of-cpus-using-python
 def available_cpu_count():
 	""" Number of available virtual or physical CPUs on this system, i.e.
 	user/real as output by time(1) when called with an optimally scaling
