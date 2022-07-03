@@ -47,8 +47,8 @@ class FeatureSelectionSeuratV3(Algorithm):
 
         #Get adata
         adata = ws.create_anndata(only_selected= False)
-        sc.pp.normalize_total(adata, target_sum=1e4, layer="Expression")
-        sc.pp.log1p(adata, layer="Expression")
+        sc.pp.normalize_total(adata, target_sum=1e4)
+        sc.pp.log1p(adata)
         if(len(self.batch)>0):
             for i in range(0,len(self.batch)):
                 if(i ==0):
@@ -61,7 +61,6 @@ class FeatureSelectionSeuratV3(Algorithm):
             adata_v,
             flavor="seurat_v3",
             n_top_genes=self.n_genes,
-            layer="Expression",
             batch_key="batch",
             subset=False)
         else:
@@ -70,7 +69,6 @@ class FeatureSelectionSeuratV3(Algorithm):
             adata_v,
             flavor="seurat_v3",
             n_top_genes=self.n_genes,
-            layer="counts",
             subset=False)
         
         genes = np.where(valid)[0][adata_v.var['highly_variable']]
