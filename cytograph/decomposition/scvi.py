@@ -52,7 +52,7 @@ class SCVI(Algorithm):
                         n_hidden=128
                         n_layers=2
                         scvi._settings.ScviConfig.num_threads = 30
-                        scvi.model.SCVI.setup_anndata(adata, layer="Expression", batch_key='batch_ind')
+                        scvi.model.SCVI.setup_anndata(adata, batch_key='batch_ind')
                         model = scvi.model.SCVI(adata)
                         model.train()
                         latent = model.get_latent_representation()
