@@ -217,11 +217,11 @@ class Colorizer:
 		elif scheme == "roigroupmid":
 			self.scheme = NamedColorScheme(
 				["Cerebral cortex", "Hippocampus", "Basal forebrain", "Amygdala", "Hypothalamus", "Thalamus", "Midbrain", "Pons", "Cerebellum", "Medulla", "Spinal cord"],
-				['#eec2a4', '#955ba5', '#ed5f8e', '#a7236e', '#43ad78', '#e7bc1f', '#f28e37', '#c48351', '#cb4335', '#8eb7d1', '#4682f0'], permute)
+				['#4682f0', '#8eb7d1', '#cb4335', '#c48351', '#f28e37', '#e7bc1f', '#43ad78', '#a7236e', '#ed5f8e', '#955ba5', '#eec2a4'], permute)
 		elif scheme == "roigroupcoarse":
 			self.scheme = NamedColorScheme(
 				["Cerebral cortex", "Hippocampus", "Cerebral nuclei", "Hypothalamus", "Thalamus", "Midbrain", "Pons", "Cerebellum", "Medulla", "Spinal cord"],
-				['#eec2a4', '#955ba5', '#ed5f8e', '#43ad78', '#e7bc1f', '#f28e37', '#c48351', '#cb4335', '#8eb7d1', '#4682f0'], permute)
+				['#4682f0', '#8eb7d1', '#cb4335', '#c48351', '#f28e37', '#e7bc1f', '#43ad78', '#ed5f8e', '#955ba5', '#eec2a4'], permute)
 		elif scheme == "regions":
 			self.scheme = NamedColorScheme(
 				["Head", "Brain", "Forebrain", "Telencephalon", "Diencephalon", "Midbrain", "Hindbrain", "Pons", "Cerebellum", "Medulla"],
