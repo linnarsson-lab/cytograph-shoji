@@ -222,6 +222,19 @@ class Colorizer:
 			self.scheme = NamedColorScheme(
 				["Cerebral cortex", "Hippocampus", "Cerebral nuclei", "Hypothalamus", "Thalamus", "Midbrain", "Pons", "Cerebellum", "Medulla", "Spinal cord"],
 				['#4682f0', '#8eb7d1', '#cb4335', '#f28e37', '#e7bc1f', '#43ad78', '#a7236e', '#ed5f8e', '#955ba5', '#eec2a4'], permute)
+		elif scheme == "superclasses":
+			self.scheme = NamedColorScheme(
+				[
+					'Astrocyte', 'Bergmann glia', 'CGE interneurons', 'Cerebellar VZ inhibitory', 'Choroid plexus', 'Eccentric MSN', 'Ependymal-like', 'Forebrain excitatory',
+					'Glycinergic, cholinergic, monoaminergic, or peptidergic', 'Hindbrain-derived excitatory', 'Hipp. CA1-CA3', 'Hipp. CA4', 'Hipp. DG', 'Immune', 'L2/3 IT',
+					'L5-6 IT', 'L5/6 NP', 'L6 CT/b', 'LAMP5-LHX6 and Chandelier', 'MGE interneurons', 'MSN', 'Mammillary body', 'Midbrain-derived inhibitory', 'Miscellaneous rare',
+					'OPC', 'Oligodendrocyte', 'Rhombic lip excitatory', 'Thalamic excitatory', 'VLMC', 'Vascular'
+				],
+				[
+					'#efa2fe', '#0075db', '#983f00', '#4c005c', '#005c31', '#2bcd48', '#fecb98', '#808080', '#93feb4', '#8e7c00', '#9ccb00', '#c10087', '#003380',
+					'#fea305', '#fea7ba', '#426600', '#fe0010', '#5ef0f1', '#00988e', '#dffe66', '#740afe', '#980000', '#fefe80', '#fefe00', '#fe5005', '#f7d1ff',
+					'#80baed', '#cc9f80', '#a580ad', '#80ad98'
+				], permute)
 		elif scheme == "regions":
 			self.scheme = NamedColorScheme(
 				["Head", "Brain", "Forebrain", "Telencephalon", "Diencephalon", "Midbrain", "Hindbrain", "Pons", "Cerebellum", "Medulla"],
