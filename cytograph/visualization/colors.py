@@ -231,9 +231,9 @@ class Colorizer:
 					'OPC', 'Oligodendrocyte', 'Rhombic lip excitatory', 'Thalamic excitatory', 'VLMC', 'Vascular'
 				],
 				[
-					'#efa2fe', '#0075db', '#983f00', '#4c005c', '#005c31', '#2bcd48', '#fecb98', '#808080', '#93feb4', '#8e7c00', '#9ccb00', '#c10087', '#003380',
-					'#fea305', '#fea7ba', '#426600', '#fe0010', '#5ef0f1', '#00988e', '#dffe66', '#740afe', '#980000', '#fefe80', '#fefe00', '#fe5005', '#f7d1ff',
-					'#80baed', '#cc9f80', '#a580ad', '#80ad98'
+					'#ab3bc4', '#e7c31f', '#983f00', '#4c005c', '#005c31', '#2bcd48', '#ed5f8e', '#808080', '#93feb4', '#8e7c00', '#9ccb00', '#c10087', '#003380',
+					'#fea305', '#fea7ba', '#426600', '#ee1010', '#5ef0f1', '#00988e', '#dffe66', '#740afe', '#980000', '#fefe80', '#fefe00', '#0098d4', '#9cba19',
+					'#80baed', '#cc9f80', '#c48351', '#e12e12'
 				], permute)
 		elif scheme == "regions":
 			self.scheme = NamedColorScheme(
