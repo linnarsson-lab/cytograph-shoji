@@ -117,7 +117,7 @@ def scatterm(xy: np.ndarray, *, c: List[np.ndarray], cmaps: List[Any], bgval: An
 	if bgval is not None:
 		bgpoints = colors == bgval
 		plt.scatter(xy[bgpoints, 0], xy[bgpoints, 1], c="lightgrey", s=s, lw=lw, **kwargs)
-		plt.scatter(xy[~bgpoints, 0], xy[~bgpoints, 1], c=data, s=s, lw=lw, **kwargs)
+		plt.scatter(xy[~bgpoints, 0], xy[~bgpoints, 1], c=data[~bgpoints], s=s, lw=lw, **kwargs)
 	else:
 		plt.scatter(xy[:, 0], xy[:, 1], c=data, s=s, lw=lw, **kwargs)
 	if g is not None:
