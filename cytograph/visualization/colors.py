@@ -238,6 +238,10 @@ class Colorizer:
 		elif scheme == "regions":
 			self.scheme = NamedColorScheme(
 				["Head", "Brain", "Forebrain", "Telencephalon", "Diencephalon", "Midbrain", "Hindbrain", "Pons", "Cerebellum", "Medulla"],
+				["#eed8c9", "#a49592", "#4682f0", "#89d8e0", "#e9c413", "#45ad78", "#6f3e94", "#a7236e", "#ed5f8e", "#9b59b6"], permute)
+		elif scheme == "regions_old":
+			self.scheme = NamedColorScheme(
+				["Head", "Brain", "Forebrain", "Telencephalon", "Diencephalon", "Midbrain", "Hindbrain", "Pons", "Cerebellum", "Medulla"],
 				["#eed8c9", "#a49592", "#f26b38", "#cb4335", "#e9c413", "#45ad78", "#a7226e", "#cc527a", "#589bf2", "#9b59b6"], permute)
 		elif scheme == "subregions":
 			self.scheme = NamedColorScheme([
