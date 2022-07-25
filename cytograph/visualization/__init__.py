@@ -1,7 +1,7 @@
 """
 Algorithms for visualization
 """
-from .colors import colors75, colorize, Colorizer
+from .colors import colors75, colorize, Colorizer, NamedColorScheme, DiscreteColorScheme
 from .dendrogram import dendrogram
 from .heatmap import Heatmap
 from .scatter import scatterc, scattern, scatterm

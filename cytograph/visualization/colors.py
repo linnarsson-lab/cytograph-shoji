@@ -214,7 +214,32 @@ class Colorizer:
 				[0.95686275, 0.42745098, 0.26274510, 1.],
 				[0.83929258, 0.18454441, 0.15286428, 1.]
 			], permute)
+		elif scheme == "roigroupmid":
+			self.scheme = NamedColorScheme(
+				["Cerebral cortex", "Hippocampus", "Basal forebrain", "Amygdala", "Hypothalamus", "Thalamus", "Midbrain", "Pons", "Cerebellum", "Medulla", "Spinal cord"],
+				['#4682f0', '#8eb7d1', '#89d8e0', '#c48351', '#f28e37', '#e7bc1f', '#43ad78', '#a7236e', '#ed5f8e', '#955ba5', '#eec2a4'], permute)
+		elif scheme == "roigroupcoarse":
+			self.scheme = NamedColorScheme(
+				["Cerebral cortex", "Hippocampus", "Cerebral nuclei", "Hypothalamus", "Thalamus", "Midbrain", "Pons", "Cerebellum", "Medulla", "Spinal cord"],
+				['#4682f0', '#8eb7d1', '#89d8e0', '#f28e37', '#e7bc1f', '#43ad78', '#a7236e', '#ed5f8e', '#955ba5', '#eec2a4'], permute)
+		elif scheme == "superclasses":
+			self.scheme = NamedColorScheme(
+				[
+					'Astrocyte', 'Bergmann glia', 'CGE interneurons', 'Cerebellar VZ inhibitory', 'Choroid plexus', 'Eccentric MSN', 'Ependymal-like', 'Forebrain excitatory',
+					'Glycinergic, cholinergic, monoaminergic, or peptidergic', 'Hindbrain-derived excitatory', 'Hipp. CA1-CA3', 'Hipp. CA4', 'Hipp. DG', 'Immune', 'L2/3 IT',
+					'L5-6 IT', 'L5/6 NP', 'L6 CT/b', 'LAMP5-LHX6 and Chandelier', 'MGE interneurons', 'MSN', 'Mammillary body', 'Midbrain-derived inhibitory', 'Miscellaneous rare',
+					'OPC', 'Oligodendrocyte', 'Rhombic lip excitatory', 'Thalamic excitatory', 'VLMC', 'Vascular'
+				],
+				[
+					'#ab3bc4', '#e7c31f', '#983f00', '#4c005c', '#005c31', '#2bcd48', '#ed5f8e', '#808080', '#93feb4', '#8e7c00', '#9ccb00', '#c10087', '#003380',
+					'#fea305', '#fea7ba', '#426600', '#ee1010', '#5ef0f1', '#00988e', '#dffe66', '#740afe', '#980000', '#fefe80', '#fefe00', '#0098d4', '#9cba19',
+					'#80baed', '#cc9f80', '#c48351', '#e12e12'
+				], permute)
 		elif scheme == "regions":
+			self.scheme = NamedColorScheme(
+				["Head", "Brain", "Forebrain", "Telencephalon", "Diencephalon", "Midbrain", "Hindbrain", "Pons", "Cerebellum", "Medulla"],
+				["#eed8c9", "#a49592", "#4682f0", "#89d8e0", "#e9c413", "#45ad78", "#6f3e94", "#a7236e", "#ed5f8e", "#9b59b6"], permute)
+		elif scheme == "regions_old":
 			self.scheme = NamedColorScheme(
 				["Head", "Brain", "Forebrain", "Telencephalon", "Diencephalon", "Midbrain", "Hindbrain", "Pons", "Cerebellum", "Medulla"],
 				["#eed8c9", "#a49592", "#f26b38", "#cb4335", "#e9c413", "#45ad78", "#a7226e", "#cc527a", "#589bf2", "#9b59b6"], permute)
