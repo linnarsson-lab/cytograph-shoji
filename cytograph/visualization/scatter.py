@@ -85,7 +85,10 @@ def scatterm(xy: np.ndarray, *, c: List[np.ndarray], cmaps: List[Any], bgval: An
 	xy = xy[ordering, :]
 	
 	winners = np.argmax(c, axis=0)
-	c = np.clip(div0(c.T, np.percentile(c, max_percentile, axis=1)).T, 0, 1)
+	max_val = np.percentile(c, max_percentile, axis=1)
+	assert np.all(max_val > 0), f"{max_percentile}th percentile is zero (increase max_percentile to fix)"
+
+	c = np.clip(div0(c.T, max_val).T, 0, 1)
 	colors = np.max(c, axis=0)
 
 	final_cmaps = []
