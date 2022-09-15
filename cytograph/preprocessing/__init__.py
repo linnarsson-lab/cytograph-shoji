@@ -3,7 +3,7 @@ Algorithms for preprocessing samples
 """
 from .log2_normalizer import Log2Normalizer
 from .doublet_finder import DoubletFinder
-from .cell_summary_statistics import CellSummaryStatistics
+from .cell_summary_statistics import CellSummaryStatistics, CellSummaryStatisticsEEL
 from .gene_summary_statistics import GeneSummaryStatistics
 from .detect_species import DetectSpecies
 from .pearson_residuals_variance import PearsonResidualsVariance

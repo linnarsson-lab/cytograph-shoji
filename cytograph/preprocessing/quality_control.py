@@ -81,7 +81,7 @@ class QualityControlEEL(Algorithm):
 	Compute QC metrics and mark valid cells (note: consider using ClassifyDroplets instead)
 	"""
 	def __init__(self, min_umis: int = 5, min_genes:int=2, min_fraction_good_cells: float = 0, 
-		umi_gene_ratio: float = 0.1, **kwargs) -> None:
+		umi_gene_ratio: float = 1.5, **kwargs) -> None:
 		"""
 		Args:
 			doublet_threshold		Threshold to call doublets, or "auto" to use automatic threshold (default: "auto")
