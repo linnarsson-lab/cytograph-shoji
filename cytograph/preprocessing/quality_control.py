@@ -80,7 +80,8 @@ class QualityControlEEL(Algorithm):
 	"""
 	Compute QC metrics and mark valid cells (note: consider using ClassifyDroplets instead)
 	"""
-	def __init__(self, min_umis: int = 5, min_genes:int=2, min_fraction_good_cells: float = 0, **kwargs) -> None:
+	def __init__(self, min_umis: int = 5, min_genes:int=2, min_fraction_good_cells: float = 0, 
+		umi_gene_ratio: float = 0.1, **kwargs) -> None:
 		"""
 		Args:
 			doublet_threshold		Threshold to call doublets, or "auto" to use automatic threshold (default: "auto")
@@ -91,7 +92,9 @@ class QualityControlEEL(Algorithm):
 		"""
 		super().__init__(**kwargs)
 		self.min_umis = min_umis
+		self.min_genes = min_genes
 		self.min_fraction_good_cells = min_fraction_good_cells
+		self.umi_gene_ratio = umi_gene_ratio
 
 	@requires("TotalUMIs", "uint32", ("cells",))
 	@creates("ValidCells", "bool", ("cells",))
@@ -115,9 +118,9 @@ class QualityControlEEL(Algorithm):
 		n_cells = ws.cells.length
 
 		enough_umis = self.TotalUMIs[:] >= self.min_umis
-		enough_genes = (self.Expression[:,:] > 0).sum(axis=1) >= self.min_genes
+		enough_genes = (ws.Expression[:,:] > 0).sum(axis=1) >= self.min_genes
 		umis_gene_ratio = self.TotalUMIs[:] / enough_genes
-		enough_ratio = umis_gene_ratio > 1
+		enough_ratio = umis_gene_ratio > self.umi_gene_ratio
 		good_cells = enough_umis & enough_genes & enough_ratio
 
 		logging.info(f" QualityControl: Marked {n_cells - enough_umis.sum()} cells with too few UMIs")
