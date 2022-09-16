@@ -218,56 +218,8 @@ class PlotOverview(Algorithm):
 		sparkline(axes[3], aggregate(labels, self.CellCycleFraction[:], func="mean"), 0.05, "blue", "Cell cycle", labels, subtrees)
 		sparkline(axes[4], aggregate(labels, self.DoubletScore[:], func="mean"), 0.4, "crimson", "Doublet score", labels, subtrees)
 		plot_ages(axes[5], ages, labels, subtrees)
-		plot_regions(axes[6], regions, {
-			'Head': 'brown',
-			'Brain': 'teal',
-			'Forebrain': 'crimson',
-			'Telencephalon': 'crimson',
-			'Diencephalon': 'orange',
-			'Midbrain': 'green',
-			'Hindbrain': 'magenta',
-			'Pons': 'magenta',
-			'Cerebellum': 'magenta',
-			'Medulla': 'blue'
-		}, labels, subtrees)
-
-		plot_regions(axes[7], subregions, {
-			'Head': 'brown',
-			'Brain': 'teal',
-
-			'Forebrain': 'red',
-			'Telencephalon': 'red',
-			'Cortex': 'red',
-			'Cortex hemisphere A': 'red',
-			'Cortex hemisphere B': 'red',
-			'Cortex lower': 'red',
-			'Cortex upper': 'red',
-			'Cortex occipital': 'red',
-			'Cortex entorhinal': 'red',
-			'Cortex frontotemporal': 'red',
-			'Cortex temporal': 'red',
-			'Cortex parietal': 'red',
-			'Cortex frontal': 'red',
-			'Cortical hem': 'red',
-			'Hippocampus': 'pink',
-
-			'Subcortex': 'orange',
-			'Caudate+Putamen': 'orange',
-			'Striatum': 'orange',
-
-			'Diencephalon': 'orange',
-			'Hypothalamus': 'orange',
-			'Thalamus': 'orange',
-
-			'Midbrain': 'green',
-			'Midbrain dorsal': 'green',
-			'Midbrain ventral': 'green',
-
-			'Hindbrain': 'magenta',
-			'Cerebellum': 'magenta',
-			'Pons': 'magenta',
-			'Medulla': 'blue'
-		}, labels, subtrees)
+		plot_regions(axes[6], regions, cgplot.Colorizer("regions").dict(), labels, subtrees)
+		plot_regions(axes[7], subregions, cgplot.Colorizer("subregions").dict(), labels, subtrees)
 		plot_auto_annotation(axes[8], ann_names, ann_post, labels, subtrees)
 		plot_genes(axes[9], markers, mean_x, genes, labels, subtrees, enriched_genes)
 		fig.tight_layout(pad=0, h_pad=0, w_pad=0)

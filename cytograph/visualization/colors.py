@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from typing import Any
+from typing import Any, Dict
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
@@ -59,6 +59,10 @@ class ColorScheme:
 		self.fit(x)
 		return self.transform(x)
 
+	@abstractmethod
+	def dict(self) -> Dict[str, str]:
+		pass
+
 
 class NamedColorScheme(ColorScheme):
 	def __init__(self, names, colors, permute: bool = False):
@@ -76,6 +80,9 @@ class NamedColorScheme(ColorScheme):
 		indices = np.nonzero(x[:, None] == self.names)[1]
 		return self.colors[indices]
 
+	def dict(self) -> Dict[str, str]:
+		return dict(zip(self.names, [matplotlib.colors.to_hex(c) for c in self.colors]))
+
 
 class DiscreteColorScheme(ColorScheme):
 	def __init__(self, colors, permute: bool = False) -> None:
@@ -92,11 +99,17 @@ class DiscreteColorScheme(ColorScheme):
 		indices = self.encoding.transform(x) % len(self.colors)
 		return self.colors[indices]
 
+	def dict(self) -> Dict[str, str]:
+		colors = [matplotlib.colors.to_hex(c) for c in self.colors]
+		return dict(zip(colors, colors))
+
 
 class Colorizer:
 	def __init__(self, scheme, permute: bool = False, interpolated: bool = False) -> None:
 		self.interpolated = interpolated
-		if scheme == "tube":
+		if isinstance(scheme, ColorScheme):
+			self.scheme = scheme
+		elif scheme == "tube":
 			self.scheme = DiscreteColorScheme([
 				"#B36305", "#E32017", "#FFD300", "#00782A",
 				"#F3A9BB", "#A0A5A9", "#9B0056", "#000000",
@@ -201,7 +214,32 @@ class Colorizer:
 				[0.95686275, 0.42745098, 0.26274510, 1.],
 				[0.83929258, 0.18454441, 0.15286428, 1.]
 			], permute)
+		elif scheme == "roigroupmid":
+			self.scheme = NamedColorScheme(
+				["Cerebral cortex", "Hippocampus", "Basal forebrain", "Amygdala", "Hypothalamus", "Thalamus", "Midbrain", "Pons", "Cerebellum", "Medulla", "Spinal cord"],
+				['#4682f0', '#8eb7d1', '#89d8e0', '#c48351', '#f28e37', '#e7bc1f', '#43ad78', '#a7236e', '#ed5f8e', '#955ba5', '#eec2a4'], permute)
+		elif scheme == "roigroupcoarse":
+			self.scheme = NamedColorScheme(
+				["Cerebral cortex", "Hippocampus", "Cerebral nuclei", "Hypothalamus", "Thalamus", "Midbrain", "Pons", "Cerebellum", "Medulla", "Spinal cord"],
+				['#4682f0', '#8eb7d1', '#89d8e0', '#f28e37', '#e7bc1f', '#43ad78', '#a7236e', '#ed5f8e', '#955ba5', '#eec2a4'], permute)
+		elif scheme == "superclasses":
+			self.scheme = NamedColorScheme(
+				[
+					'Astrocyte', 'Bergmann glia', 'CGE interneurons', 'Cerebellar VZ inhibitory', 'Choroid plexus', 'Eccentric MSN', 'Ependymal-like', 'Forebrain excitatory',
+					'Glycinergic, cholinergic, monoaminergic, or peptidergic', 'Hindbrain-derived excitatory', 'Hipp. CA1-CA3', 'Hipp. CA4', 'Hipp. DG', 'Immune', 'L2/3 IT',
+					'L5-6 IT', 'L5/6 NP', 'L6 CT/b', 'LAMP5-LHX6 and Chandelier', 'MGE interneurons', 'MSN', 'Mammillary body', 'Midbrain-derived inhibitory', 'Miscellaneous rare',
+					'OPC', 'Oligodendrocyte', 'Rhombic lip excitatory', 'Thalamic excitatory', 'VLMC', 'Vascular'
+				],
+				[
+					'#ab3bc4', '#e7c31f', '#983f00', '#4c005c', '#005c31', '#2bcd48', '#ed5f8e', '#808080', '#93feb4', '#8e7c00', '#9ccb00', '#c10087', '#003380',
+					'#fea305', '#fea7ba', '#426600', '#ee1010', '#5ef0f1', '#00988e', '#dffe66', '#740afe', '#980000', '#fefe80', '#fefe00', '#0098d4', '#9cba19',
+					'#80baed', '#cc9f80', '#c48351', '#e12e12'
+				], permute)
 		elif scheme == "regions":
+			self.scheme = NamedColorScheme(
+				["Head", "Brain", "Forebrain", "Telencephalon", "Diencephalon", "Midbrain", "Hindbrain", "Pons", "Cerebellum", "Medulla"],
+				["#eed8c9", "#a49592", "#4682f0", "#89d8e0", "#e9c413", "#45ad78", "#6f3e94", "#a7236e", "#ed5f8e", "#9b59b6"], permute)
+		elif scheme == "regions_old":
 			self.scheme = NamedColorScheme(
 				["Head", "Brain", "Forebrain", "Telencephalon", "Diencephalon", "Midbrain", "Hindbrain", "Pons", "Cerebellum", "Medulla"],
 				["#eed8c9", "#a49592", "#f26b38", "#cb4335", "#e9c413", "#45ad78", "#a7226e", "#cc527a", "#589bf2", "#9b59b6"], permute)
@@ -218,8 +256,8 @@ class Colorizer:
 			], permute)
 		elif scheme == "classes":
 			self.scheme = NamedColorScheme(
-				['Fibroblast', 'Immune', 'OPC', 'Glioblast', 'Radial glia', 'Neuroblast', 'Neuron', '(other)'],
-				["#e2975d", "#e0598b", "#74c493", "#447c69", "#e16552", "#6367ae", "#5698c4", "#9f9f9f"], permute)
+				['Neuron', 'Neuroblast', 'Neuronal IPC', 'Radial glia', "Glioblast", "Oligo", "Fibroblast", "Neural crest", "Placodes", "Immune", "Vascular", "Erythrocyte", "Failed"],
+				["#5384db", "#5d25c4", "#ab3bc4", "#27b35d", "#447c69", "#9cba19", "#c48351", "#eec79f", "#70510e", "#e7c31f", "#e12e12", "#ff617f", "#9f9f9f"], permute)
 		else:
 			raise ValueError(f"Unrecognized scheme '{scheme}'")
 
@@ -240,6 +278,9 @@ class Colorizer:
 		else:
 			return matplotlib.colors.ListedColormap(self.scheme.colors)
 
+	def dict(self) -> Dict[str, str]:
+		return self.scheme.dict()
+
 	def plot(self, show_labels: bool = True) -> None:
 		n_colors = len(self.scheme.colors)
 		fig = plt.figure(figsize=(15, 15))
@@ -252,9 +293,9 @@ class Colorizer:
 			ax.add_patch(rect)
 			if show_labels:
 				if type(self.scheme) is NamedColorScheme and self.scheme.names is not None:
-					plt.text(start + 0.5, y + 0.5, self.scheme.names[start], ha="center", va="center", fontsize=14)
+					plt.text(start + 0.5, y + 0.5, self.scheme.names[ix], ha="center", va="center", fontsize=14)
 				else:
-					plt.text(start + 0.5, y + 0.5, matplotlib.colors.to_hex(self.scheme.colors[start]), ha="center", va="center", fontsize=14)
+					plt.text(start + 0.5, y + 0.5, matplotlib.colors.to_hex(self.scheme.colors[ix]), ha="center", va="center", fontsize=14)
 			plt.xlim(0, min(10, n_colors))
 			plt.ylim(n_colors // 10 + 1, 0)
 		plt.axis("off")

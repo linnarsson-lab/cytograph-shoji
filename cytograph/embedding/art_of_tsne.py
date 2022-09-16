@@ -4,6 +4,7 @@ from cytograph import requires, creates, Algorithm
 import numpy as np
 from openTSNE import TSNEEmbedding, affinity, initialization
 import shoji
+from ..utils import available_cpu_count
 
 
 class ArtOfTsne(Algorithm):
@@ -72,7 +73,7 @@ class ArtOfTsne(Algorithm):
 				perplexity=self.perplexity,
 				metric=self.metric,
 				method="annoy",
-				n_jobs=-1
+				n_jobs=available_cpu_count()
 			)
 
 			logging.info(f" ArtOfTsne: Creating TSNE embedding")
@@ -80,7 +81,7 @@ class ArtOfTsne(Algorithm):
 				init_full,
 				affinities,
 				negative_gradient_method="fft",
-				n_jobs=-1
+				n_jobs=available_cpu_count()
 			)
 			logging.info(f" ArtOfTsne: Optimizing, stage 1")
 			Z.optimize(n_iter=250, inplace=True, exaggeration=12, momentum=0.5, learning_rate=n / 12, n_jobs=-1)
@@ -97,14 +98,14 @@ class ArtOfTsne(Algorithm):
 				perplexities=[self.perplexity, n / 100],
 				metric=self.metric,
 				method="annoy",
-				n_jobs=-1
+				n_jobs=available_cpu_count()
 			)
 			init = init_method(X)
 			Z = TSNEEmbedding(
 				init,
 				affinities_multiscale_mixture,
 				negative_gradient_method="fft",
-				n_jobs=-1
+				n_jobs=available_cpu_count()
 			)
 			Z.optimize(n_iter=250, inplace=True, exaggeration=12, momentum=0.5, learning_rate=n / 12, n_jobs=-1)
 			Z.optimize(n_iter=750, inplace=True, exaggeration=exaggeration, momentum=0.8, learning_rate=n / 12, n_jobs=-1)
@@ -120,7 +121,7 @@ class ArtOfTsne(Algorithm):
 				perplexity=self.perplexity,
 				metric=self.metric,
 				method="annoy",
-				n_jobs=-1
+				n_jobs=available_cpu_count()
 			)
 
 			init = init_method(X)
@@ -129,7 +130,7 @@ class ArtOfTsne(Algorithm):
 				init,
 				aff,
 				learning_rate=lr,
-				n_jobs=-1,
+				n_jobs=available_cpu_count(),
 				negative_gradient_method="fft"
 			)
 			Z.optimize(250, exaggeration=12, momentum=0.5, inplace=True, n_jobs=-1)

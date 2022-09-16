@@ -4,6 +4,7 @@ from cytograph import requires, creates, Algorithm
 import numpy as np
 import shoji
 import umap
+from ..utils import available_cpu_count
 
 
 class UMAP(Algorithm):
@@ -30,11 +31,18 @@ class UMAP(Algorithm):
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> np.ndarray:
 		return self._fit(self.Factors[:])
 
-	def _fit(self, X: np.ndarray) -> np.ndarray:
+	def _fit(self, X: np.ndarray, y: np.ndarray = None) -> np.ndarray:
 		"""
 		Returns:
 			The UMAP embedding as np.ndarray
 		"""
 		logging.info(" UMAP: Computing the embedding")
-		Z = umap.UMAP(metric=self.metric, n_neighbors=self.n_neighbors, min_dist=self.min_dist, dens_lambda=self.density_regularization, densmap=self.density_regularization > 0).fit_transform(X)
+		Z = umap.UMAP(
+			metric=self.metric,
+			n_neighbors=self.n_neighbors,
+			min_dist=self.min_dist,
+			dens_lambda=self.density_regularization,
+			densmap=self.density_regularization > 0,
+			n_jobs=available_cpu_count()
+		).fit_transform(X, y=y)
 		return Z
