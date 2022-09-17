@@ -35,10 +35,7 @@ class SCVI(Algorithm):
                     sc.pp.highly_variable_genes(
                         adata,
                         n_top_genes=500,
-                        subset=True,
-                        layer="counts",
                         flavor="seurat_v3",
-                        batch_key="cell_source"
                     )
                     le = LabelEncoder() 
                     batch = self.batch_keys
@@ -61,9 +58,10 @@ class SCVI(Algorithm):
                     n_epochs=np.min([round((20000/adata.n_obs)*400), 400])
                     n_hidden=128
                     n_layers=2
-                    scvi._settings.ScviConfig.num_threads = 30
+                    scvi._settings.ScviConfig.num_threads = 12
+                    scvi._settings.ScviConfig.batch_size = 512
                     scvi.model.SCVI.setup_anndata(adata, batch_key='batch_ind')
-                    model = scvi.model.SCVI(adata, n_latent=self.n_factors)
+                    model = scvi.model.SCVI(adata, n_latent=self.n_factors,gene_likelihood='zinb',n_layers=n_layers,n_hidden=n_hidden)
                     model.train()
                     latent = model.get_latent_representation()
                         

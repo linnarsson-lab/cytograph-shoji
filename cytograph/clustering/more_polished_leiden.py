@@ -166,7 +166,7 @@ class MorePolishedLeiden(Algorithm):
 		g = igraph.Graph(ws.cells.length, list(zip(rc[:, 0].T.tolist(), rc[:, 1].T.tolist())), directed=False, edge_attrs={'weight': weights})
 		logging.info(" MorePolishedLeiden: Optimizing the graph partitioning")
 		if self.resolution != 1:
-			labels = np.array(la.find_partition(g, self.method, weights=weights, max_comm_size=self.max_size, resolution_parameter=self.resolution, n_iterations=-1).membership)
+			labels = np.array(la.find_partition(g, self.method, weights=weights, max_comm_size=self.max_size, resolution_parameter=self.resolution,n_iterations=-1).membership)
 		else:
 			labels = np.array(la.find_partition(g, self.method, weights=weights, max_comm_size=self.max_size, n_iterations=-1).membership)
 		logging.info(f" MorePolishedLeiden: Found {labels.max() + 1} initial clusters")
