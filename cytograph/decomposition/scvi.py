@@ -11,7 +11,7 @@ class SCVI(Algorithm):
     """
     Remove batch effects and intergate
     """
-    def __init__(self, batch_keys: List[str] = [], **kwargs) -> None:
+    def __init__(self, n_factors=50, batch_keys: List[str] = [], **kwargs) -> None:
         """
         Remove batch effects using scVI (Lopez et al. 2018)
         Args:
@@ -19,6 +19,7 @@ class SCVI(Algorithm):
         Writes the output as Factors unless mentioned otherwise in the punch card
         """
         super().__init__(**kwargs)
+        self.n_factors= n_factors
         self.batch_keys = batch_keys
 
     @requires("Factors", "float32", ("cells", None))
@@ -28,8 +29,17 @@ class SCVI(Algorithm):
     def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> np.ndarray:
             import scanpy.external.pp._scanorama_integrate as si
             import scvi
+            import scanpy as sc
             if self.batch_keys is not None and len(self.batch_keys) > 0:
-                    adata = ws.create_anndata(only_selected= True)
+                    adata = sc.AnnData(X=ws.Expression[:],obs={self.batch_keys[0]:ws.Sample[:]})
+                    sc.pp.highly_variable_genes(
+                        adata,
+                        n_top_genes=500,
+                        subset=True,
+                        layer="counts",
+                        flavor="seurat_v3",
+                        batch_key="cell_source"
+                    )
                     le = LabelEncoder() 
                     batch = self.batch_keys
                     for b in self.batch_keys:
@@ -46,20 +56,20 @@ class SCVI(Algorithm):
                         else:
                             logging.info(f" SCVI: Can't find  {b}")
                     adata.obs['batch_ind']= le.fit_transform(adata.obs['batch_concat'].values)
-                    if(len(np.unique(adata.obs['batch_ind']))>1):
-                        logging.info(f" SCVI: Integration based on batch keys {batch}")
-                        n_epochs=np.min([round((20000/adata.n_obs)*400), 400])
-                        n_hidden=128
-                        n_layers=2
-                        scvi._settings.ScviConfig.num_threads = 30
-                        scvi.model.SCVI.setup_anndata(adata, batch_key='batch_ind')
-                        model = scvi.model.SCVI(adata)
-                        model.train()
-                        latent = model.get_latent_representation()
+                    #if(len(np.unique(adata.obs['batch_ind']))>1):
+                    logging.info(f" SCVI: Integration based on batch keys {batch}")
+                    n_epochs=np.min([round((20000/adata.n_obs)*400), 400])
+                    n_hidden=128
+                    n_layers=2
+                    scvi._settings.ScviConfig.num_threads = 30
+                    scvi.model.SCVI.setup_anndata(adata, batch_key='batch_ind')
+                    model = scvi.model.SCVI(adata, n_latent=self.n_factors)
+                    model.train()
+                    latent = model.get_latent_representation()
                         
-                    else:
-                        logging.info(f" SCVI: Skipping because one batch was found")
-                        latent = self.Factors[:]
+                    #else:
+                    #    logging.info(f" SCVI: Skipping because one batch was found")
+                    #    latent = self.Factors[:]
                         
                 
             else:
