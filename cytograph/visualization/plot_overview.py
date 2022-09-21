@@ -94,9 +94,12 @@ def plot_genes(ax, markers, mean_x, genes, labels, subtrees, enriched_genes):
 	m_names = []
 	for category, mgenes in markers.items():
 		for gene in mgenes:
-			gene_ix = np.where(genes == gene)[0][0]
-			m.append(mean_x[:, gene_ix])
-			m_names.append(f"{gene} ({category})")
+			try:
+				gene_ix = np.where(genes == gene)[0][0]
+				m.append(mean_x[:, gene_ix])
+				m_names.append(f"{gene} ({category})")
+			except:
+				pass
 	n_genes = len(m_names)
 	n_clusters = labels.max() + 1
 
