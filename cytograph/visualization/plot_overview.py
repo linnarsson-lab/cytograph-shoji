@@ -227,3 +227,72 @@ class PlotOverview(Algorithm):
 		if save:
 			plt.savefig(self.export_dir / (ws._name + self.filename), dpi=300, bbox_inches='tight')
 			plt.close()
+
+class PlotOverviewEEL(Algorithm):
+	def __init__(self, filename: str = None, **kwargs) -> None:
+		super().__init__(**kwargs)
+		self.filename = filename if filename is not None else "_overview.png"
+
+	@requires("Species", "string", ())
+	@requires("Gene", "string", ("genes",))
+	@requires("Clusters", "uint32", ("cells",))
+	@requires("TotalUMIs", "uint32", ("cells",))
+	@requires("CellCycleFraction", "float32", ("cells",))
+	@requires("MeanExpression", "float64", ("clusters",))
+	@requires("ClusterID", "uint32", ("clusters",))
+	@requires("AnnotationName", "string", ("annotations",))
+	@requires("AnnotationPosterior", "float32", ("clusters", "annotations"))
+	@requires("NCells", "uint64", ("clusters",))
+	@requires("Linkage", "float32", None)
+	@requires("Enrichment", "float32", ("clusters", "genes"))
+	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> None:
+		logging.info(" PlotOverview: Plotting the heatmap")
+
+		labels = self.Clusters[:]
+		regions = self.Region[:]
+		subregions = self.Subregion[:]
+		ages = self.Age[:].astype(int)
+		n_clusters = ws.clusters.length
+
+		cluster_labels = self.ClusterID[:]
+		ordering = np.argsort(cluster_labels)
+		mean_x = self.MeanExpression[:][ordering]
+		markers = cg.Species(self.Species[:]).markers
+		genes = self.Gene[:]
+		enrichment = self.Enrichment[:]
+		enriched_genes = []
+		for i in range(ws.clusters.length):
+			enriched_genes.append(" ".join(genes[np.argsort(-enrichment[cluster_labels == i, :][0])[:5]]))
+
+		ordering = indices_to_order_a_like_b(self.ClusterID[:], np.arange(n_clusters))
+		ann_names = self.AnnotationName[:]
+		ann_post = self.AnnotationPosterior[:].T[:, ordering]
+		n_cells = self.NCells[:]
+		linkage = self.Linkage[:].astype("float64")
+
+		if "Subtree" in ws:
+			subtrees = ws.Subtree[:]
+		else:
+			# Cut the tree into subtrees with about ten clusters each
+			cluster_subtrees = cut_tree(linkage, n_clusters=max(1, n_clusters // 10)).flatten().astype("int")
+			# Map this onto the individual cells
+			subtrees = np.zeros(ws.cells.length, dtype="uint32")
+			for j in range(n_clusters):
+				subtrees[labels == j] = cluster_subtrees[j]
+
+		fig, axes = plt.subplots(nrows=10, ncols=1, sharex=True, gridspec_kw={"height_ratios": (2, 0.25, 0.25, 0.25, 0.25, 2, 2, 6, 8, 12)}, figsize=(20, 33))
+		plot_dendrogram(axes[0], n_clusters, linkage, labels, subtrees)
+		sparkline(axes[1], n_cells, None, "orange", "Cells", labels, subtrees)
+		sparkline(axes[2], aggregate(labels, self.TotalUMIs[:], func="mean"), None, "green", "TotalUMIs", labels, subtrees)
+		sparkline(axes[3], aggregate(labels, self.CellCycleFraction[:], func="mean"), 0.05, "blue", "Cell cycle", labels, subtrees)
+		sparkline(axes[4], aggregate(labels, self.DoubletScore[:], func="mean"), 0.4, "crimson", "Doublet score", labels, subtrees)
+		#plot_ages(axes[5], ages, labels, subtrees)
+		#plot_regions(axes[6], regions, cgplot.Colorizer("regions").dict(), labels, subtrees)
+		#plot_regions(axes[7], subregions, cgplot.Colorizer("subregions").dict(), labels, subtrees)
+		plot_auto_annotation(axes[8], ann_names, ann_post, labels, subtrees)
+		plot_genes(axes[9], markers, mean_x, genes, labels, subtrees, enriched_genes)
+		fig.tight_layout(pad=0, h_pad=0, w_pad=0)
+
+		if save:
+			plt.savefig(self.export_dir / (ws._name + self.filename), dpi=300, bbox_inches='tight')
+			plt.close()

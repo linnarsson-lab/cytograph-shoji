@@ -53,9 +53,12 @@ class Heatmap(Algorithm):
 		m_names = []
 		for category, mgenes in markers.items():
 			for gene in mgenes:
-				gene_ix = np.where(genes == gene)[0][0]
-				m.append(mean_x[:, gene_ix])
-				m_names.append(gene)
+				try:
+					gene_ix = np.where(genes == gene)[0][0]
+					m.append(mean_x[:, gene_ix])
+					m_names.append(gene)
+				except:
+					pass
 		x = np.vstack([m, x])
 		enriched_genes = np.concatenate([m_names, enriched_genes])
 		# Normalize
