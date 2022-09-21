@@ -217,7 +217,7 @@ class PlotOverview(Algorithm):
 		sparkline(axes[2], aggregate(labels, self.TotalUMIs[:], func="mean"), None, "green", "TotalUMIs", labels, subtrees)
 		sparkline(axes[3], aggregate(labels, self.CellCycleFraction[:], func="mean"), 0.05, "blue", "Cell cycle", labels, subtrees)
 
-		#sparkline(axes[4], aggregate(labels, self.DoubletScore[:], func="mean"), 0.4, "crimson", "Doublet score", labels, subtrees)
+		sparkline(axes[4], aggregate(labels, self.DoubletScore[:], func="mean"), 0.4, "crimson", "Doublet score", labels, subtrees)
 		plot_ages(axes[5], ages, labels, subtrees)
 		plot_regions(axes[6], regions, cgplot.Colorizer("regions").dict(), labels, subtrees)
 		plot_regions(axes[7], subregions, cgplot.Colorizer("subregions").dict(), labels, subtrees)
@@ -283,7 +283,7 @@ class PlotOverviewEEL(Algorithm):
 		sparkline(axes[1], n_cells, None, "orange", "Cells", labels, subtrees)
 		sparkline(axes[2], aggregate(labels, self.TotalUMIs[:], func="mean"), None, "green", "TotalUMIs", labels, subtrees)
 		sparkline(axes[3], aggregate(labels, self.CellCycleFraction[:], func="mean"), 0.05, "blue", "Cell cycle", labels, subtrees)
-		sparkline(axes[4], aggregate(labels, self.DoubletScore[:], func="mean"), 0.4, "crimson", "Doublet score", labels, subtrees)
+		#sparkline(axes[4], aggregate(labels, self.DoubletScore[:], func="mean"), 0.4, "crimson", "Doublet score", labels, subtrees)
 		#plot_ages(axes[5], ages, labels, subtrees)
 		#plot_regions(axes[6], regions, cgplot.Colorizer("regions").dict(), labels, subtrees)
 		#plot_regions(axes[7], subregions, cgplot.Colorizer("subregions").dict(), labels, subtrees)
