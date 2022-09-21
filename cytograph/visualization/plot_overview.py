@@ -249,9 +249,6 @@ class PlotOverviewEEL(Algorithm):
 		logging.info(" PlotOverview: Plotting the heatmap")
 
 		labels = self.Clusters[:]
-		regions = self.Region[:]
-		subregions = self.Subregion[:]
-		ages = self.Age[:].astype(int)
 		n_clusters = ws.clusters.length
 
 		cluster_labels = self.ClusterID[:]
