@@ -96,7 +96,7 @@ class AutoAnnotate(Algorithm):
 				p_cond.append(pp[:, genes == gene].flatten()[:n_clusters])
 			and_p = np.prod(p_cond)
 			sum_p = np.sum(p_cond)
-			p = p * (sum_p - and_p)
+			posteriors = posteriors * (sum_p - and_p)
 
 			for gene in negatives:
 				posteriors *= (1 - pp[:, genes == gene].flatten())[:n_clusters]
