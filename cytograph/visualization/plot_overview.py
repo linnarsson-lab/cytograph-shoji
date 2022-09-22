@@ -191,7 +191,7 @@ class PlotOverview(Algorithm):
 		cluster_labels = self.ClusterID[:]
 		ordering = np.argsort(cluster_labels)
 		mean_x = self.MeanExpression[:][ordering]
-		markers = cg.Species(self.Species[:]).gb_markers
+		markers = cg.Species(self.Species[:]).markers
 		genes = self.Gene[:]
 		enrichment = self.Enrichment[:]
 		enriched_genes = []
@@ -258,7 +258,7 @@ class PlotOverviewEEL(Algorithm):
 		cluster_labels = self.ClusterID[:]
 		ordering = np.argsort(cluster_labels)
 		mean_x = self.MeanExpression[:][ordering]
-		markers = cg.Species(self.Species[:]).markers
+		markers = cg.Species(self.Species[:]).gb_markers
 		genes = self.Gene[:]
 		enrichment = self.Enrichment[:]
 		enriched_genes = []
