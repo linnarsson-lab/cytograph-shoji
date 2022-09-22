@@ -21,6 +21,7 @@ class PlotAnnotation(Algorithm):
 	@requires("NCells", "uint64", ("clusters",))
 	@requires("ClusterID", "uint32", ("clusters",))
 	@requires("Enrichment", "float32", ("clusters", "genes"))
+	@requires("AnnotationDescription", "string", ("annotations",))
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> None:
 		logging.info(" PlotManifold: Plotting the embedding")
 
@@ -34,7 +35,7 @@ class PlotAnnotation(Algorithm):
 		xy = self.Embedding[:]
 
 		for i in range(ws.clusters.length):
-			labels.append(label)
+			labels.append(annotation[i])
 
 		plt.figure(figsize=(20, 20))
 		ax = plt.subplot(111)

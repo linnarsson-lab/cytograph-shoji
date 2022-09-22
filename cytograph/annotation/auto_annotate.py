@@ -33,6 +33,8 @@ class Annotation:
 			genes = self.definition.strip().split()
 			self.positives = [x[1:] for x in genes if x.startswith("+")]
 			self.negatives = [x[1:] for x in genes if x.startswith("-")]
+			self.or_positives =[x[1:] for x in genes if x.startswith("|")]
+
 		else:
 			raise ValueError(os.path.basename(filename) + " did not contain a 'definition' attribute, which is required.")
 
@@ -85,22 +87,29 @@ class AutoAnnotate(Algorithm):
 					tag = Annotation(cur[root_len:], os.path.join(cur, file))
 					definitions.append(tag)
 
-		def annotation_posterior(positives, negatives):
+		def annotation_posterior(positives, negatives, or_positives):
 			posteriors = np.ones(n_clusters)
 			for gene in positives:
 				posteriors *= pp[:, genes == gene].flatten()[:n_clusters]  # Take only the first n_clusters in case the gene name is duplicated
+			p_cond = []
+			for gene in or_positives:
+				p_cond.append(pp[:, genes == gene].flatten()[:n_clusters])
+			and_p = np.prod(p_cond)
+			sum_p = np.sum(p_cond)
+			p = p * (sum_p - and_p)
+
 			for gene in negatives:
 				posteriors *= (1 - pp[:, genes == gene].flatten())[:n_clusters]
 			return posteriors
 
 		posteriors = np.empty((len(definitions), n_clusters))
 		for ix, tag in enumerate(definitions):
-			for gene in tag.positives + tag.negatives:
+			for gene in tag.positives + tag.negatives + tag.or_positives:
 				if gene not in genes:
 					logging.error(f"Gene '{gene}' for tag '{tag.name}' not found in the workspace and will omitted from the tag definition.")
 					tag.definition += f" (!missing '{gene}')"
 					continue
-			posteriors[ix, :] = annotation_posterior(tag.positives, tag.negatives)
+			posteriors[ix, :] = annotation_posterior(tag.positives, tag.negatives, tag.or_positives)
 
 		# Recreate the annotations dimension
 		if save:
