@@ -17,3 +17,4 @@ from .plot_markers import PlotMarkers
 from .plot_karyotype import PlotKaryotype
 from .plot_droplet_classes import PlotDropletClasses
 from .plot_overview import PlotOverview, PlotOverviewEEL
+from .plot_annotation import PlotAnnotation
