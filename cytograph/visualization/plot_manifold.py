@@ -59,6 +59,6 @@ class PlotManifold(Algorithm):
 			labels.append(f"{n_clusters} ({n_clusters - MAX_CLUSTERS} clusters not shown)")
 		scatterc(xy, c=np.array(labels)[clusters], legend="outside")
 		plt.axis("off")
-
+		logging.info("export dir: "+str(self.export_dir))
 		plt.savefig(self.export_dir / (ws._name + "_" + self.filename), dpi=300, bbox_inches='tight')
 		plt.close()

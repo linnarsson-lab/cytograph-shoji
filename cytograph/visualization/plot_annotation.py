@@ -9,6 +9,8 @@ import shoji
 from cytograph import Algorithm, requires
 from .scatter import scatterc
 
+def indices_to_order_a_like_b(a, b):
+	return a.argsort()[b.argsort().argsort()]
 
 class PlotAnnotation(Algorithm):
 	def __init__(self, filename: str = "annotation.png", **kwargs) -> None:
@@ -22,6 +24,8 @@ class PlotAnnotation(Algorithm):
 	@requires("ClusterID", "uint32", ("clusters",))
 	@requires("Enrichment", "float32", ("clusters", "genes"))
 	@requires("AnnotationDescription", "string", ("annotations",))
+	@requires("AnnotationName", "string", ("annotations",))
+	@requires("AnnotationPosterior", "float32", ("clusters","annotations"))
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> None:
 		logging.info(" PlotManifold: Plotting the embedding")
 
@@ -31,11 +35,20 @@ class PlotAnnotation(Algorithm):
 		n_clusters = clusters.max() + 1
 		cluster_ids = self.ClusterID[:]
 		genes = self.Gene[:]
-		annotation = self.AnnotationDescription[:]
+
+		ordering = indices_to_order_a_like_b(self.ClusterID[:], np.arange(n_clusters))
+		ann_desc = self.AnnotationDescription[:]
+		ann_names = self.AnnotationName[:]
+		ann_post = self.AnnotationPosterior[:].T[:, ordering]
+
+
 		xy = self.Embedding[:]
 
 		for i in range(ws.clusters.length):
-			labels.append(annotation[i])
+			order = ann_post[:,i].argsort()[::-1]
+			label = ann_desc[order[:3]]
+			label = ' | '.join(label)
+			labels.append(label)
 
 		plt.figure(figsize=(20, 20))
 		ax = plt.subplot(111)
@@ -59,5 +72,4 @@ class PlotAnnotation(Algorithm):
 		plt.axis("off")
 
 		plt.savefig(self.export_dir / (ws._name + "_" + self.filename), dpi=300, bbox_inches='tight')
-		plt.close(dir / (ws._name + "_" + self.filename), dpi=300, bbox_inches='tight')
 		plt.close()

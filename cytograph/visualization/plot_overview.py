@@ -281,7 +281,7 @@ class PlotOverviewEEL(Algorithm):
 			for j in range(n_clusters):
 				subtrees[labels == j] = cluster_subtrees[j]
 
-		fig, axes = plt.subplots(nrows=10, ncols=1, sharex=True, gridspec_kw={"height_ratios": (2, 0.25, 0.25, 0.25, 0.25, 2, 2, 6, 8, 12)}, figsize=(20, 33))
+		fig, axes = plt.subplots(nrows=6, ncols=1, sharex=True, gridspec_kw={"height_ratios": (2, 0.25, 0.25, 0.25, 8, 12)}, figsize=(20, 33))
 		plot_dendrogram(axes[0], n_clusters, linkage, labels, subtrees)
 		sparkline(axes[1], n_cells, None, "orange", "Cells", labels, subtrees)
 		sparkline(axes[2], aggregate(labels, self.TotalUMIs[:], func="mean"), None, "green", "TotalUMIs", labels, subtrees)

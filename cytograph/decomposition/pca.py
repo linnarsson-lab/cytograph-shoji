@@ -36,7 +36,7 @@ class PrincipalComponents(Algorithm):
 		level = np.median(totals)
 		data = self.Expression[:, self.SelectedFeatures == True]
 		vals = np.log2(div0(data.T, totals) * level + 1).T  # Transposed back to (cells, genes)
-		vals = scale(vals)
+		#vals = scale(vals)
 
 		logging.info(f" PrincipalComponents: Computing principal components")
 		pca = PCA(n_components=self.n_factors)
