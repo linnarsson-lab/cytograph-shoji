@@ -16,5 +16,5 @@ from .plot_cell_cycle import PlotCellCycle
 from .plot_markers import PlotMarkers
 from .plot_karyotype import PlotKaryotype
 from .plot_droplet_classes import PlotDropletClasses
-from .plot_overview import PlotOverview, PlotOverviewEEL
+from .plot_overview import PlotOverview, PlotOverviewEEL, PlotOverviewEELGraph
 from .plot_annotation import PlotAnnotation
