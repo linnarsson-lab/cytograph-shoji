@@ -131,8 +131,10 @@ def plot_genes(ax, markers, mean_x, genes, labels, subtrees, enriched_genes):
 def plot_auto_annotation(ax, ann_names, ann_post, labels, subtrees):
 	n_anns = len(ann_names)
 	n_clusters = labels.max() + 1
+	ann_post = (ann_post - ann_post.min(axis=0)) / (ann_post.max(axis=0) - ann_post.min(axis=0))
 
-	ax.imshow(ann_post, cmap=plt.cm.Purples, vmin=0, vmax=1, aspect='auto', interpolation="none", origin="upper", extent=(0, n_clusters, n_anns, 0))
+
+	ax.imshow(ann_post, cmap=plt.cm.Reds, vmin=0, vmax=1, aspect='auto', interpolation="none", origin="upper", extent=(0, n_clusters, n_anns, 0))
 	ax.set_yticks(np.arange(n_anns) + 0.5)
 	ax.set_yticklabels(ann_names)
 	ax.hlines(np.arange(5, n_anns, 5), 0, n_clusters, lw=1, linestyles="--", color="grey")
@@ -149,24 +151,26 @@ def plot_graph_clusters(ax, graph_clusters, labels, subtrees):
 	n_graph_clusters = graph_clusters.max() + 1
 
 	graph_values = []
-	for l in labels.unique():
+	for l in np.unique(labels):
 		zeros = np.zeros(n_graph_clusters)
 		graph_clusters_cluster_l = graph_clusters[labels == l]
 		val,counts = np.unique(graph_clusters_cluster_l, return_counts=True)
-		for val,c in zip(val,c):
+		for val,c in zip(val,counts):
 			zeros[val] = c
 
 		graph_values.append(zeros)
-	graph_values = np.stack(graph_values)
+	graph_values = np.stack(graph_values).T
+	graph_values = graph_values/graph_values.sum(axis=0)
 
-	ax.imshow(graph_values, cmap=plt.cm.Viridis, vmin=0, vmax=1, aspect='auto', interpolation="none", origin="upper", extent=(0, n_clusters, n_graph_clusters, 0))
-	ax.set_yticks(np.arange(n_clusters) + 0.5)
-	ax.set_yticklabels(np.arange(n_clusters))
+	ax.imshow(graph_values, cmap=plt.cm.viridis, vmin=0, vmax=1, aspect='auto', interpolation="none", origin="upper", extent=(0, n_clusters, n_graph_clusters, 0))
+	ax.set_yticks(np.arange(n_graph_clusters))
+	ax.set_yticklabels(np.arange(n_graph_clusters))
 
 	ax.hlines(np.arange(5, n_clusters, 5), 0, n_clusters, lw=1, linestyles="--", color="grey")
 	for ix in range(subtrees.max() + 1):
 		ax.vlines(labels[subtrees == ix].max() + 1, 0, n_clusters, linestyles="--", lw=1, color="grey")
-	ax.set_ylim(len(n_clusters), 0)
+	
+	ax.set_ylim(n_graph_clusters, 0)
 
 	ax.spines["top"].set_visible(False)
 	ax.spines["right"].set_visible(False)
@@ -344,7 +348,7 @@ class PlotOverviewEELGraph(Algorithm):
 	@requires("NCells", "uint64", ("clusters",))
 	@requires("Linkage", "float32", None)
 	@requires("Enrichment", "float32", ("clusters", "genes"))
-	@requires("GraphCluster", "uint16", ("clusters",))
+	@requires("GraphCluster", "uint16", ("cells",))
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> None:
 		logging.info(" PlotOverview: Plotting the heatmap")
 
@@ -378,7 +382,7 @@ class PlotOverviewEELGraph(Algorithm):
 				subtrees[labels == j] = cluster_subtrees[j]
 
 
-		fig, axes = plt.subplots(nrows=7, ncols=1, sharex=True, gridspec_kw={"height_ratios": (2, 0.25, 0.25, 0.25, 8, 12)}, figsize=(20, 33))
+		fig, axes = plt.subplots(nrows=7, ncols=1, sharex=True, gridspec_kw={"height_ratios": (2, 0.25, 0.25, 0.25, 8, 10, 12)}, figsize=(20, 33))
 		plot_dendrogram(axes[0], n_clusters, linkage, labels, subtrees)
 		sparkline(axes[1], n_cells, None, "orange", "Cells", labels, subtrees)
 		sparkline(axes[2], aggregate(labels, self.TotalUMIs[:], func="mean"), None, "green", "TotalUMIs", labels, subtrees)
@@ -387,8 +391,8 @@ class PlotOverviewEELGraph(Algorithm):
 		#plot_ages(axes[5], ages, labels, subtrees)
 		#plot_regions(axes[6], regions, cgplot.Colorizer("regions").dict(), labels, subtrees)
 		#plot_regions(axes[7], subregions, cgplot.Colorizer("subregions").dict(), labels, subtrees)
-		plot_graph_clusters(axes[4], ws.GraphCluster[:], labels, subtrees)
-		plot_auto_annotation(axes[5], ann_names, ann_post, labels, subtrees)
+		plot_auto_annotation(axes[4], ann_names, ann_post, labels, subtrees)
+		plot_graph_clusters(axes[5], ws.GraphCluster[:], labels, subtrees)
 		plot_genes(axes[6], markers, mean_x, genes, labels, subtrees, enriched_genes)
 		fig.tight_layout(pad=0, h_pad=0, w_pad=0)
 
