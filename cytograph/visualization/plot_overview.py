@@ -131,7 +131,10 @@ def plot_genes(ax, markers, mean_x, genes, labels, subtrees, enriched_genes):
 def plot_auto_annotation(ax, ann_names, ann_post, labels, subtrees):
 	n_anns = len(ann_names)
 	n_clusters = labels.max() + 1
-	ann_post = (ann_post - ann_post.min(axis=0)) / (ann_post.max(axis=0) - ann_post.min(axis=0))
+	
+	ann_post = (ann_post - ann_post.min(axis=0)) 
+	ann_post = np.log(ann_post+1)
+	ann_post = (ann_post - ann_post.min(axis=0))/ (ann_post.max(axis=0) - ann_post.min(axis=0))
 
 
 	ax.imshow(ann_post, cmap=plt.cm.Reds, vmin=0, vmax=1, aspect='auto', interpolation="none", origin="upper", extent=(0, n_clusters, n_anns, 0))
