@@ -47,7 +47,7 @@ class PrincipalComponents(Algorithm):
 
 		keep_factors = 50
 		if pca.explained_variance_ratio_.sum() < 0.5:
-			keep_factors = np.min(np.where(np.cumsum(pca.explained_variance_ratio_) > 0.75)[0])
+			keep_factors = np.min(np.where(np.cumsum(pca.explained_variance_ratio_) > 0.5)[0])
 			if keep_factors < 50:
 				keep_factors = 50
 
