@@ -45,10 +45,9 @@ class PrincipalComponents(Algorithm):
 		evs = ", ".join([f"{x:.2f}" for x in pca.explained_variance_ratio_ if x > 0.01]) + ", ..."
 		logging.info(f" PrincipalComponents: Explained variance ({int(pca.explained_variance_ratio_.sum() * 100)}%): {evs}")
 
-		keep_factors = 50#self.n_factors
-		#if pca.explained_variance_ratio_.sum() > 0.5:
-		#	keep_factors = np.min(np.where(np.cumsum(pca.explained_variance_ratio_) > 0.5)[0])
-
+		keep_factors = 50
+		if pca.explained_variance_ratio_.sum() > 0.75:
+			keep_factors = np.min(np.where(np.cumsum(pca.explained_variance_ratio_) > 0.5)[0])
 
 		logging.info(f" PrincipalComponents: Keeping {keep_factors} components that explain {int(pca.explained_variance_ratio_[:keep_factors].sum() * 100)}% of variance")
 		loadings = pca.components_.T
