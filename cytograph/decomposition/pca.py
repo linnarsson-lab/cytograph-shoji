@@ -46,8 +46,8 @@ class PrincipalComponents(Algorithm):
 		logging.info(f" PrincipalComponents: Explained variance ({int(pca.explained_variance_ratio_.sum() * 100)}%): {evs}")
 
 		keep_factors = 50
-		if pca.explained_variance_ratio_.sum() < 0.5:
-			keep_factors = np.min(np.where(np.cumsum(pca.explained_variance_ratio_) > 0.5)[0])
+		if pca.explained_variance_ratio_.sum() < 0.75:
+			keep_factors = np.min(np.where(np.cumsum(pca.explained_variance_ratio_) > 0.75)[0])
 			if keep_factors < 50:
 				keep_factors = 50
 
