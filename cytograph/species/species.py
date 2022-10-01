@@ -55,7 +55,6 @@ class Species:
 			}
 
 			self.gb_markers = {
-				"CellCycle": ["PCNA", "CDK1", "TOP2A"],
 				"RadialGlia": ["HES1", "HOPX"],
 				"Immune": ["PTPRC", "CD74"],
 				"Tcells": ["CD3E","CD3G"],
@@ -72,7 +71,7 @@ class Species:
 				"NPC":["CDK4","EN1","STMN1","STMN2"],
 				"MES":["VIM", "MMP3", "MMP2", "MMP9"],
 				"Neuroblasts": ["NHLH1", "NHLH2"],
-				"Neurons": ["GAD1", "GAD2", "SLC32A1","SLC17A7", "SLC17A8", "SLC17A6", "TPH2", "FEV", "TH", "SLC6A3"],
+				"Neurons": ["GAD1", "GAD2", "SLC32A1","SLC17A7", "SLC17A8", "SLC17A6"],
 				"Oligodendrocytes": ["PLP1", "MOG", "MBP"],
 			}
 
