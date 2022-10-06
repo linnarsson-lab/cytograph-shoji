@@ -46,7 +46,10 @@ class GeneSummaryStatistics(Algorithm):
 		return (mu, sd, nnz, s, valids, total)
 
 class GeneSummaryStatisticsEEL(Algorithm):
-	def __init__(self, min_cells=25, **kwargs) -> None:
+	def __init__(self, 
+		min_cells=25,
+		remove_genes = ['GFAP','UNC5C','MBP','CRYAB','SPARCL1','PSAP','CLU','GCK','MYO1F','SHOX2'],
+		**kwargs) -> None:
 		"""
 		Calculate summary statistics for each gene
 
@@ -59,7 +62,9 @@ class GeneSummaryStatisticsEEL(Algorithm):
 		"""
 		super().__init__(**kwargs)
 		self.min_cells = min_cells
+		self.remove_genes = remove_genes
 
+	@creates("Gene", "string", ("genes",))
 	@requires("Expression", "uint16", ("cells", "genes"))
 	@requires("TotalUMIs", "uint32", ("cells",))
 	@creates("MeanExpression", "float32", ("genes",))
@@ -79,7 +84,7 @@ class GeneSummaryStatisticsEEL(Algorithm):
 		
 		min_cells_exp_gene = (ws.Expression[:] > 0).sum(axis=0) > self.min_cells
 		more_than_x_molecules = (ws.Expression[:] >= 3).sum(axis=0) >= 1
-		valids = valids & min_cells_exp_gene & more_than_x_molecules
+		valids = valids & min_cells_exp_gene & more_than_x_molecules & np.isin(self.Gene[:], self.remove_genes,invert=True)
 
 		
 		logging.info(f" GeneSummaryStatistics: Average nonzero cells per gene {int(nnz.mean())}")
