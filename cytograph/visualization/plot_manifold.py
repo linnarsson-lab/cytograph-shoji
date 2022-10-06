@@ -80,6 +80,8 @@ class PlotManifoldNeighbors(Algorithm):
 	@requires("Y", "float32", ("cells",))
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> None:
 
+		
+
 		sample = ws.Sample[:]
 		x,y = ws.X[:], ws.Y[:]
 		global_cell = np.arange(x.shape[0])

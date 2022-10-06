@@ -2,18 +2,19 @@ from typing import Tuple
 
 import numpy as np
 from sklearn.decomposition import PCA
-from sklearn.preprocessing import scale
+from sklearn.preprocessing import scale, RobustScaler
 from ..utils import div0
 from ..algorithm import creates, requires, Algorithm
 import shoji
 import logging
 
 
+
 class PrincipalComponents(Algorithm):
 	"""
 	Project a dataset into a reduced feature space using PCA.
 	"""
-	def __init__(self, n_factors: int = 50, **kwargs) -> None:
+	def __init__(self, n_factors: int = 50, scale=True, **kwargs) -> None:
 		"""
 		Args:
 			n_factors:  	The number of retained components
@@ -24,6 +25,7 @@ class PrincipalComponents(Algorithm):
 		"""
 		super().__init__(**kwargs)
 		self.n_factors = n_factors
+		self.scale = scale
 
 	@requires("Expression", "uint16", ("cells", "genes"))
 	@requires("SelectedFeatures", "bool", ("genes",))
@@ -36,7 +38,9 @@ class PrincipalComponents(Algorithm):
 		level = np.median(totals)
 		data = self.Expression[:, self.SelectedFeatures == True]
 		vals = np.log2(div0(data.T, totals) * level + 1).T  # Transposed back to (cells, genes)
-		#vals = scale(vals)
+
+		if self.scale:
+			vals = scale(vals)#RobustScaler().fit_transform(vals)
 
 		logging.info(f" PrincipalComponents: Computing principal components")
 		pca = PCA(n_components=self.n_factors)
