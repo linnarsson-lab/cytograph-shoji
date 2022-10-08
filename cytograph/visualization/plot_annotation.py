@@ -27,7 +27,7 @@ class PlotAnnotation(Algorithm):
 	@requires("AnnotationName", "string", ("annotations",))
 	@requires("AnnotationPosterior", "float32", ("clusters","annotations"))
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> None:
-		logging.info(" PlotManifold: Plotting the embedding")
+		logging.info(" PlotAnnotation: Plotting the embedding")
 
 		labels = []
 		n_cells = self.NCells[:]
