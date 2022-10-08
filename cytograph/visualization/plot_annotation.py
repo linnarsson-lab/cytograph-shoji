@@ -45,9 +45,10 @@ class PlotAnnotation(Algorithm):
 		xy = self.Embedding[:]
 
 		for i in range(ws.clusters.length):
+			n = n_cells[cluster_ids == i][0]
 			order = ann_post[:,i].argsort()[::-1]
 			label = ann_desc[order[:3]]
-			label = ' | '.join(label)
+			label = f"{i:>3} ({n:,} cells) - " + ' | '.join(label)
 			labels.append(label)
 
 		plt.figure(figsize=(20, 20))

@@ -64,7 +64,7 @@ class GeneSummaryStatisticsEEL(Algorithm):
 		self.min_cells = min_cells
 		self.remove_genes = remove_genes
 
-	@creates("Gene", "string", ("genes",))
+	@requires("Gene", "string", ("genes",))
 	@requires("Expression", "uint16", ("cells", "genes"))
 	@requires("TotalUMIs", "uint32", ("cells",))
 	@creates("MeanExpression", "float32", ("genes",))

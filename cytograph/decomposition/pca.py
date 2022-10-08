@@ -14,7 +14,7 @@ class PrincipalComponents(Algorithm):
 	"""
 	Project a dataset into a reduced feature space using PCA.
 	"""
-	def __init__(self, n_factors: int = 50, scale=True, **kwargs) -> None:
+	def __init__(self, n_factors: int = 50, scale=False, **kwargs) -> None:
 		"""
 		Args:
 			n_factors:  	The number of retained components
