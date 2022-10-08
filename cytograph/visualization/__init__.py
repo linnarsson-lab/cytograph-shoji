@@ -18,3 +18,4 @@ from .plot_karyotype import PlotKaryotype
 from .plot_droplet_classes import PlotDropletClasses
 from .plot_overview import PlotOverview, PlotOverviewEEL, PlotOverviewEELGraph
 from .plot_annotation import PlotAnnotation
+from .plot_sankey import PlotSankey
