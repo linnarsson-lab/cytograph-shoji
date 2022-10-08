@@ -120,9 +120,15 @@ class CellSummaryStatisticsEEL(Algorithm):
 			g1_indices = np.isin(genes, species.genes.g1)
 			s_indices = np.isin(genes, species.genes.s)
 			g2m_indices = np.isin(genes, species.genes.g2m)
-			g1 = x[:, g1_indices].sum(axis=1)
-			s = x[:, s_indices].sum(axis=1)
-			g2m = x[:, g2m_indices].sum(axis=1)
+			g1 = x[:, g1_indices]#.sum(axis=1)
+			g1[np.where(g1 ==1)] = 0
+			g1 = g1.sum(axis=1)
+			s = x[:, s_indices]#.sum(axis=1)
+			s[np.where(s ==1)] = 0
+			s = s.sum(axis=1)
+			g2m = x[:, g2m_indices]#.sum(axis=1)
+			g2m[np.where(g2m ==1)] = 0
+			g2m = g2m.sum(axis=1)
 			cc = (g1 + s + g2m) / n_UMIs
 		else:
 			cc = np.zeros(nnz.shape[0], dtype="float32")

@@ -47,7 +47,7 @@ class PlotAnnotation(Algorithm):
 		for i in range(ws.clusters.length):
 			n = n_cells[cluster_ids == i][0]
 			order = ann_post[:,i].argsort()[::-1]
-			label = ann_desc[order[:3]]
+			label = ann_names[order[:3]]
 			label = f"{i:>3} ({n:,} cells) - " + ' | '.join(label)
 			labels.append(label)
 
