@@ -97,13 +97,37 @@ class PlotSankey(Algorithm):
 		df3 = pd.DataFrame({'source':source,'target':target, 'value':v})
 		unique_colors = colorize(np.unique(clusters))
 		unique_colors_HEX = [rgb2hex(int(color[0]*255),int(color[1]*255),int(color[2]*255)) for color in unique_colors]
+		cmap = {t:col for t,col in zip(df2.columns,unique_colors_HEX)}
+		cmap2 = {t:col for t,col in zip(df2.index,unique_colors_HEX)}
+		cmap = {**cmap,**cmap2}
+
 		sankey = hv.Sankey(df3, label='Cell2Cell').opts(
 			height=2000,
 			width=1000,
 			label_position='left', 
 			edge_color='target', 
 			node_color='index', 
-			cmap=unique_colors_HEX,
+			cmap=cmap,
 			edge_muted_alpha=0)
 		hv.save(sankey, self.export_dir / (ws._name + "_" + self.filename +".png"))
 		hv.save(sankey, self.export_dir / (ws._name + "_" + self.filename + ".html"))
+
+
+		cmap_chord = {t:col for t,col in zip(df2.index,unique_colors_HEX)}
+		df3['target2'] =  [x[8:] for x in df3['target']]
+		data = pd.DataFrame({'s':df2.index.values,'t':df2.index.values})
+
+		hvdata = hv.Dataset(data)
+		chord = hv.Chord((df3,hvdata),['source', 'target2'], ['value'])
+
+		chord = chord.select(s=data.s.values.tolist(), selection_mode='nodes')
+		chord.opts(
+			hv.opts.Chord(
+				width=1000,
+				height=1000,
+				cmap='Category20',
+				edge_color=hv.dim('source').str(),
+				node_color=hv.dim('t').str(),
+				labels='t',
+			)
+		)
