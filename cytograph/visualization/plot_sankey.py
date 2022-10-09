@@ -125,9 +125,12 @@ class PlotSankey(Algorithm):
 			hv.opts.Chord(
 				width=1000,
 				height=1000,
-				cmap='Category20',
+				cmap=cmap_chord,
 				edge_color=hv.dim('source').str(),
 				node_color=hv.dim('t').str(),
 				labels='t',
 			)
 		)
+
+		hv.save(sankey, self.export_dir / (ws._name + "_chord.png"))
+		hv.save(sankey, self.export_dir / (ws._name + "_chord.html"))
