@@ -19,3 +19,4 @@ from .plot_droplet_classes import PlotDropletClasses
 from .plot_overview import PlotOverview, PlotOverviewEEL, PlotOverviewEELGraph
 from .plot_annotation import PlotAnnotation
 from .plot_sankey import PlotSankey
+from .miscellaneous_plotting import plot_clusters, plot_gene

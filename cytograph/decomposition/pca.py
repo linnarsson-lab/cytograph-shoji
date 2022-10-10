@@ -40,6 +40,7 @@ class PrincipalComponents(Algorithm):
 		vals = np.log2(div0(data.T, totals) * level + 1).T  # Transposed back to (cells, genes)
 
 		if self.scale:
+			logging.info(f" Scaling data")
 			vals = scale(vals)#RobustScaler().fit_transform(vals)
 
 		logging.info(f" PrincipalComponents: Computing principal components")
@@ -49,12 +50,13 @@ class PrincipalComponents(Algorithm):
 		evs = ", ".join([f"{x:.2f}" for x in pca.explained_variance_ratio_ if x > 0.01]) + ", ..."
 		logging.info(f" PrincipalComponents: Explained variance ({int(pca.explained_variance_ratio_.sum() * 100)}%): {evs}")
 
-		keep_factors = 50
+		keep_factors = self.n_factors
 		if pca.explained_variance_ratio_.sum() < 0.75:
 			try:
 				keep_factors = np.min(np.where(np.cumsum(pca.explained_variance_ratio_) > 0.75)[0])
 			except:
 				keep_factors = self.n_factors
+			
 			if keep_factors < 50:
 				keep_factors = self.n_factors
 

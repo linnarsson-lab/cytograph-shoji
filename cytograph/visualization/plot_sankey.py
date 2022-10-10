@@ -18,9 +18,10 @@ def indices_to_order_a_like_b(a, b):
 	return a.argsort()[b.argsort().argsort()]
 
 class PlotSankey(Algorithm):
-	def __init__(self, filename: str = "sankey", **kwargs) -> None:
+	def __init__(self, filename: str = "sankey", condense=True, **kwargs) -> None:
 		super().__init__(**kwargs)
 		self.filename = filename
+		self.condense = condense
 
 	@requires("Gene", "string", ("genes",))
 	@requires("Clusters", "uint32", ("cells",))
@@ -57,7 +58,6 @@ class PlotSankey(Algorithm):
 		edges = []
 		center_nodes = np.arange(sample.shape[0])
 		for s in unique_samples:
-			print(s)
 			tree = KDTree(centroids[sample==s])
 			dst, nghs= tree.query(centroids[sample==s], distance_upper_bound=75, k=3,workers=-1)
 			nghs = nghs[:,1:]
@@ -88,7 +88,6 @@ class PlotSankey(Algorithm):
 		source,target, v = [], [], []
 		for s in df2.index:
 			median_v = df2.loc[s,:].median()
-			print(median_v)
 			for t in df2.columns:
 				if df2[t][s] > median_v:
 					v.append(df2[t][s])
@@ -101,7 +100,11 @@ class PlotSankey(Algorithm):
 		cmap2 = {t:col for t,col in zip(df2.index,unique_colors_HEX)}
 		cmap = {**cmap,**cmap2}
 
-		sankey = hv.Sankey(df3, label='Cell2Cell').opts(
+		if self.condense:
+			RUN_df = df3
+		else: 
+			RUN_df = df
+		sankey = hv.Sankey(RUN_df, label='Cell2Cell').opts(
 			height=2000,
 			width=1000,
 			label_position='left', 
@@ -132,5 +135,5 @@ class PlotSankey(Algorithm):
 			)
 		)
 
-		hv.save(sankey, self.export_dir / (ws._name + "_chord.png"))
-		hv.save(sankey, self.export_dir / (ws._name + "_chord.html"))
+		hv.save(chord, self.export_dir / (ws._name + "_chord.png"))
+		hv.save(chord, self.export_dir / (ws._name + "_chord.html"))
