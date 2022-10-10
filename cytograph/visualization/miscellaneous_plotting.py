@@ -43,28 +43,39 @@ def plot_clusters(ws, save=False, filename='clusters'):
     subsample = np.random.choice(np.arange(len(data)), size=100000, replace=False)
     #data = data[subsample,:]
     data.loc[:,'cluster'] = np.array([clusters_label_dic[c] for c in data['cluster']])
-    scatter = hv.Scatter(data,kdims=['x'],vdims=['y','cluster']).opts(cmap=unique_colors_HEX,color=hv.dim('cluster'), fig_size=800, s=0.1)
+    scatter = hv.Scatter(data,kdims=['x'],vdims=['y','cluster']).opts(
+                                                                    cmap=unique_colors_HEX,
+                                                                    color=hv.dim('cluster'), 
+                                                                    fig_size=800, 
+                                                                    s=1, 
+                                                                    show_legend=True,
+                                                                    xticks=0,
+                                                                    yticks=0, 
+                                                                    ylabel=None,
+                                                                    xlabel=None,
+                                                                    xaxis=None,
+                                                                    yaxis=None, 
+                                                                    )
     if save:
         hv.save(scatter, filename+'.png')
 
     return scatter
 
 def plot_gene(ws, gene, save=False):
-    gene = 'EGFR'
-    xy = ws.Embedding[:]
+    hv.extension('matplotlib')
+    xy = ws.UMAP[:]
     exp = ws.Expression[:,ws.Gene[:] == gene]
     d = np.concatenate([xy,exp],axis=1)
-
-
     zeros = exp <= 1
     s0 = d[zeros[:,0],:]
-    s0 = hv.Scatter(s0,kdims=['x'],vdims=['y','z']).opts(color='grey',size=1)
+    s0 = hv.Scatter(s0,kdims=['x'],vdims=['y','z']).opts(color='grey',s=1, alpha=0.01)
 
     s1 = d[~zeros[:,0],:]
-    #s1[:,2] = np.log(s1[:,2]+1)
-    s1 = hv.Scatter(s1,kdims=['x'],vdims=['y','z']).opts(color=hv.dim('z'),cmap='viridis',size=0.5,alpha=0.75)
+    s1[:,2] = np.log(s1[:,2]+1)
+    s1 = hv.Scatter(s1,kdims=['x'],vdims=['y','z']).opts(color=hv.dim('z'),cmap='fire',s=2,alpha=1)
 
     s= s0*s1
+    s = s.opts(xticks=0,yticks=0, ylabel=None,xlabel=None,xaxis=None,yaxis=None, fig_size=200)
     if save:
         hv.save(s, '{}.png'.format(gene))
     return s
