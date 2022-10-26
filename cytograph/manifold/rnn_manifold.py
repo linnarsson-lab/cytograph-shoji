@@ -10,7 +10,7 @@ class RnnManifold(Algorithm):
 	"""
 	Compute a radius nearest-neighbor manifold graph
 	"""
-	def __init__(self, k: int, metric: str, mutual: bool = False, max_radius_percentile: int = 90, **kwargs) -> None:
+	def __init__(self, k: int, metric: str, mutual: bool = False, max_radius_percentile: int = 100, **kwargs) -> None:
 		"""
 		Compute a radius nearest-neighbor manifold graph
 	

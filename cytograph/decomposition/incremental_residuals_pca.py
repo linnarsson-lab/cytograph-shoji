@@ -68,6 +68,8 @@ class IncrementalResidualsPCA(Algorithm):
 		if pca.explained_variance_ratio_.sum() > 0.5:
 			logging.info("Keeping factors to 50% variance", keep_factors)
 			keep_factors = np.min(np.where(np.cumsum(pca.explained_variance_ratio_) > 0.5)[0])
+			if keep_factors <= self.n_factors:
+				keep_factors = self.n_factors
 		loadings = pca.components_.T
 		loadings_all = np.zeros_like(loadings, shape=(ws.genes.length, keep_factors))
 		loadings_all[ws.SelectedFeatures[:]] = loadings[:, :keep_factors]

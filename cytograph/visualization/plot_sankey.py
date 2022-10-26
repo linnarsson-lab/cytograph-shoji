@@ -1,3 +1,4 @@
+from ensurepip import bootstrap
 from typing import Dict, List
 import logging
 
@@ -18,10 +19,17 @@ def indices_to_order_a_like_b(a, b):
 	return a.argsort()[b.argsort().argsort()]
 
 class PlotSankey(Algorithm):
-	def __init__(self, filename: str = "sankey", condense=True, **kwargs) -> None:
+	def __init__(self, 
+				filename: str = "sankey", 
+				condense=True, 
+				reduce_classes=False, 
+				cmap=None,
+				**kwargs) -> None:
 		super().__init__(**kwargs)
 		self.filename = filename
 		self.condense = condense
+		self.reduce_classes = reduce_classes
+		self.cmap = cmap
 
 	@requires("Gene", "string", ("genes",))
 	@requires("Clusters", "uint32", ("cells",))
@@ -37,9 +45,12 @@ class PlotSankey(Algorithm):
 	@requires("Y", "float32", ("cells",))
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> None:
 		logging.info(" PlotSankey: Plotting the graph")
-		subsample = np.random.choice(np.arange(self.Embedding[:].shape[0]),size=50000,replace=False)
+		#subsample = np.random.choice(np.arange(self.Embedding[:].shape[0]),size=50000,replace=False)
+		
 		labels = []
 		clusters = self.Clusters[:]#[subsample]
+		bootstrapped_clusters = np.random.choice(clusters,size=clusters.shape[0],replace=True)
+
 		n_clusters = clusters.max() + 1
 		x,y = self.X[:], self.Y[:]
 		ordering = indices_to_order_a_like_b(self.ClusterID[:], np.arange(n_clusters))
@@ -51,6 +62,8 @@ class PlotSankey(Algorithm):
 			order = ann_post[:,i].argsort()[::-1]
 			label = ann_names[order[:3]]
 			label = str(i)+ ' - ' + ' | '.join(label)
+			if self.reduce_classes:
+				label = ann_names[order[0]]
 			labels.append(label)
 
 		unique_samples = np.unique(sample)
@@ -96,6 +109,7 @@ class PlotSankey(Algorithm):
 		df3 = pd.DataFrame({'source':source,'target':target, 'value':v})
 		unique_colors = colorize(np.unique(clusters))
 		unique_colors_HEX = [rgb2hex(int(color[0]*255),int(color[1]*255),int(color[2]*255)) for color in unique_colors]
+		
 		cmap = {t:col for t,col in zip(df2.columns,unique_colors_HEX)}
 		cmap2 = {t:col for t,col in zip(df2.index,unique_colors_HEX)}
 		cmap = {**cmap,**cmap2}
@@ -115,8 +129,12 @@ class PlotSankey(Algorithm):
 		hv.save(sankey, self.export_dir / (ws._name + "_" + self.filename +".png"))
 		hv.save(sankey, self.export_dir / (ws._name + "_" + self.filename + ".html"))
 
+		if type(self.cmap) == type(None):
+			cmap_chord = {t:col for t,col in zip(df2.index,unique_colors_HEX)}
+		else:
+			print('cmap')
+			cmap_chord = self.cmap
 
-		cmap_chord = {t:col for t,col in zip(df2.index,unique_colors_HEX)}
 		df3['target2'] =  [x[8:] for x in df3['target']]
 		data = pd.DataFrame({'s':df2.index.values,'t':df2.index.values})
 
@@ -134,6 +152,6 @@ class PlotSankey(Algorithm):
 				labels='t',
 			)
 		)
-
-		hv.save(chord, self.export_dir / (ws._name + "_chord.png"))
+		print('dpi')
+		hv.save(chord, self.export_dir / (ws._name + "_chord.png"),dpi=500)
 		hv.save(chord, self.export_dir / (ws._name + "_chord.html"))
