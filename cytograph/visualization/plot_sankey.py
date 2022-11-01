@@ -49,7 +49,7 @@ class PlotSankey(Algorithm):
 		
 		labels = []
 		clusters = self.Clusters[:]#[subsample]
-		bootstrapped_clusters = np.random.choice(clusters,size=clusters.shape[0],replace=True)
+		bootstrapClusters = np.random.choice(clusters,size=clusters.shape[0],replace=True)
 
 		n_clusters = clusters.max() + 1
 		x,y = self.X[:], self.Y[:]
@@ -87,23 +87,40 @@ class PlotSankey(Algorithm):
 		clustersSource = np.array(labels)[self.Clusters[:][edges[:,0]]]
 		clustersTarget = np.array(labels)[self.Clusters[:][edges[:,1]]]
 		clustersTarget = np.array( ['Target: '+ t for t in clustersTarget])
+
+		clustersTargetBootstrap = np.array(labels)[bootstrapClusters[edges[:,0]]]
+		clustersTargetBootstrap = np.array( ['Target: '+ t for t in clustersTargetBootstrap])
+
 		values = np.ones_like(clustersSource)
 		df = pd.DataFrame({"source":clustersSource, "target":clustersTarget, "value":values.astype(np.float32)})
+		dfBootstrap = pd.DataFrame({"source":clustersSource, "target":clustersTargetBootstrap, "value":values.astype(np.float32)})
 
 		df2 = df.pivot_table(
-		index='source', 
-		columns='target',
-		aggfunc='sum',
-		fill_value=0,
-		dropna=False
+			index='source', 
+			columns='target',
+			aggfunc='sum',
+			fill_value=0,
+			dropna=False
 		)
+
+		df2Bootstrap = dfBootstrap.pivot_table(
+				index='source', 
+				columns='target',
+				aggfunc='sum',
+				fill_value=0,
+				dropna=False
+			)
+
+		df2.values = df2.values/(df2Bootstrap.values+1e-6)
+
 		df2.columns = [x[1] for x in df2.columns]
 		source,target, v = [], [], []
 		for s in df2.index:
 			median_v = df2.loc[s,:].median()
 			for t in df2.columns:
 				if df2[t][s] > median_v:
-					v.append(df2[t][s])
+					value_ratio = df2[t][s]/df2Bootstrap[t][s]
+					v.append(value_ratio)
 					source.append(s)
 					target.append(t)
 		df3 = pd.DataFrame({'source':source,'target':target, 'value':v})
@@ -135,7 +152,7 @@ class PlotSankey(Algorithm):
 			print('cmap')
 			cmap_chord = self.cmap
 
-		df3['target2'] =  [x[8:] for x in df3['target']]
+		df3['target2'] =  [x for x in df3['target']]# [x[8:] for x in df3['target']]
 		data = pd.DataFrame({'s':df2.index.values,'t':df2.index.values})
 
 		hvdata = hv.Dataset(data)
