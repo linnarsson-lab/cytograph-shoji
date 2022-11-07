@@ -351,7 +351,7 @@ class PlotOverviewEELGraph(Algorithm):
 	@requires("NCells", "uint64", ("clusters",))
 	@requires("Linkage", "float32", None)
 	@requires("Enrichment", "float32", ("clusters", "genes"))
-	@requires("GraphCluster", "uint16", ("cells",))
+	@requires("GraphCluster", "int8", ("cells",))
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> None:
 		logging.info(" PlotOverview: Plotting the heatmap")
 
