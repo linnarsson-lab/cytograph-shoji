@@ -111,7 +111,7 @@ class PlotSankey(Algorithm):
 				dropna=False
 			)
 
-		df2.values = df2.values/(df2Bootstrap.values+1e-6)
+		df2 = df2/(df2Bootstrap+1e-6)
 
 		df2.columns = [x[1] for x in df2.columns]
 		source,target, v = [], [], []
