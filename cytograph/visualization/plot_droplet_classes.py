@@ -45,7 +45,8 @@ class PlotDropletClasses(Algorithm):
 		if "m" in self.kwargs and "k" in self.kwargs:
 			m = self.kwargs["m"]
 			k = self.kwargs["k"]
-			plt.plot([0, 1], [m, m + k], color="green", ls="dashed", lw=1)
+			y = np.power(10, np.log10(m) + np.log10(k) * np.arange(0, 1, 0.1))
+			plt.plot(np.arange(0, 1, 0.1), y, color="green", ls="dashed", lw=1)
 		plt.xlabel("Unspliced fraction")
 		plt.ylabel("Total UMIs")
 		plt.yscale("log")
