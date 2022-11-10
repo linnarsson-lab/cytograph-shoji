@@ -24,18 +24,21 @@ class PlotSankey(Algorithm):
 				condense=True, 
 				reduce_classes=False, 
 				cmap=None,
+				cluster_name: str = "Cluster",
 				**kwargs) -> None:
 		super().__init__(**kwargs)
 		self.filename = filename
 		self.condense = condense
 		self.reduce_classes = reduce_classes
 		self.cmap = cmap
+		self.cluster_name = cluster_name
 
 	@requires("Gene", "string", ("genes",))
 	@requires("Clusters", "uint32", ("cells",))
 	@requires("Embedding", "float32", ("cells", 2))
 	@requires("NCells", "uint64", ("clusters",))
 	@requires("ClusterID", "uint32", ("clusters",))
+	@requires("GraphCluster", "int8", ("cells",))
 	@requires("Sample", "string", ("cells",))
 	@requires("Enrichment", "float32", ("clusters", "genes"))
 	@requires("AnnotationDescription", "string", ("annotations",))
@@ -48,12 +51,17 @@ class PlotSankey(Algorithm):
 		#subsample = np.random.choice(np.arange(self.Embedding[:].shape[0]),size=50000,replace=False)
 		
 		labels = []
-		clusters = self.Clusters[:]#[subsample]
+		if self.cluster_name == 'Cluster':
+			clusters = self.Clusters[:]#[subsample]
+			ClusterID = self.ClusterID[:]
+		elif self.cluster_name == 'GraphCluster':
+			clusters = self.GraphCluster[:]
+			ClusterID = np.unique(clusters)
 		bootstrapClusters = np.random.choice(clusters,size=clusters.shape[0],replace=True)
 
 		n_clusters = clusters.max() + 1
 		x,y = self.X[:], self.Y[:]
-		ordering = indices_to_order_a_like_b(self.ClusterID[:], np.arange(n_clusters))
+		ordering = indices_to_order_a_like_b(ClusterID, np.arange(n_clusters))
 		sample = self.Sample[:]#[subsample]
 
 		ann_names = self.AnnotationName[:]
@@ -111,15 +119,16 @@ class PlotSankey(Algorithm):
 				dropna=False
 			)
 
-		df2 = df2/(df2Bootstrap+1e-6)
+		df2 = df2/(df2Bootstrap+1)
 
 		df2.columns = [x[1] for x in df2.columns]
+		df2Bootstrap.columns = [x[1] for x in df2Bootstrap.columns]
 		source,target, v = [], [], []
 		for s in df2.index:
 			median_v = df2.loc[s,:].median()
 			for t in df2.columns:
 				if df2[t][s] > median_v:
-					value_ratio = df2[t][s]/df2Bootstrap[t][s]
+					value_ratio = df2[t][s]/(df2Bootstrap[t][s]+1)
 					v.append(value_ratio)
 					source.append(s)
 					target.append(t)
@@ -154,6 +163,8 @@ class PlotSankey(Algorithm):
 
 		df3['target2'] =  [x for x in df3['target']]# [x[8:] for x in df3['target']]
 		data = pd.DataFrame({'s':df2.index.values,'t':df2.index.values})
+		print('df3', df3.shape, df3.head())
+		print('data',data.shape,data.head())
 
 		hvdata = hv.Dataset(data)
 		chord = hv.Chord((df3,hvdata),['source', 'target2'], ['value'])
