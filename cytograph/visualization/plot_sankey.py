@@ -115,11 +115,11 @@ class PlotSankey(Algorithm):
 				index='source', 
 				columns='target',
 				aggfunc='sum',
-				fill_value=0,
+				fill_value=1,
 				dropna=False
 			)
 
-		df2 = df2/(df2Bootstrap+1)
+		df2 = df2#/(df2Bootstrap+1)
 
 		df2.columns = [x[1] for x in df2.columns]
 		df2Bootstrap.columns = [x[1] for x in df2Bootstrap.columns]
@@ -128,7 +128,7 @@ class PlotSankey(Algorithm):
 			median_v = df2.loc[s,:].median()
 			for t in df2.columns:
 				if df2[t][s] > median_v:
-					value_ratio = df2[t][s]/(df2Bootstrap[t][s]+1)
+					value_ratio = df2[t][s] #/(df2Bootstrap[t][s]+1)
 					v.append(value_ratio)
 					source.append(s)
 					target.append(t)
@@ -146,7 +146,7 @@ class PlotSankey(Algorithm):
 			RUN_df = df
 		sankey = hv.Sankey(RUN_df, label='Cell2Cell').opts(
 			height=2000,
-			width=1000,
+			width=2000,
 			label_position='left', 
 			edge_color='target', 
 			node_color='index', 
@@ -169,6 +169,8 @@ class PlotSankey(Algorithm):
 		hvdata = hv.Dataset(data)
 		chord = hv.Chord((df3,hvdata),['source', 'target2'], ['value'])
 
+		print('s',data.s.values, data.s.values.shape)
+
 		chord = chord.select(s=data.s.values.tolist(), selection_mode='nodes')
 		chord.opts(
 			hv.opts.Chord(
@@ -180,6 +182,5 @@ class PlotSankey(Algorithm):
 				labels='t',
 			)
 		)
-		print('dpi')
 		hv.save(chord, self.export_dir / (ws._name + "_chord.png"),dpi=500)
 		hv.save(chord, self.export_dir / (ws._name + "_chord.html"))
