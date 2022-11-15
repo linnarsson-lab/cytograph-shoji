@@ -67,7 +67,7 @@ class PlotSpatialmap(Algorithm):
         else:
             cmap = {t:col for t,col in zip(labels,unique_colors_HEX)}
         #logging.info('cmap',cmap)
-        print(cmap)
+        #print(cmap)
         if self.backend == 'holoviews':
             dic = {}
             for cluster, d in data.groupby('cluster'):
@@ -85,8 +85,8 @@ class PlotSpatialmap(Algorithm):
                                                                         bgcolor='black',
                                                                         aspect='equal',
                                                                         )
-                dic[clusters_label_dic[i]] = scatter
-            scatter = hv.NdOverlay(dic).opts(show_legend=True,legend_limit=100,)
+                dic[clusters_label_dic[cluster]] = scatter
+            ND = hv.NdOverlay(dic).opts(show_legend=True,legend_limit=100,legend_position='right',legend_cols=1)
         elif self.backend == 'matplotlib':
             dic = {}
             for cluster, d in data.groupby('cluster'):
@@ -103,11 +103,11 @@ class PlotSpatialmap(Algorithm):
                                                                         xaxis=None,
                                                                         yaxis=None, 
                                                                         )
-                dic[cluster] = scatter
-            scatter = hv.NdOverlay(dic).opts(show_legend=True)
+                dic[clusters_label_dic[cluster]] = scatter
+            ND = hv.NdOverlay(dic).opts(show_legend=True,legend_limit=100,nonselection_alpha=0)
 
         if save:
-            hv.save(scatter, self.export_dir / (ws._name + "_map.png"),dpi=500)
-            hv.save(scatter, self.export_dir / (ws._name + "_map.html"),dpi=500)
+            hv.save(ND, self.export_dir / (ws._name + "_map.png"),dpi=500)
+            hv.save(ND, self.export_dir / (ws._name + "_map.html"),dpi=500)
 
-        return scatter
+        return ND
