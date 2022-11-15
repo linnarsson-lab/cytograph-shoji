@@ -70,11 +70,11 @@ class PlotSpatialmap(Algorithm):
         if self.backend == 'holoviews':
             dic = {}
             for cluster, d in data.groupby('cluster'):
-                print(cluster)
+                #print(cluster)
                 scatter = hv.Scatter(d,kdims=['x'],vdims=['y','cluster']).opts(
                                                                         color=cmap[clusters_label_dic[cluster]], 
-                                                                        width=1000,
-                                                                        height=1000,
+                                                                        width=2000,
+                                                                        height=2000,
                                                                         size=self.point_size, 
                                                                         xticks=0,
                                                                         yticks=0, 
@@ -88,7 +88,7 @@ class PlotSpatialmap(Algorithm):
                                                                         )
                 dic[clusters_label_dic[cluster]] = scatter
             ND = hv.NdOverlay(dic).opts(
-                show_legend=True,legend_limit=100,#legend_cols=2, legend_offset=(0,1000)
+                show_legend=True,legend_limit=100,legend_position='right',#legend_cols=2, legend_offset=(0,1000)
                 )
                 
         elif self.backend == 'matplotlib':
