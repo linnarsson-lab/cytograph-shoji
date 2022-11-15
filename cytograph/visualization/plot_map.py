@@ -66,8 +66,7 @@ class PlotSpatialmap(Algorithm):
             cmap = self.cmap
         else:
             cmap = {t:col for t,col in zip(labels,unique_colors_HEX)}
-        #logging.info('cmap',cmap)
-        #print(cmap)
+
         if self.backend == 'holoviews':
             dic = {}
             for cluster, d in data.groupby('cluster'):
@@ -75,6 +74,7 @@ class PlotSpatialmap(Algorithm):
                 scatter = hv.Scatter(d,kdims=['x'],vdims=['y','cluster']).opts(
                                                                         color=cmap[clusters_label_dic[cluster]], 
                                                                         width=1000,
+                                                                        height=1000,
                                                                         size=self.point_size, 
                                                                         xticks=0,
                                                                         yticks=0, 
@@ -84,13 +84,16 @@ class PlotSpatialmap(Algorithm):
                                                                         yaxis=None, 
                                                                         bgcolor='black',
                                                                         aspect='equal',
+                                                                        nonselection_fill_alpha=0,
                                                                         )
                 dic[clusters_label_dic[cluster]] = scatter
-            ND = hv.NdOverlay(dic).opts(show_legend=True,legend_limit=100,legend_position='right',legend_cols=1)
+            ND = hv.NdOverlay(dic).opts(
+                show_legend=True,legend_limit=100,#legend_cols=2, legend_offset=(0,1000)
+                )
+                
         elif self.backend == 'matplotlib':
             dic = {}
             for cluster, d in data.groupby('cluster'):
-                print(cluster)
                 scatter = hv.Scatter(d,kdims=['x'],vdims=['y','cluster']).opts(
                                                                         color=cmap[cluster], 
                                                                         width=800, 

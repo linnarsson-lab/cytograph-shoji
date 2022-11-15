@@ -162,8 +162,9 @@ class PlotSankey(Algorithm):
 			cmap_chord = self.cmap
 
 		df3['target2'] =  [x[8:] for x in df3['target']]# [x[8:] for x in df3['target']]
-		
 		data = pd.DataFrame({'s':df3['source'].values,'t':df3['target2'].values})
+		
+		print(data['s'].values[0], data['t'].values[0])
 		print('df3', df3.shape, df3.head())
 		print('data',data.shape,data.head())
 
