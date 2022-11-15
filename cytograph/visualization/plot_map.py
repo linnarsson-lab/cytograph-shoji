@@ -74,7 +74,7 @@ class PlotSpatialmap(Algorithm):
                 scatter = hv.Scatter(d,kdims=['x'],vdims=['y','cluster']).opts(
                                                                         color=cmap[clusters_label_dic[cluster]], 
                                                                         width=2000,
-                                                                        height=2000,
+                                                                        #height=2000,
                                                                         size=self.point_size, 
                                                                         xticks=0,
                                                                         yticks=0, 
