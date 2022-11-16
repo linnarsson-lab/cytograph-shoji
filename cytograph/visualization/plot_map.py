@@ -114,3 +114,100 @@ class PlotSpatialmap(Algorithm):
             hv.save(ND, self.export_dir / (ws._name + "_map.html"),dpi=500)
 
         return ND
+
+class PlotSpatialGraphmap(Algorithm):
+    def __init__(self, filename='spatialmap',backend='holoviews', cmap=None, point_size=1, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.filename = filename
+        self.backend = backend
+        self.cmap = cmap
+        self.point_size = point_size
+
+    @requires("Gene", "string", ("genes",))
+    @requires("ClusterID", "uint32", ("clusters",))
+    @requires("Clusters", "uint32", ("cells",))
+    @requires("GraphCluster", "int8", ("cells",))
+    @requires("MeanExpression", "float64", ("clusters", "genes"))
+    @requires("X", "float32", ("cells",))
+    @requires("Y", "float32", ("cells",))
+    @requires("Enrichment", "float32", ("clusters", "genes"))
+    @requires("NCells", "uint64", ("clusters",))
+    def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> None:
+        labels = []
+        n_cells = self.NCells[:]
+        clusters = self.Clusters[:]
+        graphclusters = self.GraphCluster[:]
+        n_clusters = clusters.max() + 1
+        
+        cluster_ids = self.ClusterID[:]
+        clusters_label_dic = {}
+
+        for gi in np.unique(graphclusters):
+            i = np.unique(clusters[graphclusters==gi])
+            n = n_cells[cluster_ids == np.isin(i)][0]
+            label = f"{i:>3} ({n:,} cells) "
+            label += " ".join(i)
+            labels.append(label)
+            clusters_label_dic[gi] = label
+        labels = np.unique(labels)
+
+        clusters = self.Clusters[:]
+        x = self.X[:]
+        y = self.Y[:]
+        data = pd.DataFrame({'x': x, 'y':y, 'cluster':graphclusters}) #np.concatenate([xy,clusters[:,np.newaxis]],axis=1)
+        #data.loc[:,'cluster'] = np.array([clusters_label_dic[c] for c in data['cluster']])
+
+        unique_colors = colorize(np.unique(graphclusters))
+        unique_colors_HEX = [rgb2hex(int(color[0]*255),int(color[1]*255),int(color[2]*255)) for color in unique_colors]
+        if type(self.cmap) != type(None):
+            cmap = self.cmap
+        else:
+            cmap = {t:col for t,col in zip(labels,unique_colors_HEX)}
+
+        if self.backend == 'holoviews':
+            dic = {}
+            for cluster, d in data.groupby('cluster'):
+                #print(cluster)
+                scatter = hv.Scatter(d,kdims=['x'],vdims=['y','cluster']).opts(
+                                                                        color=cmap[clusters_label_dic[cluster]], 
+                                                                        width=2000,
+                                                                        height=2000,
+                                                                        size=self.point_size, 
+                                                                        xticks=0,
+                                                                        yticks=0, 
+                                                                        ylabel=None,
+                                                                        xlabel=None,
+                                                                        xaxis=None,
+                                                                        yaxis=None, 
+                                                                        bgcolor='black',
+                                                                        aspect='equal',
+                                                                        nonselection_fill_alpha=0,
+                                                                        )
+                dic[clusters_label_dic[cluster]] = scatter
+            ND = hv.NdOverlay(dic).opts(
+                show_legend=True,legend_limit=100,legend_position='right',#legend_cols=2, legend_offset=(0,1000)
+                )
+                
+        elif self.backend == 'matplotlib':
+            dic = {}
+            for cluster, d in data.groupby('cluster'):
+                scatter = hv.Scatter(d,kdims=['x'],vdims=['y','cluster']).opts(
+                                                                        color=cmap[cluster], 
+                                                                        width=800, 
+                                                                        height=800,
+                                                                        s=self.point_size, 
+                                                                        xticks=0,
+                                                                        yticks=0, 
+                                                                        ylabel=None,
+                                                                        xlabel=None,
+                                                                        xaxis=None,
+                                                                        yaxis=None, 
+                                                                        )
+                dic[clusters_label_dic[cluster]] = scatter
+            ND = hv.NdOverlay(dic).opts(show_legend=True,legend_limit=100,nonselection_alpha=0)
+
+        if save:
+            hv.save(ND, self.export_dir / (ws._name + "_graphmap.png"),dpi=500)
+            hv.save(ND, self.export_dir / (ws._name + "_graphmap.html"),dpi=500)
+
+        return ND
