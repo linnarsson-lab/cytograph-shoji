@@ -7,7 +7,7 @@ from .heatmap import Heatmap
 from .scatter import scatterc, scattern, scatterm
 from .plot_qc import PlotQC
 from .plot_batches import PlotBatches, PlotBatchesEEL
-from .plot_manifold import PlotManifold
+from .plot_manifold import PlotManifold, PlotManifoldGraph
 from .plot_scatter import NumericalScatterplot, CategoricalScatterplot
 from .plot_age import PlotAge
 from .plot_region import PlotRegion
@@ -19,5 +19,5 @@ from .plot_droplet_classes import PlotDropletClasses
 from .plot_overview import PlotOverview, PlotOverviewEEL, PlotOverviewEELGraph
 from .plot_annotation import PlotAnnotation
 from .plot_sankey import PlotSankey
-from .plot_map import PlotSpatialmap
+from .plot_map import PlotSpatialmap, PlotSpatialGraphmap
 from .miscellaneous_plotting import plot_clusters, plot_gene
