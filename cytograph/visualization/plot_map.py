@@ -142,12 +142,15 @@ class PlotSpatialGraphmap(Algorithm):
         cluster_ids = self.ClusterID[:]
         clusters_label_dic = {}
 
-        for gi in np.unique(graphclusters):
-            i = np.unique(clusters[graphclusters == gi])
-            n = [(clusters== ci).sum() for ci in i]
-            label = [f" {c:>3} ({ncells:,} cells) - " for c, ncells in zip(i,n)]
-            label = "".join(label)
-            labels.append(label)
+        for gi in range(n_clusters):
+            if (graphclusters == gi).sum() > 50:
+                #i = np.unique(clusters[graphclusters == gi])
+                n = (graphclusters ==gi).sum()
+                label = f" {gi:>3} ({n:,} cells) - "
+                labels.append(label)
+            else:
+                graphclusters[graphclusters == gi] = -1
+                labels.append("-1 (0 cells) ")
             clusters_label_dic[gi] = label
         labels = np.unique(labels)
 

@@ -91,12 +91,13 @@ class PlotManifoldGraph(Algorithm):
 		xy = self.Embedding[:]
 
 		for gi in range(n_clusters):
-			if (graphclusters == gi).sum() > 0:
+			if (graphclusters == gi).sum() > 50:
 				#i = np.unique(clusters[graphclusters == gi])
 				n = (graphclusters ==gi).sum()
 				label = f" {gi:>3} ({n:,} cells) - "
 				labels.append(label)
 			else:
+				graphclusters[graphclusters == gi] = -1
 				labels.append("-1 (0 cells) ")
 
 		plt.figure(figsize=(20, 20))
