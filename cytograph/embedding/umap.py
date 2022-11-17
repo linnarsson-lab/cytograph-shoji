@@ -83,13 +83,12 @@ class SupervisedUMAP(Algorithm):
 	@creates("Embedding", "float32", ("cells", 2))
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> np.ndarray:
 		labels = self.GraphCluster[:]
-		for gi in range(np.unique(labels)):
+		for gi in np.unique(labels):
 			if (labels == gi).sum() > 50:
 				pass
 			else:
 				labels[labels == gi] = -1
-				labels.append("-1 (0 cells) ")
-		return self._fit(self.Factors[:], )
+		return self._fit(self.Factors[:], labels)
 
 	def _fit(self, X: np.ndarray, y: np.ndarray = None) -> np.ndarray:
 		"""
