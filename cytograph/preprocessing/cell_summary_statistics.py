@@ -93,7 +93,6 @@ class CellSummaryStatisticsEEL(Algorithm):
 
 	@requires("Expression", "uint16", ("cells", "genes"))
 	@requires("Gene", "string", ("genes",))
-
 	@requires("Species", "string", ())
 	@creates("NGenes", "uint32", ("cells",))
 	@creates("TotalUMIs", "uint32", ("cells",))

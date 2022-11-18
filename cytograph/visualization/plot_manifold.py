@@ -108,7 +108,7 @@ class PlotManifoldGraph(Algorithm):
 			ax.add_collection(lc)
 
 		MAX_CLUSTERS = 100
-		top_clusters = np.argsort(np.bincount(graphclusters))[-MAX_CLUSTERS:]
+		top_clusters = np.argsort(np.unique(graphclusters,return_counts=True)[1])[-MAX_CLUSTERS:]
 		for i in top_clusters:
 			pos = np.median(xy[graphclusters == i], axis=0)
 			txt = plt.text(pos[0], pos[1], str(i), size=18, color="black")
@@ -119,8 +119,6 @@ class PlotManifoldGraph(Algorithm):
 			graphclusters[~mask] = n_clusters
 			labels.append(f"{n_clusters} ({n_clusters - MAX_CLUSTERS} clusters not shown)")
 		
-		logging.info('Labels'.format(len(labels)))
-		logging.info('n_clusterns'.format( n_clusters))
 		scatterc(xy, c=np.array(labels)[graphclusters], legend="outside")
 		plt.axis("off")
 		logging.info("export dir: "+str(self.export_dir))

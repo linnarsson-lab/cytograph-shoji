@@ -57,7 +57,6 @@ class PlotSankey(Algorithm):
 		elif self.cluster_name == 'GraphCluster':
 			clusters = self.GraphCluster[:]
 			ClusterID = np.unique(clusters)
-		bootstrapClusters = np.random.choice(clusters,size=clusters.shape[0],replace=True)
 
 		n_clusters = clusters.max() + 1
 		x,y = self.X[:], self.Y[:]
@@ -80,7 +79,7 @@ class PlotSankey(Algorithm):
 		center_nodes = np.arange(sample.shape[0])
 		for s in unique_samples:
 			tree = KDTree(centroids[sample==s])
-			dst, nghs= tree.query(centroids[sample==s], distance_upper_bound=75, k=3,workers=-1)
+			dst, nghs= tree.query(centroids[sample==s], distance_upper_bound=25, k=5,workers=-1)
 			nghs = nghs[:,1:]
 			nodes = center_nodes[sample ==s]
 
@@ -95,13 +94,17 @@ class PlotSankey(Algorithm):
 		clustersSource = np.array(labels)[self.Clusters[:][edges[:,0]]]
 		clustersTarget = np.array(labels)[self.Clusters[:][edges[:,1]]]
 		clustersTarget = np.array( ['Target: '+ t for t in clustersTarget])
-
-		clustersTargetBootstrap = np.array(labels)[bootstrapClusters[edges[:,0]]]
-		clustersTargetBootstrap = np.array( ['Target: '+ t for t in clustersTargetBootstrap])
-
 		values = np.ones_like(clustersSource)
 		df = pd.DataFrame({"source":clustersSource, "target":clustersTarget, "value":values.astype(np.float32)})
-		dfBootstrap = pd.DataFrame({"source":clustersSource, "target":clustersTargetBootstrap, "value":values.astype(np.float32)})
+
+		bootstrap = []
+		nsim = 10
+		for i in range(nsim):
+			bootstrapClusters = np.random.choice(clusters,size=clusters.shape[0],replace=True)
+			clustersTargetBootstrap = np.array(labels)[bootstrapClusters[edges[:,0]]]
+			clustersTargetBootstrap = np.array( ['Target: '+ t for t in clustersTargetBootstrap])
+			dfBootstrap = pd.DataFrame({"source":clustersSource, "target":clustersTargetBootstrap, "value":values.astype(np.float32)/nsim})
+			bootstrap.append(dfBootstrap)
 
 		df2 = df.pivot_table(
 			index='source', 
@@ -110,7 +113,7 @@ class PlotSankey(Algorithm):
 			fill_value=0,
 			dropna=False
 		)
-
+		dfBootstrap = pd.concat(bootstrap)
 		df2Bootstrap = dfBootstrap.pivot_table(
 				index='source', 
 				columns='target',
@@ -119,7 +122,7 @@ class PlotSankey(Algorithm):
 				dropna=False
 			)
 
-		df2 = df2/(df2Bootstrap+1)
+		df2 = df2#/(df2Bootstrap+1)
 
 		df2.columns = [x[1] for x in df2.columns]
 		df2Bootstrap.columns = [x[1] for x in df2Bootstrap.columns]
@@ -163,15 +166,9 @@ class PlotSankey(Algorithm):
 
 		df3['target2'] =  [x[8:] for x in df3['target']]# [x[8:] for x in df3['target']]
 		data = pd.DataFrame({'s':df3['source'].values,'t':df3['target2'].values})
-		
-		print(data['s'].values[0], data['t'].values[0])
-		print('df3', df3.shape, df3.head())
-		print('data',data.shape,data.head())
 
 		hvdata = hv.Dataset(data)
 		chord = hv.Chord((df3,hvdata),['source', 'target2'], ['value'])
-
-		print('s',data.s.values, data.s.values.shape)
 
 		chord = chord.select(s=data.s.values.tolist(), selection_mode='nodes')
 		chord.opts(
@@ -186,3 +183,30 @@ class PlotSankey(Algorithm):
 		)
 		hv.save(chord, self.export_dir / (ws._name + "_chord.png"),dpi=500)
 		hv.save(chord, self.export_dir / (ws._name + "_chord.html"))
+
+		chord_magma = chord.select(s=data.s.values.tolist(), selection_mode='nodes')
+		chord_magma.opts(
+			hv.opts.Chord(
+				width=1000,
+				height=1000,
+				cmap=cmap_chord,
+				edge_cmap='magma',
+				edge_color=hv.dim('source').str(),
+				node_color=hv.dim('t').str(),
+				labels='t',
+			)
+		)
+
+		hv.save(chord_magma, self.export_dir / (ws._name + "_chord_edges.html"))
+
+		graph = hv.Graph(((df3['source'].values,df3['target2'].values, df3['value'].values),),vdims='value').opts(
+            hv.opts.Graph(
+				edge_cmap='magma',edge_color='value',node_color='index',
+				cmap=cmap_chord,edge_line_width=hv.dim('value')*0.005,
+                edge_nonselection_alpha=0, width=1500,height=1500
+            )
+		)
+
+		labels = hv.Labels(graph.nodes, ['x', 'y'],'index')
+		graph = graph * labels.opts(text_font_size='8pt', text_color='black', bgcolor='white')
+		hv.save(graph, self.export_dir / (ws._name + "_graph.html"))
