@@ -54,6 +54,7 @@ class PlotSankey(Algorithm):
 		if self.cluster_name == 'Cluster':
 			clusters = self.Clusters[:]#[subsample]
 			ClusterID = self.ClusterID[:]
+		
 		elif self.cluster_name == 'GraphCluster':
 			clusters = self.GraphCluster[:]
 			ClusterID = np.unique(clusters)
@@ -79,7 +80,7 @@ class PlotSankey(Algorithm):
 		center_nodes = np.arange(sample.shape[0])
 		for s in unique_samples:
 			tree = KDTree(centroids[sample==s])
-			dst, nghs= tree.query(centroids[sample==s], distance_upper_bound=25, k=5,workers=-1)
+			dst, nghs= tree.query(centroids[sample==s], distance_upper_bound=25, k=10,workers=-1)
 			nghs = nghs[:,1:]
 			nodes = center_nodes[sample ==s]
 
@@ -128,7 +129,7 @@ class PlotSankey(Algorithm):
 		df2Bootstrap.columns = [x[1] for x in df2Bootstrap.columns]
 		source,target, v = [], [], []
 		for s in df2.index:
-			median_v = df2.loc[s,:].median()
+			median_v = np.quantile(df2.loc[s,:],0.75)
 			for t in df2.columns:
 				if df2[t][s] > median_v:
 					value_ratio = df2[t][s] #/(df2Bootstrap[t][s]+1)
@@ -147,6 +148,7 @@ class PlotSankey(Algorithm):
 			RUN_df = df3
 		else: 
 			RUN_df = df
+
 		sankey = hv.Sankey(RUN_df, label='Cell2Cell').opts(
 			height=2000,
 			width=2000,
@@ -166,38 +168,40 @@ class PlotSankey(Algorithm):
 
 		df3['target2'] =  [x[8:] for x in df3['target']]# [x[8:] for x in df3['target']]
 		data = pd.DataFrame({'s':df3['source'].values,'t':df3['target2'].values})
+		try:
+			hvdata = hv.Dataset(data)
+			chord = hv.Chord((df3,hvdata),['source', 'target2'], ['value'])
 
-		hvdata = hv.Dataset(data)
-		chord = hv.Chord((df3,hvdata),['source', 'target2'], ['value'])
-
-		chord = chord.select(s=data.s.values.tolist(), selection_mode='nodes')
-		chord.opts(
-			hv.opts.Chord(
-				width=1000,
-				height=1000,
-				cmap=cmap_chord,
-				edge_color=hv.dim('source').str(),
-				node_color=hv.dim('t').str(),
-				labels='t',
+			chord = chord.select(s=data.s.values.tolist(), selection_mode='nodes')
+			chord.opts(
+				hv.opts.Chord(
+					width=1000,
+					height=1000,
+					cmap=cmap_chord,
+					edge_color=hv.dim('source').str(),
+					node_color=hv.dim('t').str(),
+					labels='t',
+				)
 			)
-		)
-		hv.save(chord, self.export_dir / (ws._name + "_chord.png"),dpi=500)
-		hv.save(chord, self.export_dir / (ws._name + "_chord.html"))
+			hv.save(chord, self.export_dir / (ws._name + "_chord.png"),dpi=500)
+			hv.save(chord, self.export_dir / (ws._name + "_chord.html"))
 
-		chord_magma = chord.select(s=data.s.values.tolist(), selection_mode='nodes')
-		chord_magma.opts(
-			hv.opts.Chord(
-				width=1000,
-				height=1000,
-				cmap=cmap_chord,
-				edge_cmap='magma',
-				edge_color=hv.dim('source').str(),
-				node_color=hv.dim('t').str(),
-				labels='t',
+			chord_magma = chord.select(s=data.s.values.tolist(), selection_mode='nodes')
+			chord_magma.opts(
+				hv.opts.Chord(
+					width=1000,
+					height=1000,
+					cmap=cmap_chord,
+					edge_cmap='magma',
+					edge_color=hv.dim('source').str(),
+					node_color=hv.dim('t').str(),
+					labels='t',
+				)
 			)
-		)
 
-		hv.save(chord_magma, self.export_dir / (ws._name + "_chord_edges.html"))
+			hv.save(chord_magma, self.export_dir / (ws._name + "_chord_edges.html"))
+		except:
+			print('Chord diagram failed')
 
 		graph = hv.Graph(((df3['source'].values,df3['target2'].values, df3['value'].values),),vdims='value').opts(
             hv.opts.Graph(
@@ -210,3 +214,9 @@ class PlotSankey(Algorithm):
 		labels = hv.Labels(graph.nodes, ['x', 'y'],'index')
 		graph = graph * labels.opts(text_font_size='8pt', text_color='black', bgcolor='white')
 		hv.save(graph, self.export_dir / (ws._name + "_graph.html"))
+
+		dataHM = [(i, j, df2[i][j]) for i in df2.columns for j in df2.index]
+		hv.extension('matplotlib')
+		heatmap = hv.HeatMap(data).sort()
+		heatmap=heatmap.opts(cmap='magma',width=700,height=700)
+		hv.save(heatmap, self.export_dir / (ws._name + "_connectivity_heatmap.html"))
