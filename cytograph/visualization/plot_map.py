@@ -1,7 +1,7 @@
 from ensurepip import bootstrap
 from typing import Dict, List
 import logging
-
+from os import path, makedirs
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -45,6 +45,9 @@ class PlotSpatialmap(Algorithm):
     @requires("Enrichment", "float32", ("clusters", "genes"))
     @requires("NCells", "uint64", ("clusters",))
     def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> None:
+        save_to = self.export_dir / 'Spatial'# (ws._name + "_graph.html")
+        if path.exists(save_to) == False:
+            makedirs(save_to)
         labels = []
         n_cells = self.NCells[:]
         clusters = self.Clusters[:]
@@ -113,15 +116,15 @@ class PlotSpatialmap(Algorithm):
                 )
 
             if save:
-                hv.save(HM, self.export_dir / (ws._name + "_map_holomap.html"))
-                hv.save(NDshortlabels, self.export_dir / (ws._name + "_map.html"))
+                hv.save(HM, save_to / (ws._name + "_map_holomap.html"))
+                hv.save(NDshortlabels, save_to / (ws._name + "_map.html"))
                 NDshortlabels = NDshortlabels.opts(
                     hv.opts.Scatter(
                         size=0.05,
                     )
                 )
                 Layout = hv.Layout([dicNDshortlabels[x].opts(size=0.5, height=400,width=800) for x in dicNDshortlabels]).cols(5)
-                hv.save(Layout, self.export_dir / (ws._name + "_map.png"),dpi=1000)
+                hv.save(Layout, save_to / (ws._name + "_map.png"),dpi=1000)
                 
         elif self.backend == 'matplotlib':
             dic = {}
@@ -142,8 +145,8 @@ class PlotSpatialmap(Algorithm):
             ND = hv.NdOverlay(dic).opts(show_legend=True,legend_limit=100,nonselection_alpha=0)
 
             if save:
-                hv.save(ND, self.export_dir / (ws._name + "_map.png"),dpi=500)
-                hv.save(ND, self.export_dir / (ws._name + "_map.html"),dpi=500)
+                hv.save(ND, save_to / (ws._name + "_map.png"),dpi=500)
+                hv.save(ND, save_to / (ws._name + "_map.html"),dpi=500)
 
         return HM
 
@@ -165,6 +168,9 @@ class PlotSpatialGraphmap(Algorithm):
     @requires("Enrichment", "float32", ("clusters", "genes"))
     @requires("NCells", "uint64", ("clusters",))
     def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> None:
+        save_to = self.export_dir / 'Spatial'# (ws._name + "_graph.html")
+        if path.exists(save_to) == False:
+            makedirs(save_to)
         labels = []
         n_cells = self.NCells[:]
         clusters = self.Clusters[:]
@@ -242,15 +248,15 @@ class PlotSpatialGraphmap(Algorithm):
                 )
 
             if save:
-                hv.save(HM, self.export_dir / (ws._name + "_graphmap_holomap.html"))
-                hv.save(NDshortlabels, self.export_dir / (ws._name + "_graphmap.html"))
+                hv.save(HM, save_to / (ws._name + "_graphmap_holomap.html"))
+                hv.save(NDshortlabels, save_to / (ws._name + "_graphmap.html"))
                 NDshortlabels = NDshortlabels.opts(
                     hv.opts.Scatter(
                         size=0.05,
                     )
                 )
                 Layout = hv.Layout([dicNDshortlabels[x].opts(size=0.5, height=400, width=800) for x in dicNDshortlabels]).cols(5)
-                hv.save(Layout, self.export_dir / (ws._name + "_graphmap.png"),dpi=5000)
+                hv.save(Layout, save_to / (ws._name + "_graphmap.png"),dpi=5000)
         elif self.backend == 'matplotlib':
             dic = {}
             for cluster, d in data.groupby('cluster'):
@@ -269,7 +275,7 @@ class PlotSpatialGraphmap(Algorithm):
                 dic[clusters_label_dic[cluster]] = scatter
             ND = hv.NdOverlay(dic).opts(show_legend=True,legend_limit=100,nonselection_alpha=0)
             if save:
-                hv.save(ND, self.export_dir / (ws._name + "_graphmap.png"),dpi=500)
-                hv.save(ND, self.export_dir / (ws._name + "_graphmap.html"),dpi=500)
+                hv.save(ND, save_to / (ws._name + "_graphmap.png"),dpi=500)
+                hv.save(ND, save_to / (ws._name + "_graphmap.html"),dpi=500)
 
         return ND

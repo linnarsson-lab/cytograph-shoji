@@ -1,7 +1,7 @@
 from ensurepip import bootstrap
 from typing import Dict, List
 import logging
-
+from os import path, makedirs
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -13,6 +13,8 @@ from .colors import colorize
 from colormap import rgb2hex
 from scipy.spatial import KDTree
 import holoviews as hv
+import squidpy as sq
+import scanpy as sc
 hv.notebook_extension('bokeh')
 
 def indices_to_order_a_like_b(a, b):
@@ -48,8 +50,11 @@ class PlotSankey(Algorithm):
 	@requires("Y", "float32", ("cells",))
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> None:
 		logging.info(" PlotSankey: Plotting the graph")
-		#subsample = np.random.choice(np.arange(self.Embedding[:].shape[0]),size=50000,replace=False)
-		
+
+		save_to = self.export_dir / 'Spatial'# (ws._name + "_graph.html")
+		if path.exists(save_to) == False:
+			makedirs(save_to)
+
 		labels = []
 		if self.cluster_name == 'Cluster':
 			clusters = self.Clusters[:]#[subsample]
@@ -157,8 +162,8 @@ class PlotSankey(Algorithm):
 			node_color='index', 
 			cmap=cmap,
 			edge_muted_alpha=0)
-		hv.save(sankey, self.export_dir / (ws._name + "_" + self.filename +".png"))
-		hv.save(sankey, self.export_dir / (ws._name + "_" + self.filename + ".html"))
+		hv.save(sankey, save_to / (ws._name + "_" + self.filename +".png"))
+		hv.save(sankey, save_to / (ws._name + "_" + self.filename + ".html"))
 
 		if type(self.cmap) == type(None):
 			cmap_chord = {t:col for t,col in zip(df2.index,unique_colors_HEX)}
@@ -183,8 +188,8 @@ class PlotSankey(Algorithm):
 					labels='t',
 				)
 			)
-			hv.save(chord, self.export_dir / (ws._name + "_chord.png"),dpi=500)
-			hv.save(chord, self.export_dir / (ws._name + "_chord.html"))
+			hv.save(chord, save_to / (ws._name + "_chord.png"),dpi=500)
+			hv.save(chord, save_to / (ws._name + "_chord.html"))
 
 			chord_magma = chord.select(s=data.s.values.tolist(), selection_mode='nodes')
 			chord_magma.opts(
@@ -199,7 +204,7 @@ class PlotSankey(Algorithm):
 				)
 			)
 
-			hv.save(chord_magma, self.export_dir / (ws._name + "_chord_edges.html"))
+			hv.save(chord_magma, save_to / (ws._name + "_chord_edges.html"))
 		except:
 			print('Chord diagram failed')
 
@@ -213,10 +218,87 @@ class PlotSankey(Algorithm):
 
 		labels = hv.Labels(graph.nodes, ['x', 'y'],'index')
 		graph = graph * labels.opts(text_font_size='8pt', text_color='black', bgcolor='white')
-		hv.save(graph, self.export_dir / (ws._name + "_graph.html"))
+		hv.save(graph, save_to / (ws._name + "_graph.html"))
 
-		dataHM = [(i, j, df2[i][j]) for i in df2.columns for j in df2.index]
+		'''dataHM = [(i, j, df2[i][j]) for i in df2.columns for j in df2.index]
 		hv.extension('matplotlib')
-		heatmap = hv.HeatMap(data).sort()
+		heatmap = hv.HeatMap(dataHM).sort()
 		heatmap=heatmap.opts(cmap='magma',width=700,height=700)
-		hv.save(heatmap, self.export_dir / (ws._name + "_connectivity_heatmap.html"))
+		hv.save(heatmap, save_to / (ws._name + "_connectivity_heatmap.pdf"))'''
+
+class PlotNeighborhood(Algorithm):
+	def __init__(self, 
+				filename: str = "sankey", 
+				condense=True, 
+				reduce_classes=False, 
+				cmap=None,
+				cluster_name: str = "Cluster",
+				**kwargs) -> None:
+		super().__init__(**kwargs)
+		self.filename = filename
+		self.condense = condense
+		self.reduce_classes = reduce_classes
+		self.cmap = cmap
+		self.cluster_name = cluster_name
+
+	@requires("Gene", "string", ("genes",))
+	@requires("Clusters", "uint32", ("cells",))
+	@requires("Expression", "uint16", ("cells", "genes"))
+	@requires("Embedding", "float32", ("cells", 2))
+	@requires("NCells", "uint64", ("clusters",))
+	@requires("ClusterID", "uint32", ("clusters",))
+	@requires("GraphCluster", "int8", ("cells",))
+	@requires("Sample", "string", ("cells",))
+	@requires("Enrichment", "float32", ("clusters", "genes"))
+	@requires("AnnotationDescription", "string", ("annotations",))
+	@requires("AnnotationName", "string", ("annotations",))
+	@requires("AnnotationPosterior", "float32", ("clusters","annotations"))
+	@requires("X", "float32", ("cells",))
+	@requires("Y", "float32", ("cells",))
+	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> None:
+		logging.info(" PlotSankey: Plotting the graph")
+		#subsample = np.random.choice(np.arange(self.Embedding[:].shape[0]),size=50000,replace=False)
+		save_to = self.export_dir / 'Spatial'# (ws._name + "_graph.html")
+		if path.exists(save_to) == False:
+			makedirs(save_to)
+
+		labels = []
+		if self.cluster_name == 'Cluster':
+			clusters = self.Clusters[:]#[subsample]
+			ClusterID = self.ClusterID[:]
+		
+		elif self.cluster_name == 'GraphCluster':
+			clusters = self.GraphCluster[:]
+			ClusterID = np.unique(clusters)
+
+		leiden = pd.Categorical(self.Clusters[:])
+		spatial = np.array([self.X[:], self.Y[:]]).T
+		adata = sc.AnnData(
+			X=self.Expression[:],obsm={'spatial':spatial}, 
+			obs={'cell type':leiden}
+		)
+
+		sq.gr.co_occurrence(adata, cluster_key="cell type", interval=100)
+		for cell_ in adata.obs['cell type'].cat.categories:
+
+			sq.pl.co_occurrence(
+				adata,
+				cluster_key="cell type",
+				cluster=cell_,
+				figsize=(10, 10),
+				save = save_to / (ws._name + "_co-ocurrence{}.png".format(cell_) ),
+			)
+
+		sq.gr.spatial_neighbors(
+			adata, 
+			delaunay=True,
+			radius=25,
+			)
+
+		sq.gr.nhood_enrichment(adata, cluster_key="cell type")
+		sq.pl.nhood_enrichment(
+			adata, 
+			cluster_key="cell type", 
+			cmap='magma',
+			method='ward',
+			save=save_to / (ws._name + "_neighborhood.png"))
