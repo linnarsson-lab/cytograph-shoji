@@ -45,7 +45,7 @@ class PlotSpatialmap(Algorithm):
     @requires("Enrichment", "float32", ("clusters", "genes"))
     @requires("NCells", "uint64", ("clusters",))
     def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> None:
-        save_to = self.export_dir / 'Spatial'# (ws._name + "_graph.html")
+        save_to = self.export_dir / 'Spatial_{}'.format(ws._name )
         if path.exists(save_to) == False:
             makedirs(save_to)
         labels = []
@@ -168,7 +168,7 @@ class PlotSpatialGraphmap(Algorithm):
     @requires("Enrichment", "float32", ("clusters", "genes"))
     @requires("NCells", "uint64", ("clusters",))
     def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> None:
-        save_to = self.export_dir / 'Spatial'# (ws._name + "_graph.html")
+        save_to = self.export_dir / 'Spatial_{}'.format(ws._name )
         if path.exists(save_to) == False:
             makedirs(save_to)
         labels = []
