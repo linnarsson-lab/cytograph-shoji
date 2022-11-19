@@ -295,7 +295,10 @@ class PlotNeighborhood(Algorithm):
 			radius=25,
 			)
 
-		sq.gr.nhood_enrichment(adata, cluster_key="cell type")
+		sq.gr.nhood_enrichment(
+			adata, 
+			cluster_key="cell type")
+			
 		sq.pl.nhood_enrichment(
 			adata, 
 			cluster_key="cell type", 
