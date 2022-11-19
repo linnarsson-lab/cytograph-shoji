@@ -269,24 +269,26 @@ class PlotNeighborhood(Algorithm):
 		leiden = pd.Categorical(self.Clusters[:])
 		spatial = np.array([self.X[:], self.Y[:]]).T
 		adata = sc.AnnData(
-			X=self.Expression[:],obsm={'spatial':spatial}, 
+			X=self.Expression[:],
+			obsm={'spatial':spatial}, 
 			obs={'cell type':leiden}
 		)
 
-		sq.gr.co_occurrence(adata, cluster_key="cell type", interval=100)
+		sq.gr.co_occurrence(adata, cluster_key="cell type", interval=50)
 		for cell_ in adata.obs['cell type'].cat.categories:
-
+			print(cell_)
 			sq.pl.co_occurrence(
 				adata,
 				cluster_key="cell type",
-				cluster=cell_,
+				clusters=[cell_],
 				figsize=(10, 10),
+				palette='Set1',
 				save = save_to / (ws._name + "_co-ocurrence{}.png".format(cell_) ),
 			)
 
 		sq.gr.spatial_neighbors(
 			adata, 
-			delaunay=True,
+			#delaunay=True,
 			radius=25,
 			)
 
