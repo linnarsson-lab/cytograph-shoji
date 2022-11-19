@@ -253,7 +253,7 @@ class PlotNeighborhood(Algorithm):
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> None:
 		logging.info(" PlotSankey: Plotting the graph")
 		#subsample = np.random.choice(np.arange(self.Embedding[:].shape[0]),size=50000,replace=False)
-		save_to = self.export_dir / 'Spatial'# (ws._name + "_graph.html")
+		save_to = self.export_dir / 'Spatial_{}'.format(ws._name )
 		if path.exists(save_to) == False:
 			makedirs(save_to)
 
