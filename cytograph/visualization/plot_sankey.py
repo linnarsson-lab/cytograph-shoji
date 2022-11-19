@@ -220,11 +220,6 @@ class PlotSankey(Algorithm):
 		graph = graph * labels.opts(text_font_size='8pt', text_color='black', bgcolor='white')
 		hv.save(graph, save_to / (ws._name + "_graph.html"))
 
-		'''dataHM = [(i, j, df2[i][j]) for i in df2.columns for j in df2.index]
-		hv.extension('matplotlib')
-		heatmap = hv.HeatMap(dataHM).sort()
-		heatmap=heatmap.opts(cmap='magma',width=700,height=700)
-		hv.save(heatmap, save_to / (ws._name + "_connectivity_heatmap.pdf"))'''
 
 class PlotNeighborhood(Algorithm):
 	def __init__(self, 
@@ -298,7 +293,7 @@ class PlotNeighborhood(Algorithm):
 		sq.gr.nhood_enrichment(
 			adata, 
 			cluster_key="cell type")
-			
+
 		sq.pl.nhood_enrichment(
 			adata, 
 			cluster_key="cell type", 
