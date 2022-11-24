@@ -18,6 +18,11 @@ class Punchcard:
 			sys.exit(1)
 		with open(path) as f:
 			spec: Dict[str, Any] = yaml.load(f, Loader=yaml.FullLoader)
+		if spec is None:
+			logging.error(f"Punchcard '{path}' seems to be empty.")
+			with open(path) as f:
+				logging.error(f"First line was: '{f.readline().rstrip()}'")
+			sys.exit(1)
 		self.with_annotation = spec.get("with_annotation")
 		self.onlyif = spec.get("onlyif", None)
 		sources_spec = spec.get("sources", [])
