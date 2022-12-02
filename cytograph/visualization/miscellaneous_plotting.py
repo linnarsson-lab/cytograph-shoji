@@ -89,12 +89,20 @@ def plot_clusters(ws, save=False, size=1, cmap=None,filename='clusters',backend=
 
     return scatter
 
-def plot_gene(ws, gene, save=False):
+def plot_gene(ws, gene, save=False, subsample=False):
+
     hv.extension('matplotlib')
-    xy = ws.Embedding[:]
-    exp = ws.Expression[:,ws.Gene[:] == gene]
+    if subsample:
+        
+        xy = ws.Embedding[:]
+        subsample = np.random.choice(np.arange(len(xy)), size=subsample, replace=False)
+        xy = xy[subsample,:]
+        print(xy.shape)
+        exp = ws.Expression[:,ws.Gene[:] == gene]
+        exp = exp[subsample,:]
+        print(exp.shape, exp.max())
     d = np.concatenate([xy,exp],axis=1)
-    zeros = exp <= 2
+    zeros = exp <= 0
     s0 = d[zeros[:,0],:]
     s0 = hv.Scatter(s0,kdims=['x'],vdims=['y','z']).opts(color='grey',s=1, alpha=0.01)
 
@@ -103,7 +111,7 @@ def plot_gene(ws, gene, save=False):
     s1 = hv.Scatter(s1,kdims=['x'],vdims=['y','z']).opts(color=hv.dim('z'),cmap='fire',s=2,alpha=1)
 
     s= s0*s1
-    s = s.opts(xticks=0,yticks=0, ylabel=None,xlabel=None,xaxis=None,yaxis=None, fig_size=200)
+    s = s.opts(xticks=0,yticks=0, ylabel=None,xlabel=None,xaxis=None,yaxis=None, fig_size=200, bgcolor='white')
     if save:
         hv.save(s, '{}.png'.format(gene))
     return s

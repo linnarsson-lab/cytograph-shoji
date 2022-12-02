@@ -8,10 +8,18 @@ from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
 
 class Heatmap(Algorithm):
-	def __init__(self, filename: str = "heatmap.png", genes_per_cluster: int = 2, **kwargs) -> None:
+	def __init__(
+		self,
+		filename: str = "heatmap.png", 
+		genes_per_cluster: int = 2, 
+		show_genes: list = None,
+		**kwargs
+		) -> None:
+
 		super().__init__(**kwargs)
 		self.filename = filename
 		self.genes_per_cluster = genes_per_cluster
+		self.show_genes = show_genes
 
 	@requires("MeanExpression", "float64", ("clusters", "genes"))
 	@requires("Gene", "string", ("genes",))
@@ -25,6 +33,12 @@ class Heatmap(Algorithm):
 		ordering = np.argsort(ws.ClusterID[:])
 		mean_x = self.MeanExpression[:][ordering]
 		enrichment = self.Enrichment[:][ordering]
+		if type(self.show_genes) != type(None):
+			idx = np.where(np.isin(genes, self.show_genes,invert=True))[0]
+			enrichment[:,idx] = np.zeros([enrichment.shape[0],idx.shape[0]])
+		#	mean_x = mean_x[:, np.isin(genes, self.show_genes)]
+		#	genes = genes[np.isin(genes, self.show_genes)]
+			
 		markers = Species(self.Species[:]).markers
 
 		# Compute the main heatmap

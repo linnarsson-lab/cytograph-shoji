@@ -276,15 +276,17 @@ class PlotNeighborhood(Algorithm):
 
 		sq.gr.co_occurrence(adata, cluster_key="cell type", interval=50)
 		for cell_ in adata.obs['cell type'].cat.categories:
-			print(cell_)
-			sq.pl.co_occurrence(
-				adata,
-				cluster_key="cell type",
-				clusters=[cell_],
-				figsize=(10, 10),
-				palette='Set1',
-				save = save_to / (ws._name + "_co-ocurrence{}.png".format(cell_) ),
-			)
+			try:
+				sq.pl.co_occurrence(
+					adata,
+					cluster_key="cell type",
+					clusters=[cell_],
+					figsize=(10, 10),
+					palette='Set1',
+					save = save_to / (ws._name + "_co-ocurrence{}.png".format(cell_) ),
+				)
+			except:
+				logging.info('Co-ocurrence plot failed fro cluster {}'.format(cell_))
 
 		sq.gr.spatial_neighbors(
 			adata, 
