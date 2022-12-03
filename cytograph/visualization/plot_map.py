@@ -212,7 +212,10 @@ class PlotSpatialGraphmap(Algorithm):
         for sample in unique_samples:
             filter_sample = samples == sample
             graphclusters_s = graphclusters[filter_sample]
-            save_to = self.export_dir / 'SpatialGraph_{}_{}'.format(ws._name , sample)
+            save_to = self.export_dir / 'Spatial_{}_{}'.format(ws._name , sample)
+            if path.exists(save_to) == False:
+                makedirs(save_to)
+
 
             x = self.X[:][filter_sample]
             y = self.Y[:][filter_sample]
