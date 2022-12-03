@@ -34,9 +34,9 @@ class Heatmap(Algorithm):
 		mean_x = self.MeanExpression[:][ordering]
 		enrichment = self.Enrichment[:][ordering]
 
-		idx_zeros = np.where(mean_X.sum(axis=0) == 0)
-		enrichment[:, idx_zeros] = np.zeros([enrichment.shape[0],idx.shape[0]])
-		
+		idx_zeros = np.where(mean_x.sum(axis=0) == 0)[0]
+		enrichment[:, idx_zeros] = np.zeros([enrichment.shape[0],idx_zeros.shape[0]])
+
 		if type(self.show_genes) != type(None):
 			idx = np.where(np.isin(genes, self.show_genes,invert=True))[0]
 			enrichment[:,idx] = np.zeros([enrichment.shape[0],idx.shape[0]])

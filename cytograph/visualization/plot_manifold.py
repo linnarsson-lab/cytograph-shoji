@@ -21,6 +21,7 @@ class PlotManifold(Algorithm):
 	@requires("Embedding", "float32", ("cells", 2))
 	@requires("NCells", "uint64", ("clusters",))
 	@requires("ClusterID", "uint32", ("clusters",))
+	@requires("MeanExpression", "float64", ("clusters", "genes"))
 	@requires("Enrichment", "float32", ("clusters", "genes"))
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> None:
 		logging.info(" PlotManifold: Plotting the embedding")
@@ -31,8 +32,12 @@ class PlotManifold(Algorithm):
 		n_clusters = clusters.max() + 1
 		cluster_ids = self.ClusterID[:]
 		genes = self.Gene[:]
-		enrichment = self.Enrichment[:]
 		xy = self.Embedding[:]
+		ordering = np.argsort(ws.ClusterID[:])
+		mean_x = self.MeanExpression[:][ordering]
+		enrichment = self.Enrichment[:][ordering]
+		idx_zeros = np.where(mean_x.sum(axis=0) == 0)[0]
+		enrichment[:, idx_zeros] = np.zeros([enrichment.shape[0],idx_zeros.shape[0]])
 
 		for i in range(ws.clusters.length):
 			n = n_cells[cluster_ids == i][0]
