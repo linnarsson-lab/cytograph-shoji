@@ -267,10 +267,10 @@ class PlotSpatialGraphmap(Algorithm):
                     hv.save(NDshortlabels, save_to / (ws._name + "_graphmap.html"))
                     NDshortlabels = NDshortlabels.opts(
                         hv.opts.Scatter(
-                            size=0.05,
+                            size=2,
                         )
                     )
-                    Layout = hv.Layout([dicNDshortlabels[x].opts(size=0.5, height=800, width=1600) for x in dicNDshortlabels]).cols(5)
+                    Layout = hv.Layout([dicNDshortlabels[x].opts(size=3, height=800, width=1600) for x in dicNDshortlabels]).cols(5)
                     hv.save(Layout, save_to / (ws._name + "_graphmap.png"),dpi=5000)
 
             elif self.backend == 'matplotlib':

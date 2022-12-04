@@ -8,7 +8,7 @@ from scipy.spatial.distance import pdist
 from sklearn.preprocessing import scale
 import fastcluster
 from scipy.cluster.hierarchy import dendrogram
-
+from .colors import colorize
 
 
 class SampleBarplot(Algorithm):
@@ -51,15 +51,6 @@ class SampleBarplot(Algorithm):
         subplot = 0
         ax = fig.add_subplot(fig_spec[subplot])
 
-        lines = dendrogram(
-                    Z, 
-                    #labels=ordering,
-                    color_threshold=0.1,
-                    above_threshold_color='black',
-                    #link_color_func=lambda k: colors[k]
-                    ax=ax
-            )
-
         x = (sample_graphclusters.T/sample_graphclusters.sum(axis=1)).T
         D = pdist(x, 'euclidean')
         Z = fastcluster.linkage(D, 'ward', preserve_input=True)
@@ -68,7 +59,14 @@ class SampleBarplot(Algorithm):
         ordering_str = unique_samples[ordering]
 
 
-
+        lines = dendrogram(
+                    Z, 
+                    #labels=ordering,
+                    color_threshold=0.1,
+                    above_threshold_color='black',
+                    #link_color_func=lambda k: colors[k]
+                    ax=ax
+            )
 
         #lines.set_linewidth(0.5)
         #ax.add_collection(lines)
@@ -81,7 +79,7 @@ class SampleBarplot(Algorithm):
         subplot = 1
         ax = fig.add_subplot(fig_spec[subplot])
         indexes = np.arange(sample_graphclusters.shape[0])
-        unique_colors = cg.colorize(np.arange(sample_graphclusters.shape[1]))
+        unique_colors = colorize(np.arange(sample_graphclusters.shape[1]))
 
         sample_graphclusters_norm = (sample_graphclusters.T/sample_graphclusters.sum(axis=1)).T * 100
         loc = np.zeros(sample_graphclusters.shape[0])
