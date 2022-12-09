@@ -45,12 +45,16 @@ def scatterc(xy: np.ndarray, *, c: np.ndarray, colors = None, labels = None, leg
 		_draw_edges(ax, xy, g, gcolor, galpha, glinewidths)
 
 
-def scattern(xy: np.ndarray, *, c: np.ndarray, cmap: Any = "inferno_r", bgval: Any = None, g: np.ndarray = None, gcolor: str = "thistle", galpha: float = 0.1, glinewidths: float = 0.25, **kwargs) -> None:
+def scattern(xy: np.ndarray, *, c: np.ndarray, cmap: Any = "inferno_r", bgval: Any = None, max_percentile: float = 99, g: np.ndarray = None, gcolor: str = "thistle", galpha: float = 0.1, glinewidths: float = 0.25, **kwargs) -> None:
 	n_cells = xy.shape[0]
 	fig = plt.gcf()
 	area = np.prod(fig.get_size_inches())
 	marker_size = 100_000 / n_cells * (area / 25)
 
+	max_val = np.percentile(c, max_percentile, axis=1)
+	assert np.all(max_val > 0), f"{max_percentile}th percentile is zero (increase max_percentile to fix)"
+	c = np.clip(div0(c.T, max_val).T, 0, 1)
+	
 	ordering = np.random.permutation(xy.shape[0])
 	color = c[ordering]
 	xy = xy[ordering, :]
