@@ -280,14 +280,16 @@ class Colorizer:
 		elif scheme == "superclasses":
 			self.scheme = NamedColorScheme(
 				[
-					'Astrocyte', 'Bergmann glia', 'CGE interneurons', 'Cerebellar VZ inhibitory', 'Choroid plexus', 'Eccentric MSN', 'Ependymal-like', 'Forebrain excitatory',
-					'Glycinergic, cholinergic, monoaminergic, or peptidergic', 'Hindbrain-derived excitatory', 'Hipp. CA1-CA3', 'Hipp. CA4', 'Hipp. DG', 'Immune', 'L2/3 IT',
-					'L5-6 IT', 'L5/6 NP', 'L6 CT/b', 'LAMP5-LHX6 and Chandelier', 'MGE interneurons', 'MSN', 'Mammillary body', 'Midbrain-derived inhibitory', 'Miscellaneous rare',
-					'OPC', 'Oligodendrocyte', 'Rhombic lip excitatory', 'Thalamic excitatory', 'VLMC', 'Vascular'
+					'Astrocyte', 'Bergmann glia', 'CGE interneuron', 'Cerebellar inhibitory', 'Choroid plexus', 'Eccentric medium spiny neuron', 'Ependymal', 'Amygdala excitatory',
+					'Splatter', 'Lower rhombic lip', 'Hippocampal CA1-3', 'Hippocampal CA4', 'Hippocampal dentate gyrus', 'Microglia', 'Upper-layer intratelencephalic',
+					'Deep-layer intratelencephalic', 'Deep-layer near-projecting', 'Deep-layer corticothalamic and 6b', 'LAMP5-LHX6 and Chandelier', 'MGE interneuron', 'Medioum spiny neuron', 'Mammillary body', 
+					'Midbrain-derived inhibitory', 'Miscellaneous',
+					'Oligodendrocyte precursor', 'Oligodendrocyte', 'Committed oligodendrocyte precursor',
+					'Upper rhombic lip', 'Thalamic excitatory', 'Fibroblast', 'Vascular'
 				],
 				[
 					'#ab3bc4', '#e7c31f', '#983f00', '#4c005c', '#005c31', '#2bcd48', '#ed5f8e', '#808080', '#93feb4', '#8e7c00', '#9ccb00', '#c10087', '#003380',
-					'#fea305', '#fea7ba', '#426600', '#ee1010', '#5ef0f1', '#00988e', '#dffe66', '#740afe', '#980000', '#fefe80', '#fefe00', '#0098d4', '#9cba19',
+					'#fea305', '#fea7ba', '#426600', '#ee1010', '#5ef0f1', '#00988e', '#dffe66', '#740afe', '#980000', '#fefe80', '#fefe00', '#0098d4', '#9cba19', '#7caa09',
 					'#80baed', '#cc9f80', '#c48351', '#e12e12'
 				], permute)
 		elif scheme == "regions":
