@@ -124,6 +124,61 @@ class Colorizer:
 				"#9163b6", "#e279a3", "#e0598b",
 				"#7c9fb0", "#5698c4", "#9abf88"
 			], permute)
+		elif scheme == "colors48":
+			self.scheme = DiscreteColorScheme([
+				[0.9375, 0.63671875, 0.99609375],
+				[0., 0.45703125, 0.859375],
+				[0.59765625, 0.24609375, 0.],
+				[0.296875, 0., 0.359375],
+				[0., 0.359375, 0.19140625],
+				[0.16796875, 0.8046875, 0.28125],
+				[0.99609375, 0.796875, 0.59765625],
+				[0.578125, 0.99609375, 0.70703125],
+
+				[0.55859375, 0.484375, 0.],
+				[0.61328125, 0.796875, 0.],
+				[0.7578125, 0., 0.53125],
+				[0., 0.19921875, 0.5],
+				[0.99609375, 0.640625, 0.01953125],
+				[0.99609375, 0.65625, 0.73046875],
+				[0.2578125, 0.3984375, 0.],
+				[0.99609375, 0., 0.0625],
+				[0.3671875, 0.94140625, 0.9453125],
+				[0., 0.59765625, 0.55859375],
+
+				[0.875, 0.99609375, 0.3984375],
+				[0.453125, 0.0390625, 0.99609375],
+				[0.59765625, 0., 0.],
+				[0.99609375, 0.99609375, 0.5],
+				[0.99609375, 0.99609375, 0.],
+				[0.99609375, 0.3125, 0.01953125],
+				[0.96875, 0.81835938, 0.99804688],
+				[0.5, 0.72851562, 0.9296875],
+				[0.79882812, 0.62304688, 0.5],
+				[0.6484375, 0.5, 0.6796875],
+
+				[0.5, 0.6796875, 0.59570312],
+				[0.58398438, 0.90234375, 0.640625],
+				[0.99804688, 0.8984375, 0.79882812],
+				[0.7890625, 0.99804688, 0.85351562],
+				[0.77929688, 0.7421875, 0.5],
+				[0.80664062, 0.8984375, 0.5],
+				[0.87890625, 0.5, 0.765625],
+				[0.5, 0.59960938, 0.75],
+				[0.99804688, 0.8203125, 0.50976562],
+				[0.99804688, 0.828125, 0.86523438],
+
+				[0.62890625, 0.69921875, 0.5],
+				[0.99804688, 0.5, 0.53125],
+				[0.68359375, 0.97070312, 0.97265625],
+				[0.5, 0.79882812, 0.77929688],
+				[0.9375, 0.99804688, 0.69921875],
+				[0.7265625, 0.51953125, 0.99804688],
+				[0.79882812, 0.5, 0.5],
+				[0.99804688, 0.99804688, 0.75],
+				[0.99804688, 0.99804688, 0.5],
+				[0.99804688, 0.65625, 0.50976562],
+			], permute)
 		elif scheme == "colors75":
 			self.scheme = DiscreteColorScheme([
 				[0.9375, 0.63671875, 0.99609375],
@@ -225,14 +280,16 @@ class Colorizer:
 		elif scheme == "superclasses":
 			self.scheme = NamedColorScheme(
 				[
-					'Astrocyte', 'Bergmann glia', 'CGE interneurons', 'Cerebellar VZ inhibitory', 'Choroid plexus', 'Eccentric MSN', 'Ependymal-like', 'Forebrain excitatory',
-					'Glycinergic, cholinergic, monoaminergic, or peptidergic', 'Hindbrain-derived excitatory', 'Hipp. CA1-CA3', 'Hipp. CA4', 'Hipp. DG', 'Immune', 'L2/3 IT',
-					'L5-6 IT', 'L5/6 NP', 'L6 CT/b', 'LAMP5-LHX6 and Chandelier', 'MGE interneurons', 'MSN', 'Mammillary body', 'Midbrain-derived inhibitory', 'Miscellaneous rare',
-					'OPC', 'Oligodendrocyte', 'Rhombic lip excitatory', 'Thalamic excitatory', 'VLMC', 'Vascular'
+					'Astrocyte', 'Bergmann glia', 'CGE interneuron', 'Cerebellar inhibitory', 'Choroid plexus', 'Eccentric medium spiny neuron', 'Ependymal', 'Amygdala excitatory',
+					'Splatter', 'Lower rhombic lip', 'Hippocampal CA1-3', 'Hippocampal CA4', 'Hippocampal dentate gyrus', 'Microglia', 'Upper-layer intratelencephalic',
+					'Deep-layer intratelencephalic', 'Deep-layer near-projecting', 'Deep-layer corticothalamic and 6b', 'LAMP5-LHX6 and Chandelier', 'MGE interneuron', 'Medioum spiny neuron', 'Mammillary body', 
+					'Midbrain-derived inhibitory', 'Miscellaneous',
+					'Oligodendrocyte precursor', 'Oligodendrocyte', 'Committed oligodendrocyte precursor',
+					'Upper rhombic lip', 'Thalamic excitatory', 'Fibroblast', 'Vascular'
 				],
 				[
 					'#ab3bc4', '#e7c31f', '#983f00', '#4c005c', '#005c31', '#2bcd48', '#ed5f8e', '#808080', '#93feb4', '#8e7c00', '#9ccb00', '#c10087', '#003380',
-					'#fea305', '#fea7ba', '#426600', '#ee1010', '#5ef0f1', '#00988e', '#dffe66', '#740afe', '#980000', '#fefe80', '#fefe00', '#0098d4', '#9cba19',
+					'#fea305', '#fea7ba', '#426600', '#ee1010', '#5ef0f1', '#00988e', '#dffe66', '#740afe', '#980000', '#fefe80', '#fefe00', '#0098d4', '#9cba19', '#7caa09',
 					'#80baed', '#cc9f80', '#c48351', '#e12e12'
 				], permute)
 		elif scheme == "regions":
