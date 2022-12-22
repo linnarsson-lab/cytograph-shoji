@@ -71,7 +71,7 @@ class Karyotyper(Algorithm):
 	@requires("PearsonResidualsVariance", "float32", ("genes",))
 	@requires("GeneTotalUMIs", "uint32", ("genes",))
 	@requires("Chromosome", "string", ("genes",))
-	@requires("Start", "string", ("genes",))
+	@requires("Start", "int64", ("genes",))
 	@requires("ClusterID", "uint32", ("clusters",))
 	@requires("MeanExpression", "float64", ("clusters", "genes"))
 	@requires("AnnotationName", "string", ("annotations",))

@@ -8,4 +8,4 @@ from .polished_leiden import PolishedLeiden
 from .more_polished_leiden import MorePolishedLeiden
 from .cut_dendrogram import CutDendrogram
 from .stockholm import Stockholm
-
+from .stockholm_lda import StockholmLDA
