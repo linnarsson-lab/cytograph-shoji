@@ -59,7 +59,7 @@ class PlotBatches(Algorithm):
 		if "SampleID" in ws:
 			sid = expand_scalars(ws.SampleID[:])
 			plt.subplot(2, 2, 4)
-			scatterc(xy, c=sid, s=marker_size, lw=0, legend=None if len(sid) > 20 else "outside")
+			scatterc(xy, c=sid, s=marker_size, lw=0, legend=None if len(np.unique(sid)) > 20 else "outside")
 			plt.axis("off")
 			plt.title(f"SampleID")
 
