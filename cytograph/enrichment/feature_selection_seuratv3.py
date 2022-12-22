@@ -44,11 +44,9 @@ class FeatureSelectionSeuratV3(Algorithm):
             valid = np.ones(n_genes, dtype='bool')
         if self.mask is not None:
             valid = np.logical_and(valid, np.logical_not(mask_genes))
-	    
-        
 
         #Get adata
-        adata = ws.create_anndata(valid_genes=valid)
+        adata = ws.create_anndata(only_selected= False)
         sc.pp.normalize_total(adata, target_sum=1e4)
         sc.pp.log1p(adata)
         if(len(self.batch)>0):
@@ -58,21 +56,21 @@ class FeatureSelectionSeuratV3(Algorithm):
                 else:
                     adata.obs["batch"] =  adata.obs["batch"]+"-"+adata.obs[self.batch[i]].astype("str")
 
-            
+            adata_v = adata[:,valid].copy()
             sc.pp.highly_variable_genes(
-            adata,
+            adata_v,
             flavor="seurat_v3",
             n_top_genes=self.n_genes,
             batch_key="batch",
             subset=False)
         else:
-            
+            adata_v = adata[:,valid].copy()
             sc.pp.highly_variable_genes(
-            adata,
+            adata_v,
             flavor="seurat_v3",
             n_top_genes=self.n_genes,
             subset=False)
         
-        genes = np.where(valid)[0][adata.var['highly_variable']]
+        genes = np.where(valid)[0][adata_v.var['highly_variable']]
         logging.info(f" FeatureSelectionSeuratV3: Selected {len(genes)} features")
         return genes
