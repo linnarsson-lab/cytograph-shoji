@@ -45,7 +45,7 @@ def scatterc(xy: np.ndarray, *, c: np.ndarray, colors = None, labels = None, leg
 		_draw_edges(ax, xy, g, gcolor, galpha, glinewidths)
 
 
-def scattern(xy: np.ndarray, *, c: np.ndarray, cmap: Any = "inferno_r", bgval: Any = None, max_percentile: float = 99, g: np.ndarray = None, gcolor: str = "thistle", galpha: float = 0.1, glinewidths: float = 0.25, **kwargs) -> None:
+def scattern(xy: np.ndarray, *, c: np.ndarray, cmap: Any = "inferno_r", bgval: Any = None, max_percentile: float = 100, g: np.ndarray = None, gcolor: str = "thistle", galpha: float = 0.1, glinewidths: float = 0.25, **kwargs) -> None:
 	n_cells = xy.shape[0]
 	fig = plt.gcf()
 	area = np.prod(fig.get_size_inches())
@@ -53,7 +53,7 @@ def scattern(xy: np.ndarray, *, c: np.ndarray, cmap: Any = "inferno_r", bgval: A
 
 	max_val = np.percentile(c, max_percentile)
 	assert np.all(max_val > 0), f"{max_percentile}th percentile is zero (increase max_percentile to fix)"
-	c = np.clip(div0(c.T, max_val), 0, 1)
+	c = np.clip(c, 0, max_val)
 
 	ordering = np.random.permutation(xy.shape[0])
 	color = c[ordering]
@@ -92,7 +92,7 @@ def scatterm(xy: np.ndarray, *, c: List[np.ndarray], cmaps: List[Any], bgval: An
 	max_val = np.percentile(c, max_percentile, axis=1)
 	assert np.all(max_val > 0), f"{max_percentile}th percentile is zero (increase max_percentile to fix)"
 
-	c = np.clip(div0(c.T, max_val).T, 0, 1)
+	c = np.clip(c, 0, max_val)
 	colors = np.max(c, axis=0)
 
 	final_cmaps = []
