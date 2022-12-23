@@ -156,7 +156,7 @@ def heat_map(df, labels, sort=None, cluster_colors=None,
     
     """
     #Find the name of the input df, for logging
-    df_input_name =[x for x in globals() if globals()[x] is df][0]
+    #df_input_name =[x for x in globals() if globals()[x] is df][0]
     #print('df used for plot: {}'.format(df_input_name))
     
     if type(sort) == type(None):
