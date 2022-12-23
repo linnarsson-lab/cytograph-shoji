@@ -133,6 +133,8 @@ class PlotReference(Algorithm):
          df.columns,sort=ordering_sc_str.values,
          cluster_colors=cluster_colors_GBM
         )
+        plt.savefig(self.export_dir / (ws._name + "_" + self.filename), dpi=1000, bbox_inches='tight')
+        plt.close()
 
 def heat_map(df, labels, sort=None, cluster_colors=None, 
              cluster_number = False, save=False, name='', fontsz=8):
