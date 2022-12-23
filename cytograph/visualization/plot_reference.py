@@ -112,7 +112,7 @@ class PlotReference(Algorithm):
                 #scipy.spatial.distance.cdist()
                 correlation_matrix[seq_c,sp_c] = corr.statistic
                 
-        df = pd.DataFrame(data=correlation_matrix.T,index=adata_spatial_means.obs.GraphCluster,columns=adata_sc_means.obs.annotation_level_3)
+        df = pd.DataFrame(data=correlation_matrix.T,index=adata_spatial_means.obs.cell_types,columns=adata_sc_means.obs.annotation_level_3)
 
         # Ordering scRNAseq
         D = pdist(df.values.T, 'euclidean')
