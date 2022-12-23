@@ -266,41 +266,56 @@ class PlotNeighborhood(Algorithm):
 			clusters = self.GraphCluster[:]
 			ClusterID = np.unique(clusters)
 
-		leiden = pd.Categorical(self.Clusters[:])
-		spatial = np.array([self.X[:], self.Y[:]]).T
-		adata = sc.AnnData(
-			X=self.Expression[:],
-			obsm={'spatial':spatial}, 
-			obs={'cell type':leiden}
-		)
+		samples = self.Sample[:]
+		unique_samples = np.unique(samples)
+		X = self.X[:]
+		Y = self.Y[:]
+		expression = self.Expression[:]
+		for sample in unique_samples:
+			save_to = self.export_dir / 'Spatial_{}_{}'.format(ws._name , sample)
+			if path.exists(save_to) == False:
+				makedirs(save_to)
+				
+			filter_sample = samples == sample
 
-		sq.gr.co_occurrence(adata, cluster_key="cell type", interval=50)
-		for cell_ in adata.obs['cell type'].cat.categories:
-			try:
-				sq.pl.co_occurrence(
-					adata,
-					cluster_key="cell type",
-					clusters=[cell_],
-					figsize=(10, 10),
-					palette='Set1',
-					save = save_to / (ws._name + "_co-ocurrence{}.png".format(cell_) ),
-				)
-			except:
-				logging.info('Co-ocurrence plot failed fro cluster {}'.format(cell_))
+			leiden = pd.Categorical(clusters[filter_sample])
 
-		sq.gr.spatial_neighbors(
-			adata, 
-			#delaunay=True,
-			radius=25,
+			spatial = np.array([X[filter_sample], Y[filter_sample]]).T
+			adata = sc.AnnData(
+				X= expression[filter_sample,:],
+				obsm={'spatial':spatial}, 
+				obs={'cell type':leiden}
 			)
 
-		sq.gr.nhood_enrichment(
-			adata, 
-			cluster_key="cell type")
+			'''sq.gr.co_occurrence(adata, cluster_key="cell type", interval=50)
+			for cell_ in adata.obs['cell type'].cat.categories:
+				try:
+					sq.pl.co_occurrence(
+						adata,
+						cluster_key="cell type",
+						clusters=[cell_],
+						figsize=(10, 10),
+						palette='Set1',
+						save = save_to / (ws._name + "_co-ocurrence{}.png".format(cell_) ),
+					)
+				except:
+					logging.info('Co-ocurrence plot failed fro cluster {}'.format(cell_))'''
 
-		sq.pl.nhood_enrichment(
-			adata, 
-			cluster_key="cell type", 
-			cmap='magma',
-			method='ward',
-			save=save_to / (ws._name + "_neighborhood.png"))
+			sq.gr.spatial_neighbors(
+				adata, 
+				#delaunay=True,
+				coord_type='generic',
+				radius=50,
+				)
+
+			sq.gr.nhood_enrichment(
+				adata, 
+				cluster_key="cell type")
+
+			sq.pl.nhood_enrichment(
+				adata, 
+				cluster_key="cell type", 
+				cmap='magma',
+				mode='count',
+				method='ward',
+				save=save_to / (ws._name + "_neighborhood.png"))

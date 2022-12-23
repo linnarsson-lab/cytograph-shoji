@@ -130,10 +130,10 @@ class PlotSpatialmap(Algorithm):
                     hv.save(NDshortlabels, save_to / (ws._name + "_map.html"))
                     NDshortlabels = NDshortlabels.opts(
                         hv.opts.Scatter(
-                            size=0.05,
+                            size=2,
                         )
                     )
-                    Layout = hv.Layout([dicNDshortlabels[x].opts(size=0.5, height=800,width=1600) for x in dicNDshortlabels]).cols(5)
+                    Layout = hv.Layout([dicNDshortlabels[x].opts(size=2, height=400,width=800) for x in dicNDshortlabels]).cols(5)
                     hv.save(Layout, save_to / (ws._name + "_map.png"), dpi=2000)
                     
             elif self.backend == 'matplotlib':

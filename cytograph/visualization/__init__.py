@@ -21,3 +21,4 @@ from .plot_annotation import PlotAnnotation
 from .plot_sankey import PlotSankey, PlotNeighborhood
 from .plot_map import PlotSpatialmap, PlotSpatialGraphmap
 from .miscellaneous_plotting import plot_clusters, plot_gene
+from .plot_reference import PlotReference

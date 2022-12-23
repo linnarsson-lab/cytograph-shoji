@@ -57,8 +57,6 @@ class SampleBarplot(Algorithm):
         Z = hc.optimal_leaf_ordering(Z, D, metric='euclidean')
         ordering = hc.leaves_list(Z)
         ordering_str = unique_samples[ordering]
-
-
         lines = dendrogram(
                     Z, 
                     #labels=ordering,
@@ -68,20 +66,19 @@ class SampleBarplot(Algorithm):
                     ax=ax
             )
 
-        #lines.set_linewidth(0.5)
-        #ax.add_collection(lines)
-        #ax.set_xlim(-0.5, 1 - 0.5)
         ax.set_ylim(0, Z[:, 2].max() * 2)
         ax.axis('off')
 
         width = 0.8
-        #fig = plt.figure()
         subplot = 1
         ax = fig.add_subplot(fig_spec[subplot])
         indexes = np.arange(sample_graphclusters.shape[0])
         unique_colors = colorize(np.arange(sample_graphclusters.shape[1]))
 
         sample_graphclusters_norm = (sample_graphclusters.T/sample_graphclusters.sum(axis=1)).T * 100
+        organize_clusters = [np.where(unique_samples==x)[0][0] for x in ordering_str]
+        sample_graphclusters_norm = sample_graphclusters_norm[organize_clusters,:]
+
         loc = np.zeros(sample_graphclusters.shape[0])
         for cluster in range(sample_graphclusters.shape[1]):
 
@@ -91,20 +88,14 @@ class SampleBarplot(Algorithm):
             ax.bar(indexes, i_[ordering], width, bottom=loc,color=unique_colors[cluster])
             loc += i_[ordering]
 
-        #ax.set_ylabel('Scores')
-        #add_collection()
-        #ax.set_title('GraphCluster per Samples')
         ax.set_xticks(np.arange(ordering_str.shape[0]), ordering_str,)
         ax.tick_params(axis='both', which='major', labelsize=5)
         #ax.get_yaxis().set_ticks([])
         for pos in ['right', 'top', 'bottom', 'left']:
             ax.spines[pos].set_visible(False)
-        #ax.set_yticks()
+
         ax.set_xlim(-0.5, ordering.shape[0] - 0.5)
-        #subplot=2
-        #axlegend = fig.add_subplot(fig_spec[subplot])
-        #dots = [ax.plot(z, "ro", markersize=15) for x in unique_colors]
-        fig.legend(labels=np.arange(sample_graphclusters.shape[1]), 
+        fig.legend(labels=np.arange(-1, sample_graphclusters.shape[1]), 
                 loc='lower center', 
                 fontsize=5,
                 #bbox_to_anchor=(0, 0),
@@ -112,7 +103,6 @@ class SampleBarplot(Algorithm):
                 frameon=False,
                 )
 
-        #plt.show()
         plt.savefig(self.export_dir / (ws._name + "_" + self.filename), dpi=1000, bbox_inches='tight')
         plt.close()
 
