@@ -90,10 +90,11 @@ class PlotReference(Algorithm):
             expression_gc = expression_gc.sum(axis=0)
             mean_expression_gc.append(expression_gc)
         mean_expression_gc = np.stack(mean_expression_gc)
+        logging.info('GraphClusters shape {}'.format(mean_expression_gc.shape))
         
         eel_means = sc.AnnData(X=mean_expression_gc, obs=pd.DataFrame({'cluster':unique_graphclusters}), var=pd.DataFrame(index=gene))
         eel_means.var_names_make_unique()
-        df_ref = pd.read_csv('../GBMref/GBMreference.csv',index_col=0)
+        df_ref = pd.read_csv(self.reference_csv, index_col=0)
         ref_means = sc.AnnData(X=df_ref.values.T,obs=pd.DataFrame({'cell_types':df_ref.columns}),var=pd.DataFrame(index=df_ref.index))
         ref_means.var_names_make_unique()
 
