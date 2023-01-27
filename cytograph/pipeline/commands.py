@@ -180,7 +180,7 @@ def qc(sampleids: List[str], force: bool, import_from: str) -> None:
 					del ws[sampleid]
 					ws[sampleid] = shoji.Workspace()
 					logging.info(f"Importing '{sampleid}' from '{import_from}'")
-					ws[sampleid]._import(Path(import_from) / (sampleid.replace("TenX", "10X") + ".loom"))
+					ws[sampleid]._from_loom(Path(import_from) / (sampleid.replace("TenX", "10X") + ".loom"))
 			if sampleid not in ws:
 				logging.info(f"Skipping '{sampleid}' because sample missing (use --import-from <path> to auto-import)")
 				continue
