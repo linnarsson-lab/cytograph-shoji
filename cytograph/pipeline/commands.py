@@ -174,6 +174,8 @@ def qc(sampleids: List[str], force: bool, import_from: str) -> None:
 		sampleids = np.unique(sampleids)
 		db = shoji.connect()
 		for sampleid in sampleids:
+			if sampleid.startswith("10X"):
+				logging.warning("Sample names starting with numbers are discouraged and may cause errors; e.g. use TenX101_1 instead of 10X101_1")
 			ws = db[config.workspaces.samples_workspace_name]
 			if import_from != "" and import_from is not None:
 				if force or sampleid not in ws:
