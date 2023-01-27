@@ -175,8 +175,8 @@ def qc(sampleids: List[str], force: bool, import_from: str) -> None:
 		db = shoji.connect()
 		for sampleid in sampleids:
 			ws = db[config.workspaces.samples_workspace_name]
-			if sampleid not in ws:
-				if import_from != "" and import_from is not None:
+			if import_from != "" and import_from is not None:
+				if force or sampleid not in ws:
 					ws[sampleid] = shoji.Workspace()
 					logging.info(f"Importing '{sampleid}' from '{import_from}'")
 					ws[sampleid]._import(Path(import_from) / (sampleid.replace("TenX", "10X") + ".loom"))
