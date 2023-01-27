@@ -176,11 +176,12 @@ def qc(sampleids: List[str], force: bool, import_from: str) -> None:
 		db = shoji.connect()
 		for sampleid in sampleids:
 			ws = db[config.workspaces.samples_workspace_name]
-			if sampleid not in ws and (import_from != "" and import_from is not None):
-				ws[sampleid] = shoji.Workspace()
-				logging.info(f"Importing '{sampleid}' from '{import_from}'")
-				ws[sampleid]._import(Path(import_from) / (sampleid.replace("TenX", "10X") + ".loom"))
-			else:
+			if sampleid not in ws:
+				if import_from != "" and import_from is not None:
+					ws[sampleid] = shoji.Workspace()
+					logging.info(f"Importing '{sampleid}' from '{import_from}'")
+					ws[sampleid]._import(Path(import_from) / (sampleid.replace("TenX", "10X") + ".loom"))
+			if sampleid not in ws:
 				logging.info(f"Skipping '{sampleid}' because sample missing (use --import-from <path> to auto-import)")
 				continue
 			if force or "PassedQC" not in ws[sampleid]:
