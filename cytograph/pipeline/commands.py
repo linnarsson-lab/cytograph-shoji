@@ -168,8 +168,8 @@ def qc(sampleids: List[str], force: bool, import_from: str) -> None:
 		logging.info(f"Build folder is '{config.path}'")
 
 		deck = PunchcardDeck(config.path / "punchcards")
-		if sampleids in deck.punchcards:
-			punchcard = deck.punchcards[sampleids]
+		if sampleids[0] in deck.punchcards:
+			punchcard = deck.punchcards[sampleids[0]]
 			sampleids = punchcard.sources
 		sampleids = np.unique(sampleids)
 		db = shoji.connect()
