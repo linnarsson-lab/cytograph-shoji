@@ -158,7 +158,6 @@ def process(punchcard: str, resume: int, recipe: str) -> None:
 @click.option("--force", default=False, is_flag=True)
 @click.option("--import-from", default="")
 def qc(sampleids: List[str], force: bool, import_from: str) -> None:
-	print(import_from)
 	workspace_name = Path.cwd().name
 	logging.info(f"Workspace is '{workspace_name}'")
 	try:
