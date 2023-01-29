@@ -179,10 +179,14 @@ def qc(sampleids: List[str], force: bool, import_from: str) -> None:
 			ws = db[config.workspaces.samples_workspace_name]
 			if import_from != "" and import_from is not None:
 				if force or sampleid not in ws:
+					pathname = Path(import_from) / (sampleid.replace("TenX", "10X") + ".loom")
+					if not pathname.exists():
+						logging.info(f"Failed to import '{sampleid}' because '{pathname}' does not exist")
+						continue
 					del ws[sampleid]
 					ws[sampleid] = shoji.Workspace()
 					logging.info(f"Importing '{sampleid}' from '{import_from}'")
-					ws[sampleid]._from_loom(Path(import_from) / (sampleid.replace("TenX", "10X") + ".loom"))
+					ws[sampleid]._from_loom(pathname)
 			if sampleid not in ws:
 				logging.info(f"Skipping '{sampleid}' because sample missing (use --import-from <path> to auto-import)")
 				continue
