@@ -10,5 +10,5 @@ from .metrics import *
 from .pipeline import InitializeWorkspace, CollectCells, LoadSampleMetadata, PatchSampleMetadata, PatchGeneMetadata
 from .preprocessing import *
 from .species import *
-from .utils import div0, available_cpu_count, make_cytograph_docs
+from .utils import div0, available_cpu_count, make_cytograph_docs, shoji2anndata
 from .visualization import *

@@ -13,8 +13,15 @@ def div0(a: np.ndarray, b: np.ndarray) -> np.ndarray:
 		c = np.true_divide(a, b)
 		c[~np.isfinite(c)] = 0  # -inf inf NaN
 	return c
-
-
+	
+def export_loompy(ws, path,expression_tensor='Expression'):
+    """Export a workspace to a loom file"""
+    import loompy
+    ra_attrs = {'Gene':ws.Gene[:]}
+    ca_attrs = {'Clusters':ws.Clusters[:],'GraphCluster':ws.GraphCluster[:],'X':ws.X[:],'Y':ws.Y[:],'Sample':ws.Sample[:], 'Embedding':ws.Embedding[:]}
+    expression = ws[expression_tensor][:]
+    loompy.create(path, expression.T, row_attrs=ra_attrs, col_attrs=ca_attrs)
+    
 # https://stackoverflow.com/questions/1006289/how-to-find-out-the-number-of-cpus-using-python
 def available_cpu_count():
 	""" Number of available virtual or physical CPUs on this system, i.e.
@@ -116,7 +123,36 @@ def available_cpu_count():
 
 	raise Exception('Can not determine number of CPUs on this system')
 
-
+def shoji2anndata(ws,save=False):
+    import scanpy as sc
+    shape = ws.Expression.shape
+    X = ws.Expression[:]
+    gene_shape = ws.Gene.shape
+    cell_shape = (X.shape[0],)
+    
+    attrs = [x for x in dir(ws) if x[0] != '_' and x[0].isupper()]
+    obs = {}
+    #obsm = {}
+    var = {}
+    for att in attrs:
+        if ws[att].shape == gene_shape:
+            print('Added attribute {} to AnnData vars'.format(att))
+            var[att] = ws[att][:]
+        elif ws[att].shape == cell_shape:
+            print('Added attribute {} to AnnData obs'.format(att))
+            obs[att] = ws[att][:]
+        else:
+            print('Attribute {} NOT added to AnnData'.format(att),ws[att].shape)
+            
+    adata = sc.AnnData(X=X, obs=obs, var=var)
+    adata.var.index = adata.var.Gene
+    adata.var_names_make_unique()
+    if save:
+        adata.write_h5ad(save+'.h5ad')
+    return adata
+    
+        
+    
 def get_decorators(function):
 	"""Returns list of decorators names
 

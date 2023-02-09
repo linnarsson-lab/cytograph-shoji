@@ -116,14 +116,14 @@ class PlotReference(Algorithm):
 
         # Ordering scRNAseq
         D = pdist(df.values.T, 'euclidean')
-        Z = fastcluster.linkage(D, 'complete', preserve_input=True)
+        Z = fastcluster.linkage(D, 'ward', preserve_input=True)
         Z = hc.optimal_leaf_ordering(Z, D, metric='euclidean')
         ordering_sc = hc.leaves_list(Z)
         ordering_sc_str = df.columns[ordering_sc]
 
         # Ordering EEL
         D = pdist(df.values, 'euclidean')
-        Z = fastcluster.linkage(D, 'complete', preserve_input=True)
+        Z = fastcluster.linkage(D, 'ward', preserve_input=True)
         Z = hc.optimal_leaf_ordering(Z, D, metric='euclidean')
         ordering_sp = hc.leaves_list(Z)
         ordering_sp_str = df.index.values[ordering_sp]
@@ -131,8 +131,8 @@ class PlotReference(Algorithm):
         df = df.loc[ordering_sp_str,ordering_sc_str]
 
         heat_map(df, 
-         df.columns,sort=ordering_sc_str.values,
-         cluster_colors=cluster_colors_GBM
+            df.columns,sort=ordering_sc_str.values,
+            cluster_colors=cluster_colors_GBM
         )
         plt.savefig(self.export_dir / (ws._name + "_" + self.filename), dpi=1000, bbox_inches='tight')
         plt.close()
@@ -156,7 +156,7 @@ def heat_map(df, labels, sort=None, cluster_colors=None,
     
     """
     #Find the name of the input df, for logging
-    #df_input_name =[x for x in globals() if globals()[x] is df][0]
+    # =[x for x in globals() if globals()[x] is df][0]
     #print('df used for plot: {}'.format(df_input_name))
     
     if type(sort) == type(None):

@@ -9,3 +9,4 @@ from .gsea import GSEA
 from .enrichment import Enrichment
 from .trinarize import Trinarize
 from .batch_aware_feature_selection import BatchAwareFeatureSelection
+from .smooth import SmoothNN
