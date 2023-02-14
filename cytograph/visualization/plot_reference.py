@@ -70,7 +70,7 @@ class PlotReference(Algorithm):
     @requires("NCells", "uint64", ("clusters",))
     @requires("Clusters", "uint32", ("cells",))
     @requires("ClusterID", "uint32", ("clusters",))
-    @requires("GraphCluster", "int8", ("cells",))
+    @requires("MolecularNgh", "int8", ("cells",))
     @requires("Embedding", "float32", ("cells", 2))
     @requires("Sample", "string", ("cells",))
     @requires("Expression", "uint16", ("cells","genes"))
@@ -78,21 +78,21 @@ class PlotReference(Algorithm):
         sample = ws.Sample[:]
         gene = self.Gene[:]
         unique_samples = np.unique(sample)
-        graphcluster = self.GraphCluster[:]
-        unique_graphclusters = np.unique(graphcluster)
+        MolecularNgh = self.MolecularNgh[:]
+        unique_MolecularNghs = np.unique(MolecularNgh)
         expression = self.Expression[:]
 
-        sample_graphclusters = np.array([np.zeros(80) for x in range(unique_samples.shape[0])])
+        sample_MolecularNghs = np.array([np.zeros(80) for x in range(unique_samples.shape[0])])
 
         mean_expression_gc = []
-        for gc in unique_graphclusters:
-            expression_gc = expression[graphcluster==gc]
+        for gc in unique_MolecularNghs:
+            expression_gc = expression[MolecularNgh==gc]
             expression_gc = expression_gc.sum(axis=0)
             mean_expression_gc.append(expression_gc)
         mean_expression_gc = np.stack(mean_expression_gc)
-        logging.info('GraphClusters shape {}'.format(mean_expression_gc.shape))
+        logging.info('MolecularNghs shape {}'.format(mean_expression_gc.shape))
         
-        eel_means = sc.AnnData(X=mean_expression_gc, obs=pd.DataFrame({'cluster':unique_graphclusters}), var=pd.DataFrame(index=gene))
+        eel_means = sc.AnnData(X=mean_expression_gc, obs=pd.DataFrame({'cluster':unique_MolecularNghs}), var=pd.DataFrame(index=gene))
         eel_means.var_names_make_unique()
         df_ref = pd.read_csv(self.reference_csv, index_col=0)
         ref_means = sc.AnnData(X=df_ref.values.T,obs=pd.DataFrame({'cell_types':df_ref.columns}),var=pd.DataFrame(index=df_ref.index))

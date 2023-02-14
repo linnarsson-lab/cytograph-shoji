@@ -18,7 +18,7 @@ def export_loompy(ws, path,expression_tensor='Expression'):
     """Export a workspace to a loom file"""
     import loompy
     ra_attrs = {'Gene':ws.Gene[:]}
-    ca_attrs = {'Clusters':ws.Clusters[:],'GraphCluster':ws.GraphCluster[:],'X':ws.X[:],'Y':ws.Y[:],'Sample':ws.Sample[:], 'Embedding':ws.Embedding[:]}
+    ca_attrs = {'Clusters':ws.Clusters[:],'MolecularNgh':ws.MolecularNgh[:],'X':ws.X[:],'Y':ws.Y[:],'Sample':ws.Sample[:], 'Embedding':ws.Embedding[:]}
     expression = ws[expression_tensor][:]
     loompy.create(path, expression.T, row_attrs=ra_attrs, col_attrs=ca_attrs)
     

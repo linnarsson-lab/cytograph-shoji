@@ -81,7 +81,7 @@ class QualityControlEEL(Algorithm):
 	Compute QC metrics and mark valid cells (note: consider using ClassifyDroplets instead)
 	"""
 	def __init__(self, min_umis: int = 8, min_genes:int=2, min_fraction_good_cells: float = 0, 
-		umi_gene_ratio: float = 1.1, remove_graphclusters=[], **kwargs) -> None:
+		umi_gene_ratio: float = 1.1, remove_MolecularNghs=[], **kwargs) -> None:
 		"""
 		Args:
 			doublet_threshold		Threshold to call doublets, or "auto" to use automatic threshold (default: "auto")
@@ -95,10 +95,10 @@ class QualityControlEEL(Algorithm):
 		self.min_genes = min_genes
 		self.min_fraction_good_cells = min_fraction_good_cells
 		self.umi_gene_ratio = umi_gene_ratio
-		self.remove_graphclusters = remove_graphclusters
+		self.remove_MolecularNghs = remove_MolecularNghs
 
 	@requires("TotalUMIs", "uint32", ("cells",))
-	@requires("GraphCluster", "int8", ("cells",))
+	@requires("MolecularNgh", "int8", ("cells",))
 	@creates("ValidCells", "bool", ("cells",))
 	@creates("PassedQC", "bool", ())
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> Tuple[np.ndarray, np.ndarray]:
@@ -123,7 +123,7 @@ class QualityControlEEL(Algorithm):
 		enough_genes = (ws.Expression[:,:] > 0).sum(axis=1) >= self.min_genes
 		umis_gene_ratio = self.TotalUMIs[:] / enough_genes
 		enough_ratio = umis_gene_ratio > self.umi_gene_ratio
-		keep_graph = np.isin(self.GraphCluster[:], self.remove_graphclusters, invert=True)
+		keep_graph = np.isin(self.MolecularNgh[:], self.remove_MolecularNghs, invert=True)
 		good_cells = enough_umis & enough_genes & enough_ratio & keep_graph
 
 		logging.info(f" QualityControl: Marked {n_cells - enough_umis.sum()} cells with too few UMIs")

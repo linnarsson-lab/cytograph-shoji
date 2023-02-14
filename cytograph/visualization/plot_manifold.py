@@ -77,7 +77,7 @@ class PlotManifoldGraph(Algorithm):
 
 	@requires("Gene", "string", ("genes",))
 	@requires("Clusters", "uint32", ("cells",))
-	@requires("GraphCluster", "int8", ("cells",))
+	@requires("MolecularNgh", "int8", ("cells",))
 	@requires("Embedding", "float32", ("cells", 2))
 	@requires("NCells", "uint64", ("clusters",))
 	@requires("ClusterID", "uint32", ("clusters",))
@@ -88,21 +88,21 @@ class PlotManifoldGraph(Algorithm):
 		labels = []
 		n_cells = self.NCells[:]
 		clusters = self.Clusters[:]
-		graphclusters = self.GraphCluster[:]
-		n_clusters = graphclusters.max() + 1
+		MolecularNghs = self.MolecularNgh[:]
+		n_clusters = MolecularNghs.max() + 1
 		cluster_ids = self.ClusterID[:]
 		genes = self.Gene[:]
 		enrichment = self.Enrichment[:]
 		xy = self.Embedding[:]
 
 		for gi in range(n_clusters):
-			if (graphclusters == gi).sum() > 50:
-				#i = np.unique(clusters[graphclusters == gi])
-				n = (graphclusters ==gi).sum()
+			if (MolecularNghs == gi).sum() > 50:
+				#i = np.unique(clusters[MolecularNghs == gi])
+				n = (MolecularNghs ==gi).sum()
 				label = f" {gi:>3} ({n:,} cells) - "
 				labels.append(label)
 			else:
-				graphclusters[graphclusters == gi] = -1
+				MolecularNghs[MolecularNghs == gi] = -1
 				labels.append("-1 (0 cells) ")
 
 		plt.figure(figsize=(20, 20))
@@ -113,18 +113,18 @@ class PlotManifoldGraph(Algorithm):
 			ax.add_collection(lc)
 
 		MAX_CLUSTERS = 100
-		top_clusters = np.argsort(np.unique(graphclusters,return_counts=True)[1])[-MAX_CLUSTERS:]
+		top_clusters = np.argsort(np.unique(MolecularNghs,return_counts=True)[1])[-MAX_CLUSTERS:]
 		for i in top_clusters:
-			pos = np.median(xy[graphclusters == i], axis=0)
+			pos = np.median(xy[MolecularNghs == i], axis=0)
 			txt = plt.text(pos[0], pos[1], str(i), size=18, color="black")
 			txt.set_path_effects([PathEffects.withStroke(linewidth=3, foreground='w')])
 
 		if n_clusters > MAX_CLUSTERS:
-			mask = np.isin(graphclusters, top_clusters)
-			graphclusters[~mask] = n_clusters
+			mask = np.isin(MolecularNghs, top_clusters)
+			MolecularNghs[~mask] = n_clusters
 			labels.append(f"{n_clusters} ({n_clusters - MAX_CLUSTERS} clusters not shown)")
 		
-		scatterc(xy, c=np.array(labels)[graphclusters], legend="outside")
+		scatterc(xy, c=np.array(labels)[MolecularNghs], legend="outside")
 		plt.axis("off")
 		logging.info("export dir: "+str(self.export_dir))
 		plt.savefig(self.export_dir / (ws._name + "_" + self.filename), dpi=300, bbox_inches='tight')

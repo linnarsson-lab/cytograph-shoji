@@ -16,7 +16,7 @@ class SmoothNN(Algorithm):
 
 	@requires("Gene", "string", ("genes",))
 	@requires("Clusters", "uint32", ("cells",))
-	@requires("GraphCluster", "int8", ("cells",))
+	@requires("MolecularNgh", "int8", ("cells",))
 	@requires("Embedding", "float32", ("cells", 2))
 	@requires("NCells", "uint64", ("clusters",))
 	@requires("ClusterID", "uint32", ("clusters",))
@@ -26,9 +26,9 @@ class SmoothNN(Algorithm):
 	@requires("X", "float32", ("cells",))
 	@requires("Y", "float32", ("cells",))
 	@creates("SmoothExpression", "uint16", ("cells", "genes"))
-	@creates("GraphClusterMerge", "int8", ("cells",))
+	@creates("MolecularNghMerge", "int8", ("cells",))
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> None:
-		clusters = self.GraphCluster[:]
+		clusters = self.MolecularNgh[:]
 		ClusterID = np.unique(clusters)
 		expression = self.Expression[:]
 		gene =self.Gene[:]

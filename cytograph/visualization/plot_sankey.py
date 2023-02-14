@@ -40,7 +40,7 @@ class PlotSankey(Algorithm):
 	@requires("Embedding", "float32", ("cells", 2))
 	@requires("NCells", "uint64", ("clusters",))
 	@requires("ClusterID", "uint32", ("clusters",))
-	@requires("GraphCluster", "int8", ("cells",))
+	@requires("MolecularNgh", "int8", ("cells",))
 	@requires("Sample", "string", ("cells",))
 	@requires("Enrichment", "float32", ("clusters", "genes"))
 	@requires("AnnotationDescription", "string", ("annotations",))
@@ -60,8 +60,8 @@ class PlotSankey(Algorithm):
 			clusters = self.Clusters[:]#[subsample]
 			ClusterID = self.ClusterID[:]
 		
-		elif self.cluster_name == 'GraphCluster':
-			clusters = self.GraphCluster[:]
+		elif self.cluster_name == 'MolecularNgh':
+			clusters = self.MolecularNgh[:]
 			ClusterID = np.unique(clusters)
 
 		n_clusters = clusters.max() + 1
@@ -242,7 +242,7 @@ class PlotNeighborhood(Algorithm):
 	@requires("Embedding", "float32", ("cells", 2))
 	@requires("NCells", "uint64", ("clusters",))
 	@requires("ClusterID", "uint32", ("clusters",))
-	@requires("GraphCluster", "int8", ("cells",))
+	@requires("MolecularNgh", "int8", ("cells",))
 	@requires("Sample", "string", ("cells",))
 	@requires("Enrichment", "float32", ("clusters", "genes"))
 	@requires("AnnotationDescription", "string", ("annotations",))
@@ -262,8 +262,8 @@ class PlotNeighborhood(Algorithm):
 			clusters = self.Clusters[:]#[subsample]
 			ClusterID = self.ClusterID[:]
 		
-		elif self.cluster_name == 'GraphCluster':
-			clusters = self.GraphCluster[:]
+		elif self.cluster_name == 'MolecularNgh':
+			clusters = self.MolecularNgh[:]
 			ClusterID = np.unique(clusters)
 
 		samples = self.Sample[:]

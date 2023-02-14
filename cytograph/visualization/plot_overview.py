@@ -351,7 +351,7 @@ class PlotOverviewEELGraph(Algorithm):
 	@requires("NCells", "uint64", ("clusters",))
 	@requires("Linkage", "float32", None)
 	@requires("Enrichment", "float32", ("clusters", "genes"))
-	@requires("GraphCluster", "int8", ("cells",))
+	@requires("MolecularNgh", "int8", ("cells",))
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> None:
 		logging.info(" PlotOverview: Plotting the heatmap")
 
@@ -395,7 +395,7 @@ class PlotOverviewEELGraph(Algorithm):
 		#plot_regions(axes[6], regions, cgplot.Colorizer("regions").dict(), labels, subtrees)
 		#plot_regions(axes[7], subregions, cgplot.Colorizer("subregions").dict(), labels, subtrees)
 		plot_auto_annotation(axes[4], ann_names, ann_post, labels, subtrees)
-		plot_graph_clusters(axes[5], ws.GraphCluster[:], labels, subtrees)
+		plot_graph_clusters(axes[5], ws.MolecularNgh[:], labels, subtrees)
 		plot_genes(axes[6], markers, mean_x, genes, labels, subtrees, enriched_genes)
 		fig.tight_layout(pad=0, h_pad=0, w_pad=0)
 

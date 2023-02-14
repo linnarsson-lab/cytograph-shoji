@@ -28,20 +28,20 @@ class SampleBarplot(Algorithm):
     @requires("NCells", "uint64", ("clusters",))
     @requires("Clusters", "uint32", ("cells",))
     @requires("ClusterID", "uint32", ("clusters",))
-    @requires("GraphCluster", "int8", ("cells",))
+    @requires("MolecularNgh", "int8", ("cells",))
     @requires("Embedding", "float32", ("cells", 2))
     @requires("Sample", "string", ("cells",))
     def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> None:
         sample = ws.Sample[:]
         unique_samples = np.unique(sample)
-        graphcluster = ws.GraphCluster[:]
+        MolecularNgh = ws.MolecularNgh[:]
 
-        sample_graphclusters = np.array([np.zeros(80) for x in range(unique_samples.shape[0])])
+        sample_MolecularNghs = np.array([np.zeros(80) for x in range(unique_samples.shape[0])])
 
         for s, r in zip( unique_samples,range( unique_samples.shape[0])):
-            graphcluster_s = graphcluster[sample == s]
-            i, counts = np.unique(graphcluster_s, return_counts=True)
-            sample_graphclusters[r,i]= counts
+            MolecularNgh_s = MolecularNgh[sample == s]
+            i, counts = np.unique(MolecularNgh_s, return_counts=True)
+            sample_MolecularNghs[r,i]= counts
 
         fig = plt.figure(figsize=(10,10), dpi=500)
 
@@ -51,7 +51,7 @@ class SampleBarplot(Algorithm):
         subplot = 0
         ax = fig.add_subplot(fig_spec[subplot])
 
-        x = (sample_graphclusters.T/sample_graphclusters.sum(axis=1)).T
+        x = (sample_MolecularNghs.T/sample_MolecularNghs.sum(axis=1)).T
         D = pdist(x, 'euclidean')
         Z = fastcluster.linkage(D, 'ward', preserve_input=True)
         Z = hc.optimal_leaf_ordering(Z, D, metric='euclidean')
@@ -72,17 +72,17 @@ class SampleBarplot(Algorithm):
         width = 0.8
         subplot = 1
         ax = fig.add_subplot(fig_spec[subplot])
-        indexes = np.arange(sample_graphclusters.shape[0])
-        unique_colors = colorize(np.arange(sample_graphclusters.shape[1]))
+        indexes = np.arange(sample_MolecularNghs.shape[0])
+        unique_colors = colorize(np.arange(sample_MolecularNghs.shape[1]))
 
-        sample_graphclusters_norm = (sample_graphclusters.T/sample_graphclusters.sum(axis=1)).T * 100
+        sample_MolecularNghs_norm = (sample_MolecularNghs.T/sample_MolecularNghs.sum(axis=1)).T * 100
         organize_clusters = [np.where(unique_samples==x)[0][0] for x in ordering_str]
-        sample_graphclusters_norm = sample_graphclusters_norm[organize_clusters,:]
+        sample_MolecularNghs_norm = sample_MolecularNghs_norm[organize_clusters,:]
 
-        loc = np.zeros(sample_graphclusters.shape[0])
-        for cluster in range(sample_graphclusters.shape[1]):
+        loc = np.zeros(sample_MolecularNghs.shape[0])
+        for cluster in range(sample_MolecularNghs.shape[1]):
 
-            i_ = sample_graphclusters_norm[:,cluster]
+            i_ = sample_MolecularNghs_norm[:,cluster]
             #print(i_.shape)
 
             ax.bar(indexes, i_[ordering], width, bottom=loc,color=unique_colors[cluster])
@@ -95,7 +95,7 @@ class SampleBarplot(Algorithm):
             ax.spines[pos].set_visible(False)
 
         ax.set_xlim(-0.5, ordering.shape[0] - 0.5)
-        fig.legend(labels=np.arange(-1, sample_graphclusters.shape[1]), 
+        fig.legend(labels=np.arange(-1, sample_MolecularNghs.shape[1]), 
                 loc='lower center', 
                 fontsize=5,
                 #bbox_to_anchor=(0, 0),

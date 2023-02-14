@@ -38,7 +38,7 @@ class PlotSpatialmap(Algorithm):
     @requires("Gene", "string", ("genes",))
     @requires("ClusterID", "uint32", ("clusters",))
     @requires("Clusters", "uint32", ("cells",))
-    @requires("GraphCluster", "int8", ("cells",))
+    @requires("MolecularNgh", "int8", ("cells",))
     @requires("MeanExpression", "float64", ("clusters", "genes"))
     @requires("X", "float32", ("cells",))
     @requires("Y", "float32", ("cells",))
@@ -171,7 +171,7 @@ class PlotSpatialGraphmap(Algorithm):
     @requires("Gene", "string", ("genes",))
     @requires("ClusterID", "uint32", ("clusters",))
     @requires("Clusters", "uint32", ("cells",))
-    @requires("GraphCluster", "int8", ("cells",))
+    @requires("MolecularNgh", "int8", ("cells",))
     @requires("MeanExpression", "float64", ("clusters", "genes"))
     @requires("X", "float32", ("cells",))
     @requires("Y", "float32", ("cells",))
@@ -183,26 +183,26 @@ class PlotSpatialGraphmap(Algorithm):
         unique_samples = np.unique(self.Sample[:])
         n_cells = self.NCells[:]
         #clusters = self.Clusters[:]
-        graphclusters = self.GraphCluster[:]
-        n_clusters = graphclusters.max() + 1
+        MolecularNghs = self.MolecularNgh[:]
+        n_clusters = MolecularNghs.max() + 1
         #cluster_ids = self.ClusterID[:]
         clusters_label_dic = {}
 
         labels = []
         for gi in range(n_clusters):
-            if (graphclusters == gi).sum() > 50:
-                #i = np.unique(clusters[graphclusters == gi])
-                n = (graphclusters ==gi).sum()
+            if (MolecularNghs == gi).sum() > 50:
+                #i = np.unique(clusters[MolecularNghs == gi])
+                n = (MolecularNghs ==gi).sum()
                 label = f" {gi:>3} ({n:,} cells) - "
                 labels.append(label)
                 clusters_label_dic[gi] = label
             else:
-                graphclusters[graphclusters == gi] = -1
+                MolecularNghs[MolecularNghs == gi] = -1
                 labels.append("-1 (0 cells) ")
                 clusters_label_dic[gi] = "-1 (0 cells) "
         clusters_label_dic[-1] = "-1 (0 cells) "
         labels = np.unique(labels)
-        unique_colors = colorize(np.unique(graphclusters))
+        unique_colors = colorize(np.unique(MolecularNghs))
         unique_colors_HEX = [rgb2hex(int(color[0]*255),int(color[1]*255),int(color[2]*255)) for color in unique_colors]
         if type(self.cmap) != type(None):
             cmap = self.cmap
@@ -211,7 +211,7 @@ class PlotSpatialGraphmap(Algorithm):
 
         for sample in unique_samples:
             filter_sample = samples == sample
-            graphclusters_s = graphclusters[filter_sample]
+            MolecularNghs_s = MolecularNghs[filter_sample]
             save_to = self.export_dir / 'Spatial_{}_{}'.format(ws._name , sample)
             if path.exists(save_to) == False:
                 makedirs(save_to)
@@ -219,7 +219,7 @@ class PlotSpatialGraphmap(Algorithm):
 
             x = self.X[:][filter_sample]
             y = self.Y[:][filter_sample]
-            data = pd.DataFrame({'x': x, 'y':y, 'cluster':graphclusters_s}) #np.concatenate([xy,clusters[:,np.newaxis]],axis=1)
+            data = pd.DataFrame({'x': x, 'y':y, 'cluster':MolecularNghs_s}) #np.concatenate([xy,clusters[:,np.newaxis]],axis=1)
             #data.loc[:,'cluster'] = np.array([clusters_label_dic[c] for c in data['cluster']])
             
             xlength = x.max() - x.min()

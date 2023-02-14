@@ -79,10 +79,10 @@ class SupervisedUMAP(Algorithm):
 		self.density_regularization = density_regularization
 
 	@requires("Factors", "float32", ("cells", None))
-	@requires("GraphCluster", "int8", ("cells", ))
+	@requires("MolecularNgh", "int8", ("cells", ))
 	@creates("Embedding", "float32", ("cells", 2))
 	def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> np.ndarray:
-		labels = self.GraphCluster[:]
+		labels = self.MolecularNgh[:]
 		for gi in np.unique(labels):
 			if (labels == gi).sum() > 50:
 				pass
