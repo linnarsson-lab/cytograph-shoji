@@ -51,9 +51,10 @@ def scattern(xy: np.ndarray, *, c: np.ndarray, cmap: Any = "inferno_r", bgval: A
 	area = np.prod(fig.get_size_inches())
 	marker_size = 100_000 / n_cells * (area / 25)
 
-	max_val = np.percentile(c, max_percentile)
-	assert np.all(max_val > 0), f"{max_percentile}th percentile is zero (increase max_percentile to fix)"
-	c = np.clip(c, 0, max_val)
+	if max_percentile < 100:
+		max_val = np.percentile(c, max_percentile)
+		assert np.all(max_val > 0), f"{max_percentile}th percentile is zero (increase max_percentile to fix)"
+		c = np.clip(c, 0, max_val)
 
 	ordering = np.random.permutation(xy.shape[0])
 	color = c[ordering]
