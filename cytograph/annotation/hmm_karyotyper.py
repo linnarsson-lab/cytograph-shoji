@@ -116,6 +116,7 @@ class HmmKaryotyper(Algorithm):
 		db = shoji.connect()
 		y_refs_list = []
 		for ref in refs:
+			logging.info(f"Loading mean expression values from '{ref}'")
 			ws = db[ref]
 			assert isinstance(ws, shoji.WorkspaceManager)
 			y_refs = ws.MeanExpression[:]
@@ -125,7 +126,8 @@ class HmmKaryotyper(Algorithm):
 			y_refs = (y_refs.T / totals * self.std_size).T
 			y_refs_list.append(y_refs)
 
-			if len(y_refs_list) == 0:
+			if len(y_refs_list) == 1:
+				logging.info(f"Loading genes from '{ref}'")
 				self.accessions = ws.Accession[:]
 				self.gene_positions = np.array([int(s) for s in ws.Start[:]])  # type: ignore
 			else:
