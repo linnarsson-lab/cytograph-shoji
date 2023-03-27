@@ -130,6 +130,7 @@ class HmmKaryotyper(Algorithm):
 				logging.info(f"Loading genes from '{ref}'")
 				self.accessions = ws.Accession[:]
 				self.gene_positions = np.array([int(s) for s in ws.Start[:]])  # type: ignore
+				self.chromosome_per_gene = ws.Chromosome[:]
 			else:
 				assert np.all(self.accessions == ws.Accession[:]), f"Genes in {ref} do not match (by accessions or ordering) those of {refs[0]}"  # type: ignore
 		y_refs = np.concatenate(y_refs_list)
