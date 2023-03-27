@@ -4,7 +4,7 @@ from typing import List, Optional
 import fastcluster
 import igraph
 import leidenalg as la
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import numpy as np
 import scipy.cluster.hierarchy as hc
 from hmmlearn import hmm
@@ -14,7 +14,7 @@ from scipy.spatial.distance import pdist
 from sklearn.decomposition import PCA
 
 import shoji
-import cytograph.visualization as cgplot
+#import cytograph.visualization as cgplot
 from ..utils import div0
 from ..algorithm import Algorithm, creates, requires
 
