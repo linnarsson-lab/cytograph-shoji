@@ -34,6 +34,10 @@ def windowed_mean2d(x: np.ndarray, n: int):
 class HmmKaryotyper(Algorithm):
     """
     Estimate the karyotype of tumor cells using an external reference
+    
+    Example (Jupyter notebook):
+		hmmk = cg.HmmKaryotyper(["builds.sten.humandev20220523.PoolClean"])
+		result = hmmk.fit(ws, save=True)
     """
     def __init__(
         self,
