@@ -152,7 +152,7 @@ def shoji2anndata(ws,save=False):
     return adata
     
         
-    
+
 def get_decorators(function):
 	"""Returns list of decorators names
 
