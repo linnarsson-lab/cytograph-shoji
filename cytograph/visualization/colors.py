@@ -316,13 +316,13 @@ class Colorizer:
 				['Neuron', 'Neuroblast', 'Neuronal IPC', 'Radial glia', "Glioblast", "Oligo", "Fibroblast", "Neural crest", "Placodes", "Immune", "Vascular", "Erythrocyte", "Failed"],
 				["#5384db", "#5d25c4", "#ab3bc4", "#27b35d", "#447c69", "#9cba19", "#c48351", "#eec79f", "#70510e", "#e7c31f", "#e12e12", "#ff617f", "#9f9f9f"], permute)
 		elif scheme == "cellcycle":
-                        self.scheme = NamedColorScheme(
-                                ['G1','S','G2M','Non-cycling'],
-                                ["#0000FF","#FFA500","#008000","lightgrey"], permute)
+				self.scheme = NamedColorScheme(
+						['G1','S','G2M','Non-cycling'],
+						["#0000FF","#FFA500","#008000","lightgrey"], permute)
 		elif scheme == "GE":
-                        self.scheme = NamedColorScheme(
-                                ['MGE','LGE','CGE',''],
-                                ['#bc3754','#57106e','#f9cb35',"lightgrey"], permute)
+				self.scheme = NamedColorScheme(
+						['MGE','LGE','CGE',''],
+						['#bc3754','#57106e','#f9cb35',"lightgrey"], permute)
 		else:
 			raise ValueError(f"Unrecognized scheme '{scheme}'")
 
