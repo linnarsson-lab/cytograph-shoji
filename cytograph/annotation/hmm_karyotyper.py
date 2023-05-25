@@ -18,14 +18,34 @@ import shoji
 from ..utils import div0
 from ..algorithm import Algorithm, creates, requires
 
+import logging
+from typing import List, Optional
+
+import fastcluster
+import igraph
+import leidenalg as la
+import numpy as np
+import scipy.cluster.hierarchy as hc
+from hmmlearn import hmm
+from openTSNE import TSNE
+from pynndescent import NNDescent
+from scipy.spatial.distance import pdist
+from sklearn.decomposition import PCA
+
+import shoji
+from cytograph.utils import div0
+from cytograph.algorithm import Algorithm, creates, requires
+
 
 def windowed_mean2d(x: np.ndarray, n: int):
     if x.shape[1] == 0:
         return x
+    length = x.shape[1]
     y = np.zeros_like(x)
-    for center in range(x.shape[1]):
+    for center in range(length):
         i = max(0, center - n // 2)
-        j = min(len(x), center + n // 2)
+        j = min(length, center + n // 2)
+        
         w = x[:, i:j]
         y[:, center] = np.mean(w, axis=1)
     return y
@@ -34,10 +54,6 @@ def windowed_mean2d(x: np.ndarray, n: int):
 class HmmKaryotyper(Algorithm):
     """
     Estimate the karyotype of tumor cells using an external reference
-    
-    Example (Jupyter notebook):
-		hmmk = cg.HmmKaryotyper(["builds.sten.humandev20220523.PoolClean"])
-		result = hmmk.fit(ws, save=True)
     """
     def __init__(
         self,
@@ -119,11 +135,14 @@ class HmmKaryotyper(Algorithm):
         # Load the references
         db = shoji.connect()
         y_refs_list = []
+        shared_genes = np.ones(db[refs[0]].genes.length, dtype=bool)
         for ref in refs:
             logging.info(f"Loading mean expression values from '{ref}'")
             ws = db[ref]
             assert isinstance(ws, shoji.WorkspaceManager)
-            y_refs = ws.MeanExpression[:]
+            y_refs = np.nan_to_num(ws.MeanExpression[:])
+            shared_genes = shared_genes & (np.isnan(ws.MeanExpression[:]).sum(axis=0) == 0)
+            logging.info(f"{shared_genes.sum()} shared genes")
             assert isinstance(y_refs, np.ndarray)
             totals = y_refs.sum(axis=1)
             self.std_size = np.median(totals)
@@ -139,8 +158,8 @@ class HmmKaryotyper(Algorithm):
                 assert np.all(self.accessions == ws.Accession[:]), f"Genes in {ref} do not match (by accessions or ordering) those of {refs[0]}"  # type: ignore
         self.y_refs = np.concatenate(y_refs_list)
 
-        # Select only genes from autosomes, and that are non-zero in all cell types
-        self.housekeeping = ((self.y_refs == 0).sum(axis=0) == 0) & np.isin(self.chromosome_per_gene, list(self.chromosome_starts.keys()))
+        # Select only genes from autosomes, and that are >2% non-zero and not NaN in all cell types
+        self.housekeeping = shared_genes & (np.count_nonzero(self.y_refs, axis=0) > self.y_refs.shape[0] / 10) & np.isin(self.chromosome_per_gene, list(self.chromosome_starts.keys()))
         self.y_refs = self.y_refs[:, self.housekeeping]
         self.chromosome_per_gene = self.chromosome_per_gene[self.housekeeping]
         self.gene_positions = self.gene_positions[self.housekeeping]
@@ -161,7 +180,6 @@ class HmmKaryotyper(Algorithm):
             n = (self.chromosome_per_gene == ch).sum()
             self.chromosome_borders.append(n + ix)
             ix += n
-
         
     def _compute_metacell_dendrogram(self):
         logging.info("Computing Ward's linkage dendrogram of metacells")
@@ -230,6 +248,9 @@ class HmmKaryotyper(Algorithm):
         n_cells, _ = self.y_sample.shape
         logging.info(f"Loaded {n_cells} cells")
 
+        logging.info("Finding best reference cell type for each cell")
+        self.best_ref = np.argmax(np.corrcoef(np.log(self.y_sample + 1), np.log(self.y_refs + 1))[:n_cells, -n_refs:], axis=1)
+
         if self.window_size > 1:
             logging.info("Binning along the genome")
             for ch in self.chromosome_starts.keys():
@@ -238,10 +259,7 @@ class HmmKaryotyper(Algorithm):
                     continue
                 self.y_refs[:, selected] = windowed_mean2d(self.y_refs[:, selected], self.window_size)
                 self.y_sample[:, selected] = windowed_mean2d(self.y_sample[:, selected], self.window_size)
-
-        logging.info("Finding best reference cell type for each cell")
-        self.best_ref = np.argmax(np.corrcoef(np.log(self.y_sample + 1), np.log(self.y_refs + 1))[:n_cells, -n_refs:], axis=1)
-
+        
         # Calculate ploidy of each cell along the genome
         logging.info("Computing single-cell estimated ploidy")
         self.ploidy = np.zeros((n_cells, n_windows))
@@ -307,6 +325,7 @@ class HmmKaryotyper(Algorithm):
         # Reshape back to original shape
         self.predicted_ploidy = predicted_ploidy.reshape((n_metacells, n_windows))
         if save:
+            del ws.karyotype_genes
             del ws.karyotype_metacells
             del ws.karyotype_windows
             del ws.KaryotypeDendrogram
