@@ -37,6 +37,7 @@ from cytograph.utils import div0
 from cytograph.algorithm import Algorithm, creates, requires
 
 
+
 def windowed_mean2d(x: np.ndarray, n: int):
     if x.shape[1] == 0:
         return x
@@ -50,6 +51,19 @@ def windowed_mean2d(x: np.ndarray, n: int):
         y[:, center] = np.mean(w, axis=1)
     return y
 
+def windowed_median2d(x: np.ndarray, n: int):
+    if x.shape[1] == 0:
+        return x
+    length = x.shape[1]
+    y = np.zeros_like(x)
+    for center in range(length):
+        i = max(0, center - n // 2)
+        j = min(length, center + n // 2)
+        
+        w = x[:, i:j]
+        y[:, center] = np.median(w, axis=1)
+    return y
+
 
 class HmmKaryotyper(Algorithm):
     """
@@ -59,13 +73,13 @@ class HmmKaryotyper(Algorithm):
         self,
         refs: List[str],  # List of shoji workspaces
         min_umis: int = 1,
-        window_size: int = 200,
+        window_size: int = 300,
         n_pca_components: int = 5,
         min_clusters: int = 10,
         n_neighbors: int = 30,
         hmm_n_states: int = 5,
-        hmm_persistence: float = 0.7,
-        hmm_diploid_bias: float = 0.3
+        hmm_persistence: float = 0.5,
+        hmm_diploid_bias: float = 0.35
     ):
         self.refs = refs
         self.min_umis = min_umis
@@ -158,7 +172,7 @@ class HmmKaryotyper(Algorithm):
                 assert np.all(self.accessions == ws.Accession[:]), f"Genes in {ref} do not match (by accessions or ordering) those of {refs[0]}"  # type: ignore
         self.y_refs = np.concatenate(y_refs_list)
 
-        # Select only genes from autosomes, and that are >2% non-zero and not NaN in all cell types
+        # Select only genes from autosomes, and that are >10% non-zero and not NaN in all cell types
         self.housekeeping = shared_genes & (np.count_nonzero(self.y_refs, axis=0) > self.y_refs.shape[0] / 10) & np.isin(self.chromosome_per_gene, list(self.chromosome_starts.keys()))
         self.y_refs = self.y_refs[:, self.housekeeping]
         self.chromosome_per_gene = self.chromosome_per_gene[self.housekeeping]
@@ -251,21 +265,23 @@ class HmmKaryotyper(Algorithm):
         logging.info("Finding best reference cell type for each cell")
         self.best_ref = np.argmax(np.corrcoef(np.log(self.y_sample + 1), np.log(self.y_refs + 1))[:n_cells, -n_refs:], axis=1)
 
+        y_refs = self.y_refs.copy()
         if self.window_size > 1:
             logging.info("Binning along the genome")
             for ch in self.chromosome_starts.keys():
                 selected = (self.chromosome_per_gene == ch)
                 if selected.sum() == 0:
                     continue
-                self.y_refs[:, selected] = windowed_mean2d(self.y_refs[:, selected], self.window_size)
+                y_refs[:, selected] = windowed_mean2d(self.y_refs[:, selected], self.window_size)
                 self.y_sample[:, selected] = windowed_mean2d(self.y_sample[:, selected], self.window_size)
         
         # Calculate ploidy of each cell along the genome
         logging.info("Computing single-cell estimated ploidy")
         self.ploidy = np.zeros((n_cells, n_windows))
         for i in range(n_cells):
-            self.ploidy[i, :] = 2 * (div0(self.y_sample[i, :], self.y_refs[self.best_ref[i]]).T).T
-
+            self.ploidy[i, :] = 2 * (div0(self.y_sample[i, :], y_refs[self.best_ref[i]]).T).T
+        self.ploidy = windowed_median2d(self.ploidy, int(self.window_size * 3))
+        
         logging.info("Computing karyotype embedding using t-SNE")
         self.pca = PCA(n_components=self.n_pca_components).fit_transform(self.ploidy)
         self.embedding = TSNE().fit(self.pca)

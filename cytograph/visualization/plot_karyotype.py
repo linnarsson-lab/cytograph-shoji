@@ -34,7 +34,7 @@ class PlotHmmKaryotype:
 
         # make a colormap for the ploidy heatmaps
         bottom = plt.cm.get_cmap('Oranges', 128)
-        middle = np.full((50, 4), 0.97)
+        middle = np.full((128, 4), 0.97)
         middle[:, 3] = 1
         top = plt.cm.get_cmap('Blues_r', 128)
         newcolors = np.vstack((top(np.linspace(0, 1, 128)), middle, bottom(np.linspace(0, 1, 128))))
@@ -60,7 +60,8 @@ class PlotHmmKaryotype:
 
         for x in chromosome_borders:
             plt.vlines(x, 0, n_cells, color="black", lw=0.5, ls="--")
-
+       # plt.colorbar()
+        
         plt.axis("off")
         plt.subplot(313)
         plt.imshow(predicted_ploidy, vmin=0, vmax=4, aspect="auto", cmap=cmp, interpolation="none", origin="upper", extent=(0, n_windows, 0, n_metacells))
