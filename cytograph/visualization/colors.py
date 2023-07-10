@@ -317,8 +317,8 @@ class Colorizer:
 				["#5384db", "#5d25c4", "#ab3bc4", "#27b35d", "#447c69", "#9cba19", "#c48351", "#eec79f", "#70510e", "#e7c31f", "#e12e12", "#ff617f", "#9f9f9f"], permute)
 		elif scheme == "cellcycle":
                         self.scheme = NamedColorScheme(
-                                ['G1','S','G2M','Non-cycling'],
-                                ["#0000FF","#FFA500","#008000","lightgrey"], permute)
+                                ['G1','S','G2M','PostM','Non-cycling'],
+                                ["#0000FF","#FFA500","#008000","red","lightgrey"], permute)
 		elif scheme == "GE":
                         self.scheme = NamedColorScheme(
                                 ['MGE','LGE','CGE',''],
