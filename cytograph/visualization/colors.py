@@ -320,9 +320,9 @@ class Colorizer:
                                 ['G1','S','G2M','PostM','Non-cycling'],
                                 ["#0000FF","#FFA500","#008000","red","lightgrey"], permute)
 		elif scheme == "GE":
-                        self.scheme = NamedColorScheme(
-                                ['MGE','LGE','CGE',''],
-                                ['#bc3754','#57106e','#f9cb35',"lightgrey"], permute)
+				self.scheme = NamedColorScheme(
+						['MGE','LGE','CGE',''],
+						['#bc3754','#57106e','#f9cb35',"lightgrey"], permute)
 		else:
 			raise ValueError(f"Unrecognized scheme '{scheme}'")
 

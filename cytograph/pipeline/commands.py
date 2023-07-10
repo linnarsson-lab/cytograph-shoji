@@ -156,7 +156,8 @@ def process(punchcard: str, resume: int, recipe: str) -> None:
 @cli.command()
 @click.argument('sampleids', nargs=-1)
 @click.option("--force", default=False, is_flag=True)
-def qc(sampleids: List[str], force: bool) -> None:
+@click.option("--import-from", default="")
+def qc(sampleids: List[str], force: bool, import_from: str) -> None:
 	workspace_name = Path.cwd().name
 	logging.info(f"Workspace is '{workspace_name}'")
 	try:
@@ -167,30 +168,34 @@ def qc(sampleids: List[str], force: bool) -> None:
 		logging.info(f"Build folder is '{config.path}'")
 
 		deck = PunchcardDeck(config.path / "punchcards")
-
+		if sampleids[0] in deck.punchcards:
+			punchcard = deck.punchcards[sampleids[0]]
+			sampleids = punchcard.sources
 		sampleids = np.unique(sampleids)
 		db = shoji.connect()
 		for sampleid in sampleids:
+			if sampleid.startswith("10X"):
+				logging.warning("Sample names starting with numbers are discouraged and may cause errors; e.g. use TenX101_1 instead of 10X101_1")
 			ws = db[config.workspaces.samples_workspace_name]
-			if sampleid in ws:
-				if force or "PassedQC" not in ws[sampleid]:
-					logging.info(f"Processing '{sampleid}'")
-					recipe = config.recipes["qc"]
-					run_qc(ws[sampleid], recipe)
-				else:
-					logging.info(f"Skipping '{sampleid}' because QC already done (use --force to override)")
-			elif sampleid in deck.punchcards:
-				punchcard = deck.punchcards[sampleid]
-				for sample in punchcard.sources:
-					if sample in ws:
-						if force or "PassedQC" not in ws[sample]:
-							logging.info(f"Processing '{sample}'")
-							recipe = config.recipes["qc"]
-							run_qc(ws[sample], recipe)
-						else:
-							logging.info(f"Skipping '{sample}' because QC already done (use --force to override)")
-					else:
-						logging.warning(f"Skipping '{sample}' (specificed in punchcard '{sampleid}') because sample not found")
+			if import_from != "" and import_from is not None:
+				if force or sampleid not in ws:
+					pathname = Path(import_from) / (sampleid.replace("TenX", "10X") + ".loom")
+					if not pathname.exists():
+						logging.info(f"Failed to import '{sampleid}' because '{pathname}' does not exist")
+						continue
+					del ws[sampleid]
+					ws[sampleid] = shoji.Workspace()
+					logging.info(f"Importing '{sampleid}' from '{import_from}'")
+					ws[sampleid]._from_loom(pathname)
+			if sampleid not in ws:
+				logging.info(f"Skipping '{sampleid}' because sample missing (use --import-from <path> to auto-import)")
+				continue
+			if force or "PassedQC" not in ws[sampleid]:
+				logging.info(f"Processing '{sampleid}'")
+				recipe = config.recipes["qc"]
+				run_qc(ws[sampleid], recipe)
+			else:
+				logging.info(f"Skipping '{sampleid}' because QC already done (use --force to override)")
 	except Exception as e:
 		logging.error(f"'qc' command failed: {e}")
 		sys.exit(1)
@@ -207,7 +212,7 @@ def import_(workspace: str, loomfiles: List[str]) -> None:
 			logging.info(f"Importing '{lf}'")
 			ws._from_loom(lf)
 	except Exception as e:
-		logging.error(f"'qc' command failed: {e}")
+		logging.error(f"'import' command failed: {e}")
 		sys.exit(1)
 
 

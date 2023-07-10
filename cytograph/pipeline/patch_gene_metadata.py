@@ -33,7 +33,9 @@ class PatchGeneMetadata(Algorithm):
 		if self.patch_accession_from is not None:
 			logging.info(f" PatchGeneMetadata: Patching accessions from {self.patch_accession_from}")
 			db = shoji.connect()
-			ws.Accession = shoji.Tensor("string", ("genes",), inits=db.samples_ih[self.patch_accession_from].Accession[:])
+			# Assume the source sample is in the same workspace
+			from_ws = db[".".join(ws._path[:-1])][self.patch_accession_from]
+			ws.Accession = shoji.Tensor("string", ("genes",), inits=from_ws.Accession[:])
 
 		logging.info(f" PatchGeneMetadata: Loading gene metadata")
 		accessions = pd.DataFrame({"Accession": ws.Accession[:]})
