@@ -39,6 +39,17 @@ from cytograph.algorithm import Algorithm, creates, requires
 from tqdm import trange
 
 
+def pairwise_correlation(A, B):
+    A = A.T
+    B = B.T
+    am = A - np.mean(A, axis=0, keepdims=True)
+    bm = B - np.mean(B, axis=0, keepdims=True)
+    return am.T @ bm /  (np.sqrt(
+        np.sum(am**2, axis=0,
+               keepdims=True)).T * np.sqrt(
+        np.sum(bm**2, axis=0, keepdims=True)))
+
+
 def windowed_mean2d(x: np.ndarray, n: int):
     if x.shape[1] == 0:
         return x
@@ -267,9 +278,10 @@ class HmmKaryotyper(Algorithm):
         # self.best_ref = np.argmax(np.corrcoef(np.log(self.y_sample + 1), np.log(self.y_refs + 1))[:n_cells, -n_refs:], axis=1)
         temp = []
         logged_refs = np.log(self.y_refs + 1)
-        for ix in trange(n_cells):
-            temp.append(np.argmax(np.corrcoef(np.log(self.y_sample[ix, :] + 1), logged_refs)[0, 1:]))
-        self.best_ref = np.array(temp)
+        batch_size = 1000
+        for ix in range(0, n_cells, batch_size):
+            temp.append(np.argmax(pairwise_correlation(np.log(self.y_sample[ix:ix + batch_size, :] + 1), logged_refs), axis=1))
+        self.best_ref = np.concatenate(temp)        
 
         y_refs = self.y_refs.copy()
         if self.window_size > 1:
