@@ -36,6 +36,7 @@ import shoji
 from cytograph.utils import div0
 from cytograph.algorithm import Algorithm, creates, requires
 
+from tqdm import trange
 
 
 def windowed_mean2d(x: np.ndarray, n: int):
@@ -266,7 +267,7 @@ class HmmKaryotyper(Algorithm):
         # self.best_ref = np.argmax(np.corrcoef(np.log(self.y_sample + 1), np.log(self.y_refs + 1))[:n_cells, -n_refs:], axis=1)
         temp = []
         logged_refs = np.log(self.y_refs + 1)
-        for ix in range(n_cells):
+        for ix in trange(n_cells):
             temp.append(np.argmax(np.corrcoef(np.log(self.y_sample[ix, :] + 1), logged_refs)[0, 1:]))
         self.best_ref = np.array(temp)
 
