@@ -263,7 +263,12 @@ class HmmKaryotyper(Algorithm):
         logging.info(f"Loaded {n_cells} cells")
 
         logging.info("Finding best reference cell type for each cell")
-        self.best_ref = np.argmax(np.corrcoef(np.log(self.y_sample + 1), np.log(self.y_refs + 1))[:n_cells, -n_refs:], axis=1)
+        # self.best_ref = np.argmax(np.corrcoef(np.log(self.y_sample + 1), np.log(self.y_refs + 1))[:n_cells, -n_refs:], axis=1)
+        temp = []
+        logged_refs = np.log(self.y_refs + 1)
+        for ix in range(n_cells):
+            temp.append(np.argmax(np.corrcoef(np.log(self.y_sample[ix, :] + 1), logged_refs)[0, 1:]))
+        self.best_ref = np.array(temp)
 
         y_refs = self.y_refs.copy()
         if self.window_size > 1:
