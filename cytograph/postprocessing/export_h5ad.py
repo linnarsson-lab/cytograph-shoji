@@ -3,6 +3,7 @@ import shoji
 import numpy as np
 from cytograph import requires, creates, Algorithm
 import logging
+from pathlib import Path
 
 
 class ExportH5Ad(Algorithm):
@@ -34,4 +35,4 @@ class ExportH5Ad(Algorithm):
 		logging.info(" ExportH5Ad: Creating AnnData object")
 		ad = ws.anndata(X=self.X, var=self.var, obs=self.obs, varm=self.varm, obsm=self.obsm, var_key=self.var_key, obs_key=self.obs_key, layers=self.layers)
 		logging.info(" ExportH5Ad: Saving AnnData as .h5ad file")
-		ad.write_h5ad(self.export_dir / (ws._name + ".h5ad"))
+		ad.write_h5ad(Path(self.export_dir) / (ws._name + ".h5ad"))
