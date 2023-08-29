@@ -11,7 +11,7 @@ from matplotlib.colors import ListedColormap
 
 
 class PlotHmmKaryotype:
-    def __init__(self, markers: List[str] = ["PTPRC", "SOX10", "PDGFRA", "MOG", "SOX2", "WIF1", "AQP4", "HES1", "DCN", "LUM", "CDK1"], filename: str = "karyotype.png", **kwargs):
+    def __init__(self, markers: List[str] = ["PTPRC", "MOG", "PLP1", "PDGFRA",  "CLDN5", "SOX2-OT", "PCNA", "DCN", "CD44", "SOX10", "AQP4"], filename: str = "karyotype.png", **kwargs):
         super().__init__(**kwargs)
         self.markers = markers
         self.filename = filename
