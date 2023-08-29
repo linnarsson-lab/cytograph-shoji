@@ -15,8 +15,7 @@ from sklearn.decomposition import PCA
 
 import shoji
 #import cytograph.visualization as cgplot
-from ..utils import div0
-from ..algorithm import Algorithm, creates, requires
+from cytograph import div0, Algorithm, creates, requires
 
 import logging
 from typing import List, Optional
@@ -50,30 +49,29 @@ def pairwise_correlation(A, B):
         np.sum(bm**2, axis=0, keepdims=True)))
 
 
-def windowed_mean2d(x: np.ndarray, n: int):
+# Compute a function in windows of size n, but without crossing the given borders
+# Close to borders, windows are shifted without reducing their size unless needed to fit between adjacent borders
+def windowed_function2d(x: np.ndarray, n: int, borders: np.ndarray, func):
     if x.shape[1] == 0:
         return x
     length = x.shape[1]
     y = np.zeros_like(x)
-    for center in range(length):
-        i = max(0, center - n // 2)
-        j = min(length, center + n // 2)
-        
-        w = x[:, i:j]
-        y[:, center] = np.mean(w, axis=1)
-    return y
+    offset = 0
+    for border in borders:
+        nn = min(n, border - offset)  # Adjust window size if the borders are too close
+        for center in range(offset, border):
+            i = center - nn // 2
+            j = center + nn // 2
+            if i < offset:
+                i = offset
+                j = offset + nn
+            elif j > border:
+                i = border - nn
+                j = border
 
-def windowed_median2d(x: np.ndarray, n: int):
-    if x.shape[1] == 0:
-        return x
-    length = x.shape[1]
-    y = np.zeros_like(x)
-    for center in range(length):
-        i = max(0, center - n // 2)
-        j = min(length, center + n // 2)
-        
-        w = x[:, i:j]
-        y[:, center] = np.median(w, axis=1)
+            w = x[:, i:j]
+            y[:, center] = func(w, axis=1)
+        offset = border
     return y
 
 
@@ -85,7 +83,7 @@ class HmmKaryotyper(Algorithm):
         self,
         refs: List[str],  # List of shoji workspaces
         min_umis: int = 1,
-        window_size: int = 300,
+        window_size: int = 25,
         n_pca_components: int = 5,
         min_clusters: int = 10,
         n_neighbors: int = 30,
@@ -162,6 +160,7 @@ class HmmKaryotyper(Algorithm):
         db = shoji.connect()
         y_refs_list = []
         shared_genes = np.ones(db[refs[0]].genes.length, dtype=bool)
+        self.std_size = 0
         for ref in refs:
             logging.info(f"Loading mean expression values from '{ref}'")
             ws = db[ref]
@@ -171,7 +170,8 @@ class HmmKaryotyper(Algorithm):
             logging.info(f"{shared_genes.sum()} shared genes")
             assert isinstance(y_refs, np.ndarray)
             totals = y_refs.sum(axis=1)
-            self.std_size = np.median(totals)
+            if self.std_size == 0:
+                self.std_size = np.median(totals)
             y_refs = (y_refs.T / totals * self.std_size).T
             y_refs_list.append(y_refs)
 
@@ -184,8 +184,10 @@ class HmmKaryotyper(Algorithm):
                 assert np.all(self.accessions == ws.Accession[:]), f"Genes in {ref} do not match (by accessions or ordering) those of {refs[0]}"  # type: ignore
         self.y_refs = np.concatenate(y_refs_list)
 
-        # Select only genes from autosomes, and that are >10% non-zero and not NaN in all cell types
-        self.housekeeping = shared_genes & (np.count_nonzero(self.y_refs, axis=0) > self.y_refs.shape[0] / 10) & np.isin(self.chromosome_per_gene, list(self.chromosome_starts.keys()))
+        # Select only genes from autosomes, and that are expressed in at least half of clusters and not NaN in all cell types
+        # Expressed is defined as greater than 10% of the 99th percentile expression level
+        nonzeros = self.y_refs > 0.1 * np.percentile(self.y_refs, 99)
+        self.housekeeping = shared_genes & (nonzeros.sum(axis=0) > self.y_refs.shape[0] / 2) & np.isin(self.chromosome_per_gene, list(self.chromosome_starts.keys()))
         self.y_refs = self.y_refs[:, self.housekeeping]
         self.chromosome_per_gene = self.chromosome_per_gene[self.housekeeping]
         self.gene_positions = self.gene_positions[self.housekeeping]
@@ -286,19 +288,18 @@ class HmmKaryotyper(Algorithm):
         y_refs = self.y_refs.copy()
         if self.window_size > 1:
             logging.info("Binning along the genome")
-            for ch in self.chromosome_starts.keys():
-                selected = (self.chromosome_per_gene == ch)
-                if selected.sum() == 0:
-                    continue
-                y_refs[:, selected] = windowed_mean2d(self.y_refs[:, selected], self.window_size)
-                self.y_sample[:, selected] = windowed_mean2d(self.y_sample[:, selected], self.window_size)
+            y_refs = windowed_function2d(self.y_refs, self.window_size, self.chromosome_borders, np.mean)
+            self.y_sample = windowed_function2d(self.y_sample, self.window_size, self.chromosome_borders, np.mean)
         
         # Calculate ploidy of each cell along the genome
         logging.info("Computing single-cell estimated ploidy")
         self.ploidy = np.zeros((n_cells, n_windows))
-        for i in range(n_cells):
-            self.ploidy[i, :] = 2 * (div0(self.y_sample[i, :], y_refs[self.best_ref[i]]).T).T
-        self.ploidy = windowed_median2d(self.ploidy, int(self.window_size * 3))
+        BATCH_SIZE = 100
+        for i in range(0, n_cells, BATCH_SIZE):
+            self.ploidy[i:i + BATCH_SIZE, :] = 2 * (div0(self.y_sample[i:i + BATCH_SIZE, :], y_refs[self.best_ref[i:i + BATCH_SIZE]]).T).T
+        logging.info(f"Smoothing ploidy in windows (size={self.window_size * 8}) and rescaling to median 2")
+        self.ploidy = windowed_function2d(self.ploidy, int(self.window_size * 8), self.chromosome_borders, np.median)
+        self.ploidy = (self.ploidy.T / np.median(self.ploidy, axis=1) * 2).T
         
         logging.info("Computing karyotype embedding using t-SNE")
         self.pca = PCA(n_components=self.n_pca_components).fit_transform(self.ploidy)
