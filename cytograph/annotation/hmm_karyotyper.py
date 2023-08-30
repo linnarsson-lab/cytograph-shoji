@@ -15,7 +15,8 @@ from sklearn.decomposition import PCA
 
 import shoji
 #import cytograph.visualization as cgplot
-from cytograph import div0, Algorithm, creates, requires
+from ..utils import div0
+from ..algorithm import Algorithm, creates, requires
 
 import logging
 from typing import List, Optional
