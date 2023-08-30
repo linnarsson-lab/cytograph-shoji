@@ -32,8 +32,8 @@ from scipy.spatial.distance import pdist
 from sklearn.decomposition import PCA
 
 import shoji
-from cytograph.utils import div0
-from cytograph.algorithm import Algorithm, creates, requires
+from ..utils import div0
+from ..algorithm import Algorithm, creates, requires
 
 from tqdm import trange
 
