@@ -298,7 +298,7 @@ class HmmKaryotyper(Algorithm):
         BATCH_SIZE = 100
         for i in range(0, n_cells, BATCH_SIZE):
             self.ploidy[i:i + BATCH_SIZE, :] = 2 * (div0(self.y_sample[i:i + BATCH_SIZE, :], y_refs[self.best_ref[i:i + BATCH_SIZE]]).T).T
-        logging.info(f"Smoothing ploidy in windows (size={self.window_size * 8}) and rescaling to median 2")
+        logging.info("Smoothing ploidy and rescaling to median 2.0")
         self.ploidy = windowed_function2d(self.ploidy, int(self.window_size * 8), self.chromosome_borders, np.median)
         self.ploidy = (self.ploidy.T / np.median(self.ploidy, axis=1) * 2).T
         
