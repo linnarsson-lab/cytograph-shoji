@@ -90,7 +90,8 @@ class HmmKaryotyper(Algorithm):
         n_neighbors: int = 30,
         hmm_n_states: int = 5,
         hmm_persistence: float = 0.5,
-        hmm_diploid_bias: float = 0.35
+        hmm_diploid_bias: float = 0.35,
+        smoothing_size: int = 4
     ):
         self.refs = refs
         self.min_umis = min_umis
@@ -98,10 +99,10 @@ class HmmKaryotyper(Algorithm):
         self.n_pca_components = n_pca_components
         self.min_clusters = min_clusters
         self.n_neighbors = n_neighbors
-
         self.hmm_n_states = hmm_n_states
         self.hmm_persistence = hmm_persistence
         self.hmm_diploid_bias = hmm_diploid_bias
+        self.smoothing_size = smoothing_size
 
         self.chromosome_starts = {
             'chr1': 0,
@@ -299,7 +300,7 @@ class HmmKaryotyper(Algorithm):
         for i in range(0, n_cells, BATCH_SIZE):
             self.ploidy[i:i + BATCH_SIZE, :] = 2 * (div0(self.y_sample[i:i + BATCH_SIZE, :], y_refs[self.best_ref[i:i + BATCH_SIZE]]).T).T
         logging.info("Smoothing ploidy and rescaling to median 2.0")
-        self.ploidy = windowed_function2d(self.ploidy, int(self.window_size * 8), self.chromosome_borders, np.median)
+        self.ploidy = windowed_function2d(self.ploidy, int(self.window_size * self.smoothing_size), self.chromosome_borders, np.median)
         self.ploidy = (self.ploidy.T / np.median(self.ploidy, axis=1) * 2).T
         
         logging.info("Computing karyotype embedding using t-SNE")
