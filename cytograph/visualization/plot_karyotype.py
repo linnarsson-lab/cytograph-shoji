@@ -11,7 +11,8 @@ from matplotlib.colors import ListedColormap
 
 
 class PlotHmmKaryotype:
-    def __init__(self, markers: List[str] = ["PTPRC", "MOG", "PLP1", "PDGFRA",  "CLDN5", "SOX2-OT", "PCNA", "DCN", "CD44", "SOX10", "AQP4"], filename: str = "karyotype.png", **kwargs):
+    def __init__(self, markers: List[str] = ["PTPRC", "MOG", "PLP1", "PDGFRA",  "CLDN5", "SOX2-OT", "PCNA", "DCN", "CD44", "SOX10", "AQP4"], \
+                 filename: str = "karyotype.png", **kwargs):
         super().__init__(**kwargs)
         self.markers = markers
         self.filename = filename
@@ -79,5 +80,8 @@ class PlotHmmKaryotype:
         plt.axis("off")
 
         if save:
-            plt.savefig(self.export_dir / (ws._name + "_" + self.filename), dpi=300, bbox_inches='tight')
+            if hasattr(self, "export_dir"):
+                plt.savefig(self.export_dir / (ws._name + "_" + self.filename), dpi=300, bbox_inches='tight')
+            else:
+                plt.savefig(self.filename, dpi=300, bbox_inches='tight')
             plt.close()
