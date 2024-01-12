@@ -7,11 +7,11 @@ import importlib
 from .algorithm import Algorithm
 
 
-def div0(a: np.ndarray, b: np.ndarray) -> np.ndarray:
+def div0(a: np.ndarray, b: np.ndarray, default: float = 0) -> np.ndarray:
 	""" ignore / 0, div0( [-1, 0, 1], 0 ) -> [0, 0, 0] """
 	with np.errstate(divide='ignore', invalid='ignore'):
 		c = np.true_divide(a, b)
-		c[~np.isfinite(c)] = 0  # -inf inf NaN
+		c[~np.isfinite(c)] = default  # -inf inf NaN
 	return c
 
 

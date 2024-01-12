@@ -86,14 +86,14 @@ def scatterm(xy: np.ndarray, *, c: List[np.ndarray], cmaps: List[Any], bgval: An
 	marker_size = 100_000 / n_cells * (area / 25)
 
 	ordering = np.random.permutation(n_cells)
-	c = np.array(c)[:, ordering]
+	c = np.hstack(c).T[:, ordering]
 	xy = xy[ordering, :]
 	
 	winners = np.argmax(c, axis=0)
 	max_val = np.percentile(c, max_percentile, axis=1)
 	assert np.all(max_val > 0), f"{max_percentile}th percentile is zero (increase max_percentile to fix)"
 
-	c = np.clip(c, 0, max_val)
+	c = np.clip(c.T, 0, max_val).T
 	colors = np.max(c, axis=0)
 
 	final_cmaps = []

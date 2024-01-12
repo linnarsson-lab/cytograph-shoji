@@ -359,6 +359,7 @@ class HmmKaryotyper(Algorithm):
         n_samples = [n_windows] * n_metacells  # (n_sequences,); sum should be n_samples
         m.fit(median_ploidy, lengths=[n_samples])
         predicted_ploidy = m.predict(median_ploidy)
+
         # Reshape back to original shape
         self.predicted_ploidy = predicted_ploidy.reshape((n_metacells, n_windows))
         if save:
