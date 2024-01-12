@@ -51,7 +51,7 @@ class PlotNeftel(Algorithm):
             plt.annotate(txt, (z[i], y[i]),fontsize=15, ha="center")
 
         plt.subplot(122)
-        scatterm(ws.Embedding[:], c=[ac, mes, npc, opc], cmaps=["gold", "brown", "orange", "green"], labels=["AC", "MES", "NPC", "OPC"])
+        scatterm(ws.Embedding[:], c=[ac, mes, npc, opc], cmaps=["gold", "brown", "deepskyblue", "green"], labels=["AC", "MES", "NPC", "OPC"])
 
         if save:
             plt.savefig(self.export_dir / (ws._name + "_" + self.filename), dpi=300, bbox_inches='tight')
