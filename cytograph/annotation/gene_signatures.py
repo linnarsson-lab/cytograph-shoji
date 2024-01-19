@@ -2,7 +2,6 @@ import numpy as np
 
 import shoji
 import numpy as np
-from sklearn.preprocessing import StandardScaler
 
 from cytograph import Algorithm, creates, requires
 
@@ -34,7 +33,7 @@ NPC = np.concatenate((NPC1, NPC2))
 # SEPT3 -> SEPTIN3
 # LOC150568 -> LINC01102
 
-class NeftelStates(Algorithm):
+class GeneSignatures(Algorithm):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
     
@@ -42,15 +41,14 @@ class NeftelStates(Algorithm):
     @requires("Gene", "string", ("genes",))
     @requires("GeneTotalUMIs", "uint32", ("genes",))
     @requires("TotalUMIs", "uint32", ("cells",))
-    @creates("NeftelScore", "float32", ("cells", 4))
-    @creates("NeftelClass", "string", ("cells",))
+    @creates("SignatureNames", "string", ("signatures", None))
+    @creates("SignatureScores", "string", ("signatures", None))
     def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> np.ndarray:
-
         logging.info("Loading genes")
         genes = self.Gene[:]
         n_genes = len(genes)
         logging.info("Loading expression matrix")
-        expression = self.Expression[:]
+        expression = self.Expression.sparse()
         total_umi = self.TotalUMIs[:]
         logging.info("Normalizing to median total UMI")
         expression = (expression.T / total_umi).T * np.median(total_umi)
@@ -70,14 +68,10 @@ class NeftelStates(Algorithm):
             for g in signature_genes:
                 ix = np.where(genes == g)[0][0]
                 bin_ix = ix // bin_size
-                random100 = np.random.choice(bin_size, size=100, replace=False) + ix // bin_size * bin_size
-                random100 = random100[random100 < n_genes]  # Make sure we don't spill over the end of the gene list
-                control_genes[random100] = True
+                random100 = np.random.choice(bin_size, size=100, replace=False)
+                control_genes[random100 + ix // bin_size * bin_size] = True
             control_score = np.mean(expression[:, control_genes], axis=1)
             return score - control_score
         
         scores = list(map(gene_signature_score, [AC, MES, NPC, OPC]))
-        neftel_score = np.hstack([x[:, None] for x in scores])
-        scaled = StandardScaler().fit_transform(neftel_score)
-        labels = np.array(["AC", "MES", "NPC", "OPC"])[np.argmax(scaled, axis=1)]
-        return neftel_score, labels
+        return np.hstack([x[:, None] for x in scores])
