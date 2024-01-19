@@ -68,8 +68,9 @@ class NeftelStates(Algorithm):
             for g in signature_genes:
                 ix = np.where(genes == g)[0][0]
                 bin_ix = ix // bin_size
-                random100 = np.random.choice(bin_size, size=100, replace=False)
-                control_genes[random100 + ix // bin_size * bin_size] = True
+                random100 = np.random.choice(bin_size, size=100, replace=False) + ix // bin_size * bin_size
+                random100 = random100[random100 < n_genes]  # Make sure we don't spill over the end of the gene list
+                control_genes[random100] = True
             control_score = np.mean(expression[:, control_genes], axis=1)
             return score - control_score
         
