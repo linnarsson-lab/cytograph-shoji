@@ -78,6 +78,5 @@ class NeftelStates(Algorithm):
         
         scores = list(map(gene_signature_score, [AC, MES, NPC, OPC]))
         neftel_score = np.hstack([x[:, None] for x in scores])
-        scaled = StandardScaler().fit_transform(neftel_score)
-        labels = np.array(["AC", "MES", "NPC", "OPC"])[np.argmax(scaled, axis=1)]
+        labels = np.array(["AC", "MES", "NPC", "OPC"])[np.argmax(neftel_score, axis=1)]
         return neftel_score, labels
