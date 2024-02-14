@@ -18,3 +18,4 @@ from .plot_karyotype import PlotHmmKaryotype
 from .plot_droplet_classes import PlotDropletClasses
 from .plot_overview import PlotOverview
 from .plot_neftel import PlotNeftel
+from .plot_gene_signatures import PlotGeneSignatures
