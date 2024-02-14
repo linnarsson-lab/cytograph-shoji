@@ -14,11 +14,12 @@ import logging
 
 
 class GeneSignatures(Algorithm):
-    def __init__(self, signature_names: List[str], path_to_signatures: str, use_cache: bool = False, build_cache: bool = False, allow_invalid_genes: bool = False, **kwargs) -> None:
+    def __init__(self, signature_names: List[str], path_to_signatures: str, alpha: float = 0.99, use_cache: bool = False, build_cache: bool = False, allow_invalid_genes: bool = False, **kwargs) -> None:
         super().__init__(**kwargs)
         self.all_signature_names = []
         self.signature_names = signature_names
         self.path_to_signatures = Path(path_to_signatures)
+        self.alpha = alpha
         self.allow_invalid_genes = allow_invalid_genes
         
         if build_cache:
@@ -60,13 +61,13 @@ class GeneSignatures(Algorithm):
     @requires("TotalUMIs", "uint32", ("cells",))
     @creates("SignatureNames", "string", ("signatures",))
     @creates("SignatureScores", "float32", ("cells", "signatures"))
-    @creates("SignatureBootstrapP95", "float32", ("cells", ))
+    @creates("SignatureBootstrap", "float32", ("cells", ))
     def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> np.ndarray:
         if "signatures" in ws:
             del ws.signatures
             del ws.SignatureNames
             del ws.SignatureScores
-            del ws.SignatureBootstrapP95
+            del ws.SignatureBootstrap
         ws.signatures = shoji.Dimension(shape=len(self.signatures))
                 
         genes = self.Gene[:]
@@ -136,4 +137,4 @@ class GeneSignatures(Algorithm):
             gene_names = self.signatures[signame]
             scores.append(gene_signature_score(signame, gene_names)[:, None])
             names.append(signame)
-        return np.array(names), np.array(np.hstack(scores)), np.percentile(np.array(bootstrap_scores), 95, axis=0).flatten()
+        return np.array(names), np.array(np.hstack(scores)), np.percentile(np.array(bootstrap_scores), 100 * (1 - self.alpha), axis=0).flatten()
