@@ -14,7 +14,7 @@ import logging
 
 
 class GeneSignatures(Algorithm):
-    def __init__(self, signature_names: List[str], path_to_signatures: str, alpha: float = 0.99, use_cache: bool = False, build_cache: bool = False, allow_invalid_genes: bool = False, **kwargs) -> None:
+    def __init__(self, signature_names: List[str], path_to_signatures: str, alpha: float = 0.01, use_cache: bool = False, build_cache: bool = False, allow_invalid_genes: bool = False, **kwargs) -> None:
         super().__init__(**kwargs)
         self.all_signature_names = []
         self.signature_names = signature_names
