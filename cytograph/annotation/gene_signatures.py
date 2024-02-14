@@ -60,12 +60,13 @@ class GeneSignatures(Algorithm):
     @requires("TotalUMIs", "uint32", ("cells",))
     @creates("SignatureNames", "string", ("signatures",))
     @creates("SignatureScores", "float32", ("cells", "signatures"))
+    @creates("SignatureBootstrapP95", "float32", ("cells", ))
     def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> np.ndarray:
         if "signatures" in ws:
             del ws.signatures
             del ws.SignatureNames
             del ws.SignatureScores
-            del ws.SignatureLoadings
+            del ws.SignatureBootstrapP95
         ws.signatures = shoji.Dimension(shape=len(self.signatures))
                 
         genes = self.Gene[:]
@@ -121,6 +122,12 @@ class GeneSignatures(Algorithm):
                 control_score_sum += control_scores[:, gene_ix // bin_size]
             return (score - control_score_sum / len(signature_genes) / 100)
         
+        logging.info(f"Computing bootstrap scores for P values")
+        bootstrap_scores = []
+        for j in trange(100):
+            gene_names = np.random.choice(genes, size=100, replace=False)  # Each random signature is without replacement, but replacement will happen across samples
+            bootstrap_scores.append(gene_signature_score(signame, gene_names)[:, None])
+        
         logging.info(f"Computing signature scores")
         scores = []
         names = []
@@ -129,4 +136,4 @@ class GeneSignatures(Algorithm):
             gene_names = self.signatures[signame]
             scores.append(gene_signature_score(signame, gene_names)[:, None])
             names.append(signame)
-        return np.array(names), np.array(np.hstack(scores))
+        return np.array(names), np.array(np.hstack(scores)), np.percentile(np.array(bootstrap_scores), 95, axis=0).flatten()
