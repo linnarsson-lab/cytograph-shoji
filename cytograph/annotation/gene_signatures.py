@@ -40,6 +40,7 @@ class GeneSignatures(Algorithm):
             logging.info("Loading gene signatures from cache")
             with open(self.path_to_signatures / "signatures.pkl", "rb") as fin:
                 all_signatures = pickle.load(fin)
+            self.all_signature_names = list(all_signatures.keys())
             self.signatures = {}
             for signame in self.signature_names:
                 self.signatures[signame] = all_signatures[signame]            
@@ -50,8 +51,8 @@ class GeneSignatures(Algorithm):
                 if path.is_file() and path.suffix == ".json":
                     with path.open() as f:
                         for signame, vals in json.load(f).items():
-                            if signame not in self.all_signatures:
-                                self.all_signatures.append(signame)
+                            if signame not in self.all_signature_names:
+                                self.all_signature_names.append(signame)
                             if signame in self.signature_names:
                                 self.signatures[signame] = vals["geneSymbols"]
 
