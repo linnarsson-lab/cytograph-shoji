@@ -25,7 +25,7 @@ class PlotGeneSignatures(Algorithm):
         xy = self.Embedding[:]
         n_signatures = len(signames)
         n_cols = 4
-        n_rows = np.ceil(n_signatures / n_cols)
+        n_rows = int(np.ceil(n_signatures / n_cols))
 
         # Clip to minimum zero
         scores = np.clip(scores, 0, None)
