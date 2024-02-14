@@ -38,3 +38,7 @@ class PlotGeneSignatures(Algorithm):
             plt.scatter(xy[selected, 0], xy[selected, 1], c=scores[selected, i], s=5, vmin=0, vmax=np.percentile(scores[selected, i], 99), cmap=plt.cm.plasma_r)
             plt.title(signame)
             plt.axis("off")
+
+        if save:
+            plt.savefig(self.export_dir / (ws._name + "_" + self.filename), dpi=300, bbox_inches='tight')
+            plt.close()
