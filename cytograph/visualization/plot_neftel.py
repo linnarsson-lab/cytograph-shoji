@@ -14,9 +14,16 @@ class PlotNeftel(Algorithm):
         super().__init__(**kwargs)
         self.filename = filename
 
-    @requires("NeftelScore", "float32", ("cells", 4))
+    @requires("SignatureNames", "string", ("signatures",))
+    @requires("SignatureScores", "float32", ("cells", "signatures"))
     def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> None:
-        ac, mes, npc, opc = np.hsplit(self.NeftelScore[:], 4)
+        signature_names = self.SignatureNames[:]
+        if np.isin(["NEFTEL_AC", "NEFTEL_AC", "NEFTEL_AC", "NEFTEL_AC"]).sum() != 4:
+            raise ValueError("One or more NEFTEL_xx signature is missing (run the GeneSignatures algorithm first to fix)")
+        ac = self.SignatureScores[:, signature_names == "NEFTEL_AC"]
+        mes = self.SignatureScores[:, signature_names == "NEFTEL_MES"]
+        npc = self.SignatureScores[:, signature_names == "NEFTEL_NPC"]
+        opc = self.SignatureScores[:, signature_names == "NEFTEL_OPC"]
 
         #Calc x, y coordinates for plotting the meta-modules:
         D = np.maximum(opc, npc) - np.maximum(ac, mes)
@@ -41,10 +48,12 @@ class PlotNeftel(Algorithm):
         plt.axvline(0, ls='--', lw=.4)
         plt.axhline(0, ls='--', lw=.4)
         plt.gca().set_aspect('equal')
-        plt.xlim(-6, 6)
-        plt.ylim(-6, 6)
-        y = [5.5,-5.5,5.5,-5.5]
-        z = [-5.5,-5.5,5.5,5.5]
+        max_val = np.max([np.max(X_sum), np.max(-X_sum), np.max(Y_sum), np.max(-Y_sum)])
+        plt.xlim(-max_val, max_val)
+        plt.ylim(-max_val, max_val)
+        i = max_val / 2
+        y = [i,-i,i,-i]
+        z = [-i,-i,i,i]
         n = ["OPC-like", "AC-like","NPC-like","MES-like"]
 
         for i, txt in enumerate(n):
