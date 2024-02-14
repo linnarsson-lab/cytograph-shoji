@@ -6,7 +6,7 @@ import numpy as np
 
 import shoji
 from cytograph import Algorithm, requires
-from cytograph import scatterm
+from .scatter import scatterm
 
 
 class PlotGeneSignatures(Algorithm):
