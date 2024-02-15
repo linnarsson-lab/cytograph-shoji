@@ -20,6 +20,7 @@ class EnrichmentBy(Algorithm):
         self.group = group
 
     @requires("Expression", "uint16", ("cells", "genes"))
+    @creates("EnrichmentByGroupNames", "string", (None,))
     @creates("EnrichmentByGroup", "float32", (None, "genes"))
     def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> np.ndarray:
         logging.info(f" EnrichmentBy: Computing enrichment by {self.group}")
@@ -53,5 +54,5 @@ class EnrichmentBy(Algorithm):
             f_nnz_other = np.average(f_nnz[:, ix], weights=weights, axis=1)
             enrichment[:, j] = (f_nnz[:, j] + 0.1) / (f_nnz_other + 0.1) * (means[:, j] + 0.01) / (means_other + 0.01)
         enrichment = enrichment.T
-        return enrichment
+        return le.classes_, enrichment
 
