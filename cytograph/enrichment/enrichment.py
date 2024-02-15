@@ -14,8 +14,8 @@ class Enrichment(Algorithm):
 
 		Remarks:
 			Gene enrichment is computed as the regularized fold-change between
-			each cluster and all other clusters. This is different from the
-			previous cytograph version, which also considered the fraction non-zeros.
+			each cluster and all other clusters, taking into account both mean 
+			expression and fraction non-zeros. 
 		"""
 		super().__init__(**kwargs)
 
