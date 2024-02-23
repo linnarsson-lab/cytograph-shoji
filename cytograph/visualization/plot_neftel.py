@@ -18,7 +18,7 @@ class PlotNeftel(Algorithm):
     @requires("SignatureScores", "float32", ("cells", "signatures"))
     def fit(self, ws: shoji.WorkspaceManager, save: bool = False) -> None:
         signature_names = self.SignatureNames[:]
-        if np.isin(["NEFTEL_AC", "NEFTEL_AC", "NEFTEL_AC", "NEFTEL_AC"]).sum() != 4:
+        if np.isin(signature_names, ["NEFTEL_AC", "NEFTEL_AC", "NEFTEL_AC", "NEFTEL_AC"]).sum() != 4:
             raise ValueError("One or more NEFTEL_xx signature is missing (run the GeneSignatures algorithm first to fix)")
         ac = self.SignatureScores[:, signature_names == "NEFTEL_AC"]
         mes = self.SignatureScores[:, signature_names == "NEFTEL_MES"]
