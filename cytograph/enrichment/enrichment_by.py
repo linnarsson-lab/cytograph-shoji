@@ -54,5 +54,4 @@ class EnrichmentBy(Algorithm):
             f_nnz_other = np.average(f_nnz[:, ix], weights=weights, axis=1)
             enrichment[:, j] = (f_nnz[:, j] + 0.1) / (f_nnz_other + 0.1) * (means[:, j] + 0.01) / (means_other + 0.01)
         enrichment = enrichment.T
-        return le.classes_, enrichment
-
+        return np.array([str(x) for x in le.classes_], dtype="object"), enrichment
